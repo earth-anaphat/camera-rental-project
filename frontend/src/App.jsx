@@ -4429,7 +4429,7 @@ function EquipmentForm() {
             />
           </Field>
           <Field label="ชื่ออุปกรณ์ *" className="sm:col-span-2">
-            <input required className="input" placeholder="เช่น Ricoh GR IIIx" value={form.name} onChange={(e) => set({ name: e.target.value })} />
+            <input required className="input" placeholder="ชื่อกล้องหรืออุปกรณ์" value={form.name} onChange={(e) => set({ name: e.target.value })} />
           </Field>
           <Field label="ยี่ห้อ">
             <input className="input" value={form.brand || ''} onChange={(e) => set({ brand: e.target.value })} />
@@ -4863,12 +4863,12 @@ function VisFrame({ label, children }) {
 }
 
 function VisInventory() {
-  const rows = [['Ricoh GR IIIx (1)', 'พร้อมให้เช่า'], ['Ricoh GR IIIx (2)', 'พร้อมให้เช่า'], ['Canon IXUS 285 HS A', 'พร้อมให้เช่า'], ['Fujifilm X-T100', 'พร้อมให้เช่า']];
+  const rows = [['ชื่ออุปกรณ์', 'ราคา/สถานะ'], ['ชื่ออุปกรณ์', 'ราคา/สถานะ'], ['ชื่ออุปกรณ์', 'ราคา/สถานะ'], ['ชื่ออุปกรณ์', 'ราคา/สถานะ']];
   return (
     <VisFrame label="01 — INVENTORY">
       <div className="grid h-full grid-cols-2 gap-3">
         {rows.map(([n, p], i) => (
-          <div key={n} className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
+          <div key={i} className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
             <div className="relative min-h-[64px] flex-1" style={{ background: `linear-gradient(${130 + i * 40}deg, #552c9c, #3a1b6c)` }}>
               <Aperture size={44} strokeWidth={0.8} className="absolute bottom-2 right-2 text-[#9d73fa]/40" />
             </div>
@@ -4890,9 +4890,9 @@ function VisInventory() {
 function VisGantt() {
   const days = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'];
   const rows = [
-    { n: 'GR IIIx (1)', bars: [[0, 3, 'a'], [4, 2, 'x']] },
-    { n: 'IXUS 285', bars: [[1, 2, 'b'], [4, 3, 'a']] },
-    { n: 'X-T100', bars: [[0, 2, 'b'], [3, 3, 'a']] },
+    { n: 'อุปกรณ์ 1', bars: [[0, 3, 'a'], [4, 2, 'x']] },
+    { n: 'อุปกรณ์ 2', bars: [[1, 2, 'b'], [4, 3, 'a']] },
+    { n: 'อุปกรณ์ 3', bars: [[0, 2, 'b'], [3, 3, 'a']] },
   ];
   const tone = {
     a: 'bg-[#8452e0] text-white',
@@ -5036,7 +5036,7 @@ function HeroFinder() {
 
       <div className="absolute right-6 top-[17%] w-[62%] rounded-xl border border-white/10 bg-black/45 p-3.5 backdrop-blur-md" style={{ animation: 'floaty 7s ease-in-out infinite' }}>
         <p className="mono !text-[9px] text-[#faf7ff]/50">BK-2610 · ตัวอย่าง</p>
-        <p className="mt-1 text-sm  text-[#ffffff]/50">Ricoh GR IIIx (1)</p>
+        <p className="mt-1 text-sm  text-[#ffffff]/50">ตัวอย่างรายการจอง</p>
         <div className="mt-2.5 flex items-center justify-between text-[11px] text-[#faf7ff]/60">
           <span>คืน 12:00 น.</span>
           <span className="flex items-center gap-1.5 text-[#7cbe94]"><i className="h-1.5 w-1.5 rounded-full bg-[#7cbe94]" />ว่างพร้อมส่ง</span>
@@ -5581,21 +5581,9 @@ function Dashboard() {
       d.setMonth(d.getMonth() - (11 - i));
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       const hit = map.get(key);
-      return {
-        label: MONTHS_SHORT[d.getMonth()],
-        full: `${MONTHS_SHORT[d.getMonth()]} ${String(d.getFullYear() + 543).slice(-2)}`,
-        income: hit?.income || 0,
-        expense: hit?.expense || 0,
-      };
+      return { label: MONTHS_SHORT[d.getMonth()], income: hit?.income || 0, expense: hit?.expense || 0 };
     });
   }, [report]);
-
-  const [cmpA, setCmpA] = useState(11);
-  const [cmpB, setCmpB] = useState(10);
-  const pct = (cur, prev) => (prev > 0 ? Math.round(((cur - prev) / prev) * 100) : cur > 0 ? null : 0);
-  const maxIncome = Math.max(1, ...months.map((m) => m.income));
-  const A = months[cmpA];
-  const B = months[cmpB];
 
   const usable = Math.max(1, counts.total - counts.maintenance);
   const usage = Math.min(100, Math.round((counts.rented / usable) * 100));
@@ -6642,9 +6630,21 @@ function Finance() {
       d.setMonth(d.getMonth() - (11 - i));
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       const hit = map.get(key);
-      return { label: MONTHS_SHORT[d.getMonth()], income: hit?.income || 0, expense: hit?.expense || 0 };
+      return {
+        label: MONTHS_SHORT[d.getMonth()],
+        full: `${MONTHS_SHORT[d.getMonth()]} ${String(d.getFullYear() + 543).slice(-2)}`,
+        income: Number(hit?.income) || 0,
+        expense: Number(hit?.expense) || 0,
+      };
     });
   }, [report]);
+
+  const [cmpA, setCmpA] = useState(11);
+  const [cmpB, setCmpB] = useState(10);
+  const pct = (cur, prev) => (prev > 0 ? Math.round(((cur - prev) / prev) * 100) : cur > 0 ? null : 0);
+  const maxIncome = Math.max(1, ...months.map((m) => m.income));
+  const A = months[cmpA];
+  const B = months[cmpB];
 
   const totals = report?.totals || { income: 0, expense: 0 };
   const profit = totals.income - totals.expense;
@@ -7031,6 +7031,33 @@ const PAGES = {
   settings: Settings,
 };
 
+/* กันหน้าจอดำทั้งหน้า: ถ้าหน้าใดพัง จะแสดงข้อความ error แทน และกดลองใหม่ได้ */
+class PageBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+
+  componentDidCatch(error) {
+    console.error('Page crashed:', error);
+  }
+
+  render() {
+    if (!this.state.error) return this.props.children;
+    return (
+      <div className="card card-pad mx-auto mt-10 max-w-xl text-center">
+        <h2 className="font-serif text-lg font-semibold">หน้านี้แสดงผลไม่สำเร็จ</h2>
+        <p className="mt-2 break-words text-sm text-mute">{String(this.state.error?.message || this.state.error)}</p>
+        <button className="btn btn-primary mt-5" onClick={() => this.setState({ error: null })}>ลองใหม่</button>
+      </div>
+    );
+  }
+}
+
 function Root() {
   const { entered, enter, page, bookingModal, equipmentModal, detailId } = useApp();
   const [iris, setIris] = useState({ state: '', x: '50%', y: '50%' });
@@ -7086,7 +7113,9 @@ function Root() {
       {entered ? (
         <>
           <Shell>
-            <Page />
+            <PageBoundary key={page}>
+              <Page />
+            </PageBoundary>
           </Shell>
           {bookingModal.open && <BookingForm />}
           {equipmentModal.open && <EquipmentForm />}
