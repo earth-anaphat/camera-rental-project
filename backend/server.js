@@ -164,7 +164,11 @@ const removeUploadedFile = (imageUrl) => {
   }
 };
 
-app.post('/api/upload', upload.single('image'), asyncHandler(async (req, res) => {
+// (asyncHandler ถูกประกาศทีหลัง จึงใช้ตัวห่อของ route นี้เอง ไม่งั้นจะ crash ตอนโหลดไฟล์)
+const wrapAsync = (handler) => (req, res, next) =>
+  Promise.resolve(handler(req, res, next)).catch(next);
+
+app.post('/api/upload', upload.single('image'), wrapAsync(async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'ไม่พบไฟล์รูปภาพ' });
   }
