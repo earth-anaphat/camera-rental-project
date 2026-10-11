@@ -1,0 +1,46 @@
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* Consistent panel styling */
+.rounded-xl,
+.rounded-2xl {
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+/* Sidebar and navigation hover */
+aside a,
+aside button {
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+/* Cleaner tables on smaller screens */
+table th,
+table td {
+  vertical-align: middle;
+}
+
+/* Modal backdrop and content safety */
+.fixed.inset-0 {
+  overscroll-behavior: contain;
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  body {
+    font-size: 13px;
+  }
+
+  table {
+    font-size: 12px;
+  }
+}
