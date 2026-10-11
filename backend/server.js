@@ -164,7 +164,7 @@ const removeUploadedFile = (imageUrl) => {
   }
 };
 
-// (asyncHandler ถูกประกาศทีหลัง จึงใช้ตัวห่อของ route นี้เอง ไม่งั้นจะ crash ตอนโหลดไฟล์)
+// asyncHandler ถูกประกาศทีหลังในไฟล์ จึงต้องใช้ตัวห่อของ route นี้เอง ไม่งั้นจะ crash ตอนโหลดไฟล์
 const wrapAsync = (handler) => (req, res, next) =>
   Promise.resolve(handler(req, res, next)).catch(next);
 
@@ -1123,7 +1123,7 @@ app.get('/api/availability', asyncHandler(async (req, res) => {
 
   const { data, error } = await supabase
     .from('booking_items')
-    .select('equipment_id, bookings!inner(booking_no, start_date, end_date, status)')
+    .select('equipment_id, bookings!inner(booking_no, start_date, end_date, status, customers(fullname))')
     .in('bookings.status', ['pending', 'confirmed', 'picked_up'])
     .lt('bookings.start_date', endIso)
     .gt('bookings.end_date', startIso);
@@ -1135,6 +1135,7 @@ app.get('/api/availability', asyncHandler(async (req, res) => {
     booking_no: row.bookings?.booking_no,
     start_date: row.bookings?.start_date,
     end_date: row.bookings?.end_date,
+    customer_name: row.bookings?.customers?.fullname,
   }));
 
   res.json(formatted);

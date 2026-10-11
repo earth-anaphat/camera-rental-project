@@ -3537,6 +3537,22 @@ const REGION_OPTIONS = [
   { value: 'other', label: 'ต่างจังหวัดภาคอื่น ๆ', detail: 'รายวันขั้นต่ำ 5 วัน' },
 ];
 
+const describeBusy = (row) =>
+  row
+    ? `${row.booking_no}${row.customer_name ? ` · ${row.customer_name}` : ''} (${fmtDateTime(row.start_date)} – ${fmtDateTime(row.end_date)})`
+    : '';
+
+// เตือนทันทีเมื่อกล้องตัวเดียวกันถูกจองซ้อนช่วงเวลา
+const alertDuplicate = (items) =>
+  fire({
+    icon: 'warning',
+    title: 'กล้องตัวเดียวกันถูกจองซ้ำ',
+    html: `<div class="sw-note warn" style="text-align:left">${items
+      .map((it) => `<b>${esc(it.name)}</b><br/>มีการจองแล้ว: ${esc(describeBusy(it.row) || 'ช่วงเวลานี้ไม่ว่าง')}`)
+      .join('<br/><br/>')}</div><p style="margin-top:12px;font-size:13px;opacity:.75">กรุณาเปลี่ยนวัน/เวลา หรือเลือกกล้องตัวอื่น</p>`,
+    confirmButtonText: 'รับทราบ',
+  });
+
 function BookingForm() {
   const { bookingModal, closeBooking, equipments, customers, refresh, navigate } = useApp();
   const initialStart = nextSlot();
@@ -3559,6 +3575,7 @@ function BookingForm() {
   const [query, setQuery] = useState('');
   const [cat, setCat] = useState('all');
   const [busy, setBusy] = useState({});
+  const [busyInfo, setBusyInfo] = useState({});
   const [checking, setChecking] = useState(false);
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
@@ -3590,6 +3607,7 @@ function BookingForm() {
   useEffect(() => {
     if (rentalDays(debouncedStart, debouncedEnd) === 0) {
       setBusy({});
+      setBusyInfo({});
       return undefined;
     }
     let cancelled = false;
@@ -3598,17 +3616,16 @@ function BookingForm() {
       .then(({ data }) => {
         if (cancelled) return;
         const map = {};
-        data.forEach((row) => { map[row.equipment_id] = row.booking_no; });
+        const info = {};
+        data.forEach((row) => { map[row.equipment_id] = row.booking_no; info[row.equipment_id] = row; });
         setBusy(map);
+        setBusyInfo(info);
         const conflicted = equipments.filter((e) => selected.has(Number(e.id)) && map[e.id]);
         if (conflicted.length) {
           const signature = `${debouncedStart}|${debouncedEnd}|${conflicted.map((e) => e.id).join(',')}`;
           if (lastConflictNotice.current !== signature) {
             lastConflictNotice.current = signature;
-            showError(
-              `กล้องที่เลือกมีรายการจองทับช่วงเวลา: ${conflicted.map((e) => `${e.name} (${map[e.id]})`).join(', ')} กรุณาเปลี่ยนวันหรือเลือกกล้องตัวอื่น`,
-              'พบวันจองซ้ำ'
-            );
+            alertDuplicate(conflicted.map((e) => ({ name: e.name, row: info[e.id] })));
           }
         } else {
           lastConflictNotice.current = '';
@@ -3635,7 +3652,8 @@ function BookingForm() {
   const toggle = (e) => {
     const alreadySelected = selected.has(Number(e.id));
     if ((e.status === 'maintenance' || busy[e.id]) && !alreadySelected) {
-      showError(reasonOf(e), 'กล้องไม่ว่างในช่วงเวลานี้');
+      if (busy[e.id]) alertDuplicate([{ name: e.name, row: busyInfo[e.id] }]);
+      else showError(reasonOf(e), 'กล้องไม่ว่างในช่วงเวลานี้');
       return;
     }
     setSelected((prev) => {
@@ -3698,7 +3716,10 @@ function BookingForm() {
     }
     if (!chosen.length) return showError('กรุณาเลือกกล้องอย่างน้อย 1 ตัว', 'ยังไม่ได้เลือกกล้อง');
     const conflict = chosen.find((e) => busy[e.id] || e.status === 'maintenance');
-    if (conflict) return showError(`${conflict.name} ไม่ว่างหรือมีการจองทับช่วงเวลา`, 'พบวันจองซ้ำ');
+    if (conflict) {
+      if (busy[conflict.id]) return alertDuplicate([{ name: conflict.name, row: busyInfo[conflict.id] }]);
+      return showError(`${conflict.name} อยู่ระหว่างซ่อมบำรุง`, 'กล้องไม่ว่าง');
+    }
     const price = Number(form.custom_price);
     const discount = Number(form.discount || 0);
     const deposit = Number(form.deposit || 0);
@@ -4408,7 +4429,7 @@ function EquipmentForm() {
             />
           </Field>
           <Field label="ชื่ออุปกรณ์ *" className="sm:col-span-2">
-            <input required className="input" placeholder="เช่น Sony Alpha A7 IV" value={form.name} onChange={(e) => set({ name: e.target.value })} />
+            <input required className="input" placeholder="เช่น Ricoh GR IIIx" value={form.name} onChange={(e) => set({ name: e.target.value })} />
           </Field>
           <Field label="ยี่ห้อ">
             <input className="input" value={form.brand || ''} onChange={(e) => set({ brand: e.target.value })} />
@@ -4842,7 +4863,7 @@ function VisFrame({ label, children }) {
 }
 
 function VisInventory() {
-  const rows = [['Sony A7 IV', '1,800'], ['Canon R6 II', '2,000'], ['Fujifilm X-T5', '1,500']];
+  const rows = [['Ricoh GR IIIx (1)', 'พร้อมให้เช่า'], ['Ricoh GR IIIx (2)', 'พร้อมให้เช่า'], ['Canon IXUS 285 HS A', 'พร้อมให้เช่า'], ['Fujifilm X-T100', 'พร้อมให้เช่า']];
   return (
     <VisFrame label="01 — INVENTORY">
       <div className="grid h-full grid-cols-2 gap-3">
@@ -4853,11 +4874,11 @@ function VisInventory() {
             </div>
             <div className="p-3">
               <p className="truncate text-xs">{n}</p>
-              <p className="mono mt-1 !text-[9px] text-[#9d73fa]">฿{p}/วัน</p>
+              <p className="mono mt-1 !text-[9px] text-[#9d73fa]">{p}</p>
             </div>
           </div>
         ))}
-        <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[#9d73fa]/50 text-[#9d73fa]">
+        <div className="col-span-2 flex flex-row items-center justify-center gap-2 rounded-xl border border-dashed border-[#9d73fa]/50 py-2 text-[#9d73fa]">
           <ImagePlus size={22} strokeWidth={1.3} />
           <span className="mono !text-[9px]">ลากรูปมาวางที่นี่</span>
         </div>
@@ -4869,9 +4890,9 @@ function VisInventory() {
 function VisGantt() {
   const days = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'];
   const rows = [
-    { n: 'A7 IV', bars: [[0, 3, 'a'], [4, 2, 'x']] },
-    { n: 'FE 24-70', bars: [[1, 2, 'b'], [4, 3, 'a']] },
-    { n: 'Godox V1', bars: [[0, 2, 'b'], [3, 3, 'a']] },
+    { n: 'GR IIIx (1)', bars: [[0, 3, 'a'], [4, 2, 'x']] },
+    { n: 'IXUS 285', bars: [[1, 2, 'b'], [4, 3, 'a']] },
+    { n: 'X-T100', bars: [[0, 2, 'b'], [3, 3, 'a']] },
   ];
   const tone = {
     a: 'bg-[#8452e0] text-white',
@@ -5015,7 +5036,7 @@ function HeroFinder() {
 
       <div className="absolute right-6 top-[17%] w-[62%] rounded-xl border border-white/10 bg-black/45 p-3.5 backdrop-blur-md" style={{ animation: 'floaty 7s ease-in-out infinite' }}>
         <p className="mono !text-[9px] text-[#faf7ff]/50">BK-2610 · ตัวอย่าง</p>
-        <p className="mt-1 text-sm  text-[#ffffff]/50">Sony A7 IV + FE 24-70</p>
+        <p className="mt-1 text-sm  text-[#ffffff]/50">Ricoh GR IIIx (1)</p>
         <div className="mt-2.5 flex items-center justify-between text-[11px] text-[#faf7ff]/60">
           <span>คืน 12:00 น.</span>
           <span className="flex items-center gap-1.5 text-[#7cbe94]"><i className="h-1.5 w-1.5 rounded-full bg-[#7cbe94]" />ว่างพร้อมส่ง</span>
@@ -5023,7 +5044,7 @@ function HeroFinder() {
       </div>
 
       <div className="absolute bottom-[19%] left-6 rounded-xl border border-white/10 bg-black/45 px-4 py-3 backdrop-blur-md" style={{ animation: 'floaty 8s ease-in-out -3s infinite' }}>
-        <p className="mono !text-[9px] text-[#faf7ff]/50">รายรับวันนี้</p>
+        <p className="mono !text-[9px] text-[#faf7ff]/50">รายรับวันนี้ · ตัวอย่าง</p>
         <p className="font-num text-3xl leading-none text-[#9d73fa]">฿4,300</p>
       </div>
 
@@ -5560,9 +5581,21 @@ function Dashboard() {
       d.setMonth(d.getMonth() - (11 - i));
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       const hit = map.get(key);
-      return { label: MONTHS_SHORT[d.getMonth()], income: hit?.income || 0, expense: hit?.expense || 0 };
+      return {
+        label: MONTHS_SHORT[d.getMonth()],
+        full: `${MONTHS_SHORT[d.getMonth()]} ${String(d.getFullYear() + 543).slice(-2)}`,
+        income: hit?.income || 0,
+        expense: hit?.expense || 0,
+      };
     });
   }, [report]);
+
+  const [cmpA, setCmpA] = useState(11);
+  const [cmpB, setCmpB] = useState(10);
+  const pct = (cur, prev) => (prev > 0 ? Math.round(((cur - prev) / prev) * 100) : cur > 0 ? null : 0);
+  const maxIncome = Math.max(1, ...months.map((m) => m.income));
+  const A = months[cmpA];
+  const B = months[cmpB];
 
   const usable = Math.max(1, counts.total - counts.maintenance);
   const usage = Math.min(100, Math.round((counts.rented / usable) * 100));
@@ -6666,6 +6699,81 @@ function Finance() {
       <section className="card card-pad mb-6 anim-i" style={{ '--i': 4 }}>
         <h2 className="mb-5 font-serif text-lg font-semibold">แนวโน้ม 12 เดือน</h2>
         <BarChart data={months} height={190} />
+      </section>
+
+      <section className="card card-pad mb-6 anim-i" style={{ '--i': 5 }}>
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="font-serif text-lg font-semibold">เปรียบเทียบรายได้รายเดือน</h2>
+          <div className="flex items-center gap-2 text-sm">
+            <select className="input !min-h-9 !w-auto" value={cmpA} onChange={(e) => setCmpA(Number(e.target.value))}>
+              {months.map((m, i) => <option key={i} value={i}>{m.full}</option>)}
+            </select>
+            <span className="text-mute">เทียบกับ</span>
+            <select className="input !min-h-9 !w-auto" value={cmpB} onChange={(e) => setCmpB(Number(e.target.value))}>
+              {months.map((m, i) => <option key={i} value={i}>{m.full}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div className="mb-6 grid gap-3 sm:grid-cols-3">
+          {[
+            ['รายรับ', A.income, B.income],
+            ['รายจ่าย', A.expense, B.expense],
+            ['กำไรสุทธิ', A.income - A.expense, B.income - B.expense],
+          ].map(([label, a, b]) => {
+            const diff = a - b;
+            const p = pct(a, b);
+            const good = label === 'รายจ่าย' ? diff <= 0 : diff >= 0;
+            return (
+              <div key={label} className="rounded-2xl border border-line bg-surface2/40 p-4">
+                <p className="text-xs text-mute">{label} · {A.full}</p>
+                <p className="font-num mt-1 text-2xl font-semibold">{baht(a)}</p>
+                <p className="mt-1 text-xs text-mute">{B.full}: {baht(b)}</p>
+                <p className={`mt-2 text-sm font-medium ${diff === 0 ? 'text-mute' : good ? 'text-ok' : 'text-bad'}`}>
+                  {diff > 0 ? '▲ +' : diff < 0 ? '▼ −' : ''}{baht(Math.abs(diff))}
+                  {p === null ? ' (ใหม่)' : diff !== 0 ? ` (${p > 0 ? '+' : ''}${p}%)` : ' (เท่ากัน)'}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[560px] text-sm">
+            <thead>
+              <tr className="text-left text-xs text-mute">
+                <th className="pb-2 font-medium">เดือน</th>
+                <th className="pb-2 text-right font-medium">รายรับ</th>
+                <th className="pb-2 text-right font-medium">รายจ่าย</th>
+                <th className="pb-2 text-right font-medium">กำไร</th>
+                <th className="pb-2 text-right font-medium">เทียบเดือนก่อน</th>
+                <th className="w-32 pb-2" />
+              </tr>
+            </thead>
+            <tbody>
+              {months.map((m, i) => {
+                const prev = i > 0 ? months[i - 1] : null;
+                const p = prev ? pct(m.income, prev.income) : 0;
+                return (
+                  <tr key={m.full} className="border-t border-line/60">
+                    <td className="py-2.5 font-medium">{m.full}</td>
+                    <td className="py-2.5 text-right">{baht(m.income)}</td>
+                    <td className="py-2.5 text-right text-mute">{baht(m.expense)}</td>
+                    <td className={`py-2.5 text-right ${m.income - m.expense < 0 ? 'text-bad' : ''}`}>{baht(m.income - m.expense)}</td>
+                    <td className={`py-2.5 text-right text-xs ${!prev || p === 0 ? 'text-mute' : p === null || p > 0 ? 'text-ok' : 'text-bad'}`}>
+                      {!prev ? '—' : p === null ? 'ใหม่' : p === 0 ? '—' : `${p > 0 ? '▲ +' : '▼ '}${p}%`}
+                    </td>
+                    <td className="py-2.5 pl-3">
+                      <div className="h-2 rounded-full bg-line/50">
+                        <div className="h-2 rounded-full bg-accent" style={{ width: `${(m.income / maxIncome) * 100}%` }} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <Segmented
