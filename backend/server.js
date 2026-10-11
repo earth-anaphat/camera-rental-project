@@ -23,7 +23,8 @@ const configuredOrigins = (process.env.CORS_ORIGINS || '').split(',').map(v => v
 app.use(cors({
   origin(origin, callback) {
     if (!origin || privateOrigin.test(origin) || configuredOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('CORS_ORIGIN_DENIED'));
+    // ไม่ throw error: ปล่อยให้เบราว์เซอร์เป็นคนบล็อก (ถ้า throw จะได้ 500 ที่ไม่มี header CORS)
+    return callback(null, false);
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Idempotency-Key'],
@@ -107,7 +108,12 @@ app.use('/api', rateLimit({ windowMs: 60_000, max: 240 }));
 // FILE UPLOAD (รูปอุปกรณ์จากเครื่องของผู้ใช้)
 // ==========================================
 const UPLOAD_DIR = path.join(__dirname, '../uploads');
-fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+try {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+} catch (err) {
+  // Vercel เป็นระบบไฟล์แบบอ่านอย่างเดียว — ข้ามได้ เพราะรูปจะเก็บใน Supabase Storage
+  console.warn('Skip local uploads dir:', err.message);
+}
 
 app.use(
   '/uploads',
@@ -121,15 +127,12 @@ const ALLOWED_MIME = {
   'image/gif': '.gif',
 };
 
+// รูปอุปกรณ์เก็บใน Supabase Storage (bucket สาธารณะ) เพราะ Vercel เขียนไฟล์ลงดิสก์ไม่ได้
+const STORAGE_BUCKET = process.env.SUPABASE_BUCKET || 'equipment-images';
+
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => cb(null, UPLOAD_DIR),
-    filename: (req, file, cb) => {
-      const ext = ALLOWED_MIME[file.mimetype] || '.jpg';
-      cb(null, `eq-${Date.now()}-${crypto.randomBytes(4).toString('hex')}${ext}`);
-    },
-  }),
-  limits: { fileSize: 8 * 1024 * 1024 },
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 4 * 1024 * 1024 }, // Vercel จำกัด request ~4.5MB
   fileFilter: (req, file, cb) => {
     if (!ALLOWED_MIME[file.mimetype]) {
       return cb(new Error('INVALID_FILE_TYPE'));
@@ -138,8 +141,19 @@ const upload = multer({
   },
 });
 
+const storagePathOf = (imageUrl) => {
+  const marker = `/storage/v1/object/public/${STORAGE_BUCKET}/`;
+  const i = String(imageUrl || '').indexOf(marker);
+  return i === -1 ? null : decodeURIComponent(String(imageUrl).slice(i + marker.length).split('?')[0]);
+};
+
 const removeUploadedFile = (imageUrl) => {
   try {
+    const key = storagePathOf(imageUrl);
+    if (key) {
+      supabase.storage.from(STORAGE_BUCKET).remove([key]).catch(() => {});
+      return;
+    }
     if (!imageUrl || !String(imageUrl).startsWith('/uploads/')) return;
     const filePath = path.join(UPLOAD_DIR, path.basename(imageUrl));
     if (filePath.startsWith(UPLOAD_DIR) && fs.existsSync(filePath)) {
@@ -150,17 +164,29 @@ const removeUploadedFile = (imageUrl) => {
   }
 };
 
-app.post('/api/upload', upload.single('image'), (req, res) => {
+app.post('/api/upload', upload.single('image'), asyncHandler(async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'ไม่พบไฟล์รูปภาพ' });
   }
 
+  const name = `eq-${Date.now()}-${crypto.randomBytes(4).toString('hex')}${ALLOWED_MIME[req.file.mimetype] || '.jpg'}`;
+  const { error } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .upload(name, req.file.buffer, { contentType: req.file.mimetype, upsert: false });
+
+  if (error) {
+    return res.status(500).json({
+      error: `อัปโหลดรูปไม่สำเร็จ (ตรวจว่าสร้าง bucket "${STORAGE_BUCKET}" แบบ Public แล้ว): ${error.message}`,
+    });
+  }
+
+  const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(name);
   res.status(201).json({
-    url: `/uploads/${req.file.filename}`,
+    url: data.publicUrl,
     size: req.file.size,
     message: 'อัปโหลดรูปสำเร็จ',
   });
-});
+}));
 
 // ==========================================
 // DATABASE CONNECTION (SUPABASE)
@@ -1181,7 +1207,7 @@ app.use((err, req, res, next) => {
   if (err.message === 'CORS_ORIGIN_DENIED') return res.status(403).json({ error: 'Origin นี้ไม่ได้รับอนุญาต' });
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) return res.status(400).json({ error: 'รูปแบบ JSON ไม่ถูกต้อง' });
   if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(413).json({ error: 'ไฟล์รูปใหญ่เกินไป (สูงสุด 8 MB)' });
+    return res.status(413).json({ error: 'ไฟล์รูปใหญ่เกินไป (สูงสุด 4 MB)' });
   }
 
   if (err.message === 'INVALID_FILE_TYPE') {
