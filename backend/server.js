@@ -1,11 +1,10 @@
-
 const express = require('express');
 const cors = require('cors');
-const mysql = require('mysql2/promise');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const multer = require('multer');
+const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const app = express();
@@ -139,7 +138,6 @@ const upload = multer({
   },
 });
 
-// ลบไฟล์ที่เราอัปโหลดเอง (ไม่แตะลิงก์ภายนอกหรือไฟล์นอกโฟลเดอร์)
 const removeUploadedFile = (imageUrl) => {
   try {
     if (!imageUrl || !String(imageUrl).startsWith('/uploads/')) return;
@@ -165,16 +163,21 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
 });
 
 // ==========================================
-// DATABASE CONNECTION
+// DATABASE CONNECTION (SUPABASE)
 // ==========================================
-const db = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'camera_rental_db',
-  waitForConnections: true,
-  connectionLimit: 10,
-  dateStrings: true,
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error('CRITICAL: Missing SUPABASE_URL or SUPABASE_KEY in .env file');
+}
+
+// ใช้ Custom Fetch เพื่อป้องกันปัญหาสายหลุด/DNS resolution บน macOS local dev
+const supabase = createClient(supabaseUrl || '', supabaseKey || '', {
+  auth: { persistSession: false },
+  global: {
+    fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' }),
+  },
 });
 
 // ==========================================
@@ -184,22 +187,11 @@ const asyncHandler = (handler) => (req, res, next) => {
   Promise.resolve(handler(req, res, next)).catch(next);
 };
 
-const toDateTime = (value) => {
+const toISO = (value) => {
   if (!value) return null;
-
-  // รองรับค่า datetime-local จาก HTML
-  return String(value).replace('T', ' ');
-};
-
-const calculateDays = (start, end) => {
-  const milliseconds = new Date(end).getTime() - new Date(start).getTime();
-
-  if (!Number.isFinite(milliseconds) || milliseconds <= 0) {
-    throw new Error('วันและเวลาคืนต้องอยู่หลังวันและเวลาเริ่มเช่า');
-  }
-
-  // คิดค่าเช่าเป็นรายวัน ปัดเศษขึ้น และอย่างน้อย 1 วัน
-  return Math.max(1, Math.ceil(milliseconds / 86400000));
+  const str = String(value).trim().replace(' ', 'T');
+  const d = new Date(str);
+  return Number.isNaN(d.getTime()) ? null : d.toISOString();
 };
 
 const makeBookingNo = () => {
@@ -208,249 +200,189 @@ const makeBookingNo = () => {
   return `BK-${time}-${random}`;
 };
 
-const getBookingEquipmentIds = async (connection, bookingId) => {
-  const [rows] = await connection.query(
-    'SELECT equipment_id FROM booking_items WHERE booking_id = ?',
-    [bookingId]
-  );
+const getBookingEquipmentIds = async (bookingId) => {
+  const { data, error } = await supabase
+    .from('booking_items')
+    .select('equipment_id')
+    .eq('booking_id', bookingId);
 
-  return rows.map((row) => row.equipment_id);
+  if (error) throw error;
+  return (data || []).map((row) => row.equipment_id);
 };
 
-const saveInspection = async (
-  connection,
-  bookingId,
-  type,
-  body = {}
-) => {
+const saveInspection = async (bookingId, type, body = {}) => {
   const accessories = body.accessories_checked ?? null;
   const images = body.images ?? null;
 
-  await connection.query(
-    `INSERT INTO inspections
-      (booking_id, type, inspection_date, accessories_checked,
-       condition_notes, images)
-     VALUES (?, ?, NOW(), ?, ?, ?)`,
-    [
-      bookingId,
-      type,
-      accessories === null ? null : JSON.stringify(accessories),
-      body.condition_notes || null,
-      images === null ? null : JSON.stringify(images),
-    ]
-  );
+  const { error } = await supabase.from('inspections').insert([{
+    booking_id: bookingId,
+    type,
+    inspection_date: new Date().toISOString(),
+    accessories_checked: accessories,
+    condition_notes: body.condition_notes || null,
+    images: images,
+  }]);
+
+  if (error) throw error;
 };
 
 // ==========================================
 // 1. DASHBOARD API
 // ==========================================
 app.get('/api/dashboard', asyncHandler(async (req, res) => {
-  const [statusRows] = await db.query(`
-    SELECT status, COUNT(*) AS count
-    FROM equipments
-    GROUP BY status
-  `);
+  const { data: equipments, error: eqErr } = await supabase.from('equipments').select('status');
+  if (eqErr) throw eqErr;
 
   const statusCounts = {};
-  for (const row of statusRows) {
-    statusCounts[row.status] = Number(row.count);
+  for (const row of equipments || []) {
+    statusCounts[row.status] = (statusCounts[row.status] || 0) + 1;
   }
 
-  const [todayBookings] = await db.query(`
-    SELECT
-      b.*,
-      c.fullname AS customer_name,
-      c.phone,
-      (
-        SELECT GROUP_CONCAT(e.name SEPARATOR ', ')
-        FROM booking_items bi
-        JOIN equipments e ON e.id = bi.equipment_id
-        WHERE bi.booking_id = b.id
-      ) AS equipment_names
-    FROM bookings b
-    JOIN customers c ON c.id = b.customer_id
-    WHERE DATE(b.start_date) = CURDATE()
-       OR DATE(b.end_date) = CURDATE()
-    ORDER BY b.start_date ASC
-  `);
+  const { data: bookingsData, error: bkErr } = await supabase
+    .from('bookings')
+    .select('*, customers!inner(fullname, phone), booking_items(equipments(name))')
+    .order('start_date', { ascending: true });
 
-  const [overdueBookings] = await db.query(`
-    SELECT
-      b.*,
-      c.fullname AS customer_name,
-      c.phone,
-      (
-        SELECT GROUP_CONCAT(e.name SEPARATOR ', ')
-        FROM booking_items bi
-        JOIN equipments e ON e.id = bi.equipment_id
-        WHERE bi.booking_id = b.id
-      ) AS equipment_names
-    FROM bookings b
-    JOIN customers c ON c.id = b.customer_id
-    WHERE b.end_date < NOW()
-      AND b.status = 'picked_up'
-    ORDER BY b.end_date ASC
-  `);
+  if (bkErr) throw bkErr;
 
-  // รายการรับอุปกรณ์ที่กำลังจะมาถึงใน 7 วันข้างหน้า
-  const [upcomingBookings] = await db.query(`
-    SELECT
-      b.*,
-      c.fullname AS customer_name,
-      c.phone,
-      (
-        SELECT GROUP_CONCAT(e.name SEPARATOR ', ')
-        FROM booking_items bi
-        JOIN equipments e ON e.id = bi.equipment_id
-        WHERE bi.booking_id = b.id
-      ) AS equipment_names
-    FROM bookings b
-    JOIN customers c ON c.id = b.customer_id
-    WHERE b.status IN ('pending', 'confirmed')
-      AND b.start_date >= NOW()
-      AND b.start_date < DATE_ADD(NOW(), INTERVAL 7 DAY)
-    ORDER BY b.start_date ASC
-    LIMIT 10
-  `);
+  const formattedBookings = (bookingsData || []).map(b => ({
+    ...b,
+    customer_name: b.customers?.fullname,
+    phone: b.customers?.phone,
+    equipment_names: (b.booking_items || []).map(bi => bi.equipments?.name).filter(Boolean).join(', ')
+  }));
 
-  const [[monthRow]] = await db.query(`
-    SELECT
-      COALESCE(SUM(CASE WHEN type = 'income' THEN amount END), 0) AS income,
-      COALESCE(SUM(CASE WHEN type = 'expense' THEN amount END), 0) AS expense
-    FROM transactions
-    WHERE YEAR(transaction_date) = YEAR(CURDATE())
-      AND MONTH(transaction_date) = MONTH(CURDATE())
-  `);
+  const nowIso = new Date().toISOString();
+  const todayStr = nowIso.split('T')[0];
 
-  const [[depositRow]] = await db.query(`
-    SELECT COALESCE(SUM(deposit), 0) AS holding
-    FROM bookings
-    WHERE status IN ('pending', 'confirmed', 'picked_up')
-  `);
+  const todayBookings = formattedBookings.filter(b => 
+    String(b.start_date || '').startsWith(todayStr) || String(b.end_date || '').startsWith(todayStr)
+  );
+
+  const overdueBookings = formattedBookings.filter(b => 
+    b.status === 'picked_up' && b.end_date < nowIso
+  ).sort((a, b) => new Date(a.end_date) - new Date(b.end_date));
+
+  const next7Days = new Date();
+  next7Days.setDate(next7Days.getDate() + 7);
+  const next7DaysIso = next7Days.toISOString();
+
+  const upcomingBookings = formattedBookings.filter(b => 
+    ['pending', 'confirmed'].includes(b.status) &&
+    b.start_date >= nowIso &&
+    b.start_date < next7DaysIso
+  ).slice(0, 10);
+
+  const { data: txData, error: txErr } = await supabase.from('transactions').select('type, amount, transaction_date');
+  if (txErr) throw txErr;
+
+  const now = new Date();
+  const curYear = now.getFullYear();
+  const curMonth = now.getMonth();
+
+  let monthIncome = 0;
+  let monthExpense = 0;
+
+  for (const t of txData || []) {
+    const tDate = new Date(t.transaction_date);
+    if (tDate.getFullYear() === curYear && tDate.getMonth() === curMonth) {
+      if (t.type === 'income') monthIncome += Number(t.amount || 0);
+      if (t.type === 'expense') monthExpense += Number(t.amount || 0);
+    }
+  }
+
+  const { data: depData, error: depErr } = await supabase
+    .from('bookings')
+    .select('deposit')
+    .in('status', ['pending', 'confirmed', 'picked_up']);
+
+  if (depErr) throw depErr;
+
+  const depositHolding = (depData || []).reduce((sum, b) => sum + Number(b.deposit || 0), 0);
 
   res.json({
     statusCounts,
     todayBookings,
     overdueBookings,
     upcomingBookings,
-    monthIncome: Number(monthRow.income),
-    monthExpense: Number(monthRow.expense),
-    depositHolding: Number(depositRow.holding),
+    monthIncome,
+    monthExpense,
+    depositHolding,
   });
 }));
 
 // ==========================================
 // 2. EQUIPMENTS API
 // ==========================================
-
-// GET all equipment
 app.get('/api/equipments', asyncHandler(async (req, res) => {
-  const [rows] = await db.query(`
-    SELECT *
-    FROM equipments
-    ORDER BY id DESC
-  `);
+  const { data, error } = await supabase
+    .from('equipments')
+    .select('*')
+    .order('id', { ascending: false });
 
-  res.json(rows);
+  if (error) throw error;
+  res.json(data);
 }));
 
-// GET one equipment
 app.get('/api/equipments/:id', asyncHandler(async (req, res) => {
-  const [rows] = await db.query(
-    'SELECT * FROM equipments WHERE id = ?',
-    [req.params.id]
-  );
+  const { data, error } = await supabase
+    .from('equipments')
+    .select('*')
+    .eq('id', req.params.id)
+    .single();
 
-  if (!rows.length) {
-    return res.status(404).json({ error: 'ไม่พบอุปกรณ์นี้' });
-  }
-
-  res.json(rows[0]);
+  if (error || !data) return res.status(404).json({ error: 'ไม่พบอุปกรณ์นี้' });
+  res.json(data);
 }));
 
-// CREATE equipment
 app.post('/api/equipments', asyncHandler(async (req, res) => {
   const {
-    code,
-    name,
-    category,
-    brand,
-    model,
-    image_url,
-    serial_number,
-    cost_price,
-    current_value,
-    rental_rate_per_day,
-    status,
-    defects,
+    code, name, category, brand, model, image_url, serial_number,
+    cost_price, current_value, rental_rate_per_day, status, defects,
   } = req.body;
 
   if (!code || !name || !category || rental_rate_per_day == null) {
-    return res.status(400).json({
-      error: 'กรุณากรอกรหัส ชื่อ หมวดหมู่ และราคาเช่าต่อวัน',
-    });
+    return res.status(400).json({ error: 'กรุณากรอกรหัส ชื่อ หมวดหมู่ และราคาเช่าต่อวัน' });
   }
 
   const validCategories = ['camera', 'lens', 'flash', 'accessory'];
   const validStatuses = ['available', 'booked', 'rented', 'maintenance'];
 
-  if (!validCategories.includes(category)) {
-    return res.status(400).json({ error: 'หมวดหมู่อุปกรณ์ไม่ถูกต้อง' });
-  }
+  if (!validCategories.includes(category)) return res.status(400).json({ error: 'หมวดหมู่อุปกรณ์ไม่ถูกต้อง' });
+  if (status && !validStatuses.includes(status)) return res.status(400).json({ error: 'สถานะอุปกรณ์ไม่ถูกต้อง' });
 
-  if (status && !validStatuses.includes(status)) {
-    return res.status(400).json({ error: 'สถานะอุปกรณ์ไม่ถูกต้อง' });
-  }
-
-  if (
-    !Number.isFinite(Number(rental_rate_per_day)) ||
-    Number(rental_rate_per_day) < 0
-  ) {
+  if (!Number.isFinite(Number(rental_rate_per_day)) || Number(rental_rate_per_day) < 0) {
     return res.status(400).json({ error: 'ราคาเช่าไม่ถูกต้อง' });
   }
 
-  const [result] = await db.query(
-    `INSERT INTO equipments
-    (code, name, category, brand, model, image_url, serial_number,
-    cost_price, current_value, rental_rate_per_day, status, defects)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-    code,
-    name,
-    category,
-    brand || null,
-    model || null,
-    image_url || null,
-    serial_number || null,
-    cost_price || 0,
-    current_value || 0,
-    rental_rate_per_day,
-    status || 'available',
-    defects || '',
-]
-  );
+  const { data, error } = await supabase
+    .from('equipments')
+    .insert([{
+      code, name, category,
+      brand: brand || null,
+      model: model || null,
+      image_url: image_url || null,
+      serial_number: serial_number || null,
+      cost_price: cost_price || 0,
+      current_value: current_value || 0,
+      rental_rate_per_day,
+      status: status || 'available',
+      defects: defects || '',
+    }])
+    .select();
 
-  res.status(201).json({
-    id: result.insertId,
-    message: 'บันทึกอุปกรณ์สำเร็จ',
-  });
+  if (error) {
+    if (error.code === '23505') return res.status(409).json({ error: 'ข้อมูลซ้ำ เช่น รหัสอุปกรณ์หรือหมายเลขซีเรียล' });
+    throw error;
+  }
+
+  res.status(201).json({ id: data[0].id, message: 'บันทึกอุปกรณ์สำเร็จ' });
 }));
 
-// UPDATE equipment
 app.put('/api/equipments/:id', asyncHandler(async (req, res) => {
   const {
-    code,
-    name,
-    category,
-    brand,
-    model,
-    image_url,
-    serial_number,
-    cost_price,
-    current_value,
-    rental_rate_per_day,
-    status,
-    defects,
+    code, name, category, brand, model, image_url, serial_number,
+    cost_price, current_value, rental_rate_per_day, status, defects,
   } = req.body;
 
   const validCategories = ['camera', 'lens', 'flash', 'accessory'];
@@ -459,96 +391,72 @@ app.put('/api/equipments/:id', asyncHandler(async (req, res) => {
   if (!code || !name || !category || rental_rate_per_day == null) {
     return res.status(400).json({ error: 'ข้อมูลอุปกรณ์ไม่ครบถ้วน' });
   }
+  if (!validCategories.includes(category)) return res.status(400).json({ error: 'หมวดหมู่อุปกรณ์ไม่ถูกต้อง' });
+  if (!validStatuses.includes(status)) return res.status(400).json({ error: 'สถานะอุปกรณ์ไม่ถูกต้อง' });
 
-  if (!validCategories.includes(category)) {
-    return res.status(400).json({ error: 'หมวดหมู่อุปกรณ์ไม่ถูกต้อง' });
+  const { data: oldRows } = await supabase.from('equipments').select('image_url').eq('id', req.params.id);
+
+  const { data, error } = await supabase
+    .from('equipments')
+    .update({
+      code, name, category,
+      brand: brand || null,
+      model: model || null,
+      image_url: image_url || null,
+      serial_number: serial_number || null,
+      cost_price: cost_price || 0,
+      current_value: current_value || 0,
+      rental_rate_per_day,
+      status,
+      defects: defects || '',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', req.params.id)
+    .select();
+
+  if (error) {
+    if (error.code === '23505') return res.status(409).json({ error: 'ข้อมูลซ้ำ เช่น รหัสอุปกรณ์หรือหมายเลขซีเรียล' });
+    throw error;
   }
 
-  if (!validStatuses.includes(status)) {
-    return res.status(400).json({ error: 'สถานะอุปกรณ์ไม่ถูกต้อง' });
-  }
+  if (!data || !data.length) return res.status(404).json({ error: 'ไม่พบอุปกรณ์นี้' });
 
-  const [oldRows] = await db.query(
-    'SELECT image_url FROM equipments WHERE id = ?',
-    [req.params.id]
-  );
-
-  const [result] = await db.query(
-    `UPDATE equipments
-        SET code = ?, name = ?, category = ?, brand = ?, model = ?,
-            image_url = ?, serial_number = ?, cost_price = ?, current_value = ?,
-            rental_rate_per_day = ?, status = ?, defects = ?
-        WHERE id = ?`,
-        [
-        code,
-        name,
-        category,
-        brand || null,
-        model || null,
-        image_url || null,
-        serial_number || null,
-        cost_price || 0,
-        current_value || 0,
-        rental_rate_per_day,
-        status,
-        defects || '',
-        req.params.id,
-        ]
-  );
-
-  if (!result.affectedRows) {
-    return res.status(404).json({ error: 'ไม่พบอุปกรณ์นี้' });
-  }
-
-  // ถ้าเปลี่ยนรูปใหม่ ให้ลบไฟล์รูปเก่าออกจากเครื่อง
-  if (oldRows.length && oldRows[0].image_url !== (image_url || null)) {
+  if (oldRows && oldRows.length && oldRows[0].image_url !== (image_url || null)) {
     removeUploadedFile(oldRows[0].image_url);
   }
 
   res.json({ message: 'อัปเดตอุปกรณ์สำเร็จ' });
 }));
 
-// DELETE equipment
 app.delete('/api/equipments/:id', asyncHandler(async (req, res) => {
   try {
-    const [oldRows] = await db.query(
-      'SELECT image_url FROM equipments WHERE id = ?',
-      [req.params.id]
-    );
+    const { data: oldRows } = await supabase.from('equipments').select('image_url').eq('id', req.params.id);
 
-    // ฐานข้อมูลตั้ง ON DELETE CASCADE ไว้ การลบอุปกรณ์จะทำให้ประวัติการจองหาย
-    // จึงบล็อกการลบถ้าอุปกรณ์เคยอยู่ในรายการจองใดๆ
-    const [used] = await db.query(
-      'SELECT COUNT(*) AS count FROM booking_items WHERE equipment_id = ?',
-      [req.params.id]
-    );
+    const { data: used, error: usedErr } = await supabase
+      .from('booking_items')
+      .select('id')
+      .eq('equipment_id', req.params.id);
 
-    if (Number(used[0].count) > 0) {
+    if (usedErr) throw usedErr;
+
+    if (used && used.length > 0) {
       return res.status(409).json({
-        error:
-          'อุปกรณ์นี้มีประวัติการจอง ลบไม่ได้เพื่อไม่ให้ประวัติสูญหาย (ใช้สถานะซ่อมบำรุงเพื่อพักการใช้งานแทนได้)',
+        error: 'อุปกรณ์นี้มีประวัติการจอง ลบไม่ได้เพื่อไม่ให้ประวัติสูญหาย (ใช้สถานะซ่อมบำรุงเพื่อพักการใช้งานแทนได้)',
       });
     }
 
-    const [result] = await db.query(
-      'DELETE FROM equipments WHERE id = ?',
-      [req.params.id]
-    );
+    const { data, error } = await supabase.from('equipments').delete().eq('id', req.params.id).select();
+    if (error) throw error;
 
-    if (!result.affectedRows) {
-      return res.status(404).json({ error: 'ไม่พบอุปกรณ์นี้' });
-    }
+    if (!data || !data.length) return res.status(404).json({ error: 'ไม่พบอุปกรณ์นี้' });
 
-    if (oldRows.length) removeUploadedFile(oldRows[0].image_url);
+    if (oldRows && oldRows.length) removeUploadedFile(oldRows[0].image_url);
 
     res.json({ message: 'ลบอุปกรณ์สำเร็จ' });
   } catch (err) {
-    if (err.code === 'ER_ROW_IS_REFERENCED_2') {
-      return res.status(409).json({
-        error: 'ไม่สามารถลบอุปกรณ์ที่มีประวัติการจองหรือการซ่อมบำรุงได้',
-      });
+    if (err.code === '23503') {
+      return res.status(409).json({ error: 'ไม่สามารถลบอุปกรณ์ที่มีประวัติการจองหรือการซ่อมบำรุงได้' });
     }
-
     throw err;
   }
 }));
@@ -556,121 +464,126 @@ app.delete('/api/equipments/:id', asyncHandler(async (req, res) => {
 // ==========================================
 // 3. BOOKINGS API
 // ==========================================
-
-// GET bookings
 app.get('/api/bookings', asyncHandler(async (req, res) => {
-  const [rows] = await db.query(`
-    SELECT
-      b.*,
-      c.fullname AS customer_name,
-      c.phone,
-      c.email,
-      (
-        SELECT bi.equipment_id
-        FROM booking_items bi
-        WHERE bi.booking_id = b.id
-        ORDER BY bi.id
-        LIMIT 1
-      ) AS equipment_id,
-      (
-        SELECT GROUP_CONCAT(e.name SEPARATOR ', ')
-        FROM booking_items bi
-        JOIN equipments e ON e.id = bi.equipment_id
-        WHERE bi.booking_id = b.id
-      ) AS equipment_names,
-      (
-        SELECT GROUP_CONCAT(bi.equipment_id)
-        FROM booking_items bi
-        WHERE bi.booking_id = b.id
-      ) AS equipment_ids
-    FROM bookings b
-    JOIN customers c ON c.id = b.customer_id
-    ORDER BY b.id DESC
-  `);
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*, customers!inner(fullname, phone, email), booking_items(equipment_id, equipments(name))')
+    .order('id', { ascending: false });
 
-  res.json(rows);
+  if (error) throw error;
+
+  const formatted = (data || []).map(b => {
+    const items = b.booking_items || [];
+    const firstItem = items[0];
+    return {
+      ...b,
+      customer_name: b.customers?.fullname,
+      phone: b.customers?.phone,
+      email: b.customers?.email,
+      equipment_id: firstItem ? firstItem.equipment_id : null,
+      equipment_names: items.map(bi => bi.equipments?.name).filter(Boolean).join(', '),
+      equipment_ids: items.map(bi => bi.equipment_id).join(',')
+    };
+  });
+
+  res.json(formatted);
 }));
 
-// GET booking details
 app.get('/api/bookings/:id', asyncHandler(async (req, res) => {
-  const [rows] = await db.query(`
-    SELECT b.*, c.fullname AS customer_name, c.phone, c.email
-    FROM bookings b
-    JOIN customers c ON c.id = b.customer_id
-    WHERE b.id = ?
-  `, [req.params.id]);
+  const { data: booking, error: bkErr } = await supabase
+    .from('bookings')
+    .select('*, customers!inner(fullname, phone, email)')
+    .eq('id', req.params.id)
+    .single();
 
-  if (!rows.length) {
-    return res.status(404).json({ error: 'ไม่พบรายการจองนี้' });
-  }
+  if (bkErr || !booking) return res.status(404).json({ error: 'ไม่พบรายการจองนี้' });
 
-  const [items] = await db.query(`
-    SELECT bi.*, e.code, e.name, e.brand, e.model, e.image_url, e.category
-    FROM booking_items bi
-    JOIN equipments e ON e.id = bi.equipment_id
-    WHERE bi.booking_id = ?
-  `, [req.params.id]);
+  const { data: items, error: itErr } = await supabase
+    .from('booking_items')
+    .select('*, equipments(code, name, brand, model, image_url, category)')
+    .eq('booking_id', req.params.id);
 
-  const [inspections] = await db.query(
-    'SELECT * FROM inspections WHERE booking_id = ? ORDER BY id DESC',
-    [req.params.id]
-  );
+  if (itErr) throw itErr;
+
+  const formattedItems = (items || []).map(item => ({
+    ...item,
+    ...(item.equipments || {})
+  }));
+
+  const { data: inspections, error: inspErr } = await supabase
+    .from('inspections')
+    .select('*')
+    .eq('booking_id', req.params.id)
+    .order('id', { ascending: false });
+
+  if (inspErr) throw inspErr;
 
   res.json({
-    ...rows[0],
-    items,
-    inspections,
+    ...booking,
+    customer_name: booking.customers?.fullname,
+    phone: booking.customers?.phone,
+    email: booking.customers?.email,
+    items: formattedItems,
+    inspections: inspections || [],
   });
 }));
 
-// CREATE booking: persist idempotency result so retries do not create duplicate bookings.
+// CREATE booking with Idempotency
 app.post('/api/bookings', rateLimit({ windowMs: 60_000, max: 20 }), asyncHandler(async (req, res, next) => {
   const key = String(req.get('Idempotency-Key') || '').trim();
   if (!/^[A-Za-z0-9._:-]{16,128}$/.test(key)) {
     return res.status(400).json({ error: 'คำขอจองต้องมี Idempotency-Key ที่ถูกต้อง กรุณารีเฟรชหน้าแล้วลองใหม่' });
   }
   const bodyHash = crypto.createHash('sha256').update(JSON.stringify(req.body || {})).digest('hex');
-  try {
-    await db.query("INSERT INTO api_idempotency (idem_key, body_hash, state, created_at) VALUES (?, ?, 'processing', NOW())", [key, bodyHash]);
-    req.idempotency = { key, bodyHash };
-  } catch (err) {
-    if (err.code !== 'ER_DUP_ENTRY') throw err;
-    const [rows] = await db.query('SELECT body_hash, state, response_status, response_body FROM api_idempotency WHERE idem_key = ? LIMIT 1', [key]);
-    const saved = rows[0];
-    if (!saved) return res.status(409).json({ error: 'กำลังตรวจสอบคำขอเดิม กรุณารอสักครู่' });
-    if (saved.body_hash !== bodyHash) return res.status(409).json({ error: 'Idempotency-Key นี้ถูกใช้กับข้อมูลคนละชุด กรุณาเริ่มรายการใหม่' });
-    if (saved.state !== 'complete') return res.status(409).json({ error: 'คำขอเดิมกำลังดำเนินการ กรุณารอสักครู่ก่อนตรวจสอบรายการจอง' });
-    res.setHeader('Idempotency-Replayed', 'true');
-    return res.status(Number(saved.response_status) || 201).json(JSON.parse(saved.response_body || '{}'));
+
+  const { error: idemInsertErr } = await supabase
+    .from('api_idempotency')
+    .insert([{ idem_key: key, body_hash: bodyHash, state: 'processing', created_at: new Date().toISOString() }]);
+
+  if (idemInsertErr) {
+    if (idemInsertErr.code === '23505') { // Duplicate key
+      const { data: savedRows } = await supabase
+        .from('api_idempotency')
+        .select('body_hash, state, response_status, response_body')
+        .eq('idem_key', key)
+        .limit(1);
+
+      const saved = savedRows?.[0];
+      if (!saved) return res.status(409).json({ error: 'กำลังตรวจสอบคำขอเดิม กรุณารอสักครู่' });
+      if (saved.body_hash !== bodyHash) return res.status(409).json({ error: 'Idempotency-Key นี้ถูกใช้กับข้อมูลคนละชุด กรุณาเริ่มรายการใหม่' });
+      if (saved.state !== 'complete') return res.status(409).json({ error: 'คำขอเดิมกำลังดำเนินการ กรุณารอสักครู่ก่อนตรวจสอบรายการจอง' });
+
+      res.setHeader('Idempotency-Replayed', 'true');
+      return res.status(Number(saved.response_status) || 201).json(JSON.parse(saved.response_body || '{}'));
+    }
+    throw idemInsertErr;
   }
+
   const originalJson = res.json.bind(res);
   res.json = (body) => {
     const status = res.statusCode;
     const payload = JSON.stringify(body ?? {});
-    db.query("UPDATE api_idempotency SET state = 'complete', response_status = ?, response_body = ? WHERE idem_key = ?", [status, payload, key])
+    supabase
+      .from('api_idempotency')
+      .update({ state: 'complete', response_status: status, response_body: payload })
+      .eq('idem_key', key)
+      .then(() => {})
       .catch(err => console.error('Cannot save idempotency response:', err.message));
     return originalJson(body);
   };
+
   res.on('close', () => {
-    if (!res.writableEnded) db.query("DELETE FROM api_idempotency WHERE idem_key = ? AND state = 'processing'", [key]).catch(() => {});
+    if (!res.writableEnded) {
+      supabase.from('api_idempotency').delete().eq('idem_key', key).eq('state', 'processing').then(() => {}).catch(() => {});
+    }
   });
   next();
 }), asyncHandler(async (req, res) => {
   const {
-    customer_name,
-    phone,
-    equipment_id,
-    equipment_ids,
-    start_date,
-    end_date,
-    notes,
-    discount = 0,
-    deposit,
-    rental_type = 'daily',
-    rental_hours = null,
-    rental_region = 'local',
-    delivery_method = 'meetup',
-    custom_price = null,
+    customer_name, phone, equipment_id, equipment_ids,
+    start_date, end_date, notes, discount = 0, deposit,
+    rental_type = 'daily', rental_hours = null, rental_region = 'local',
+    delivery_method = 'meetup', custom_price = null,
   } = req.body;
 
   const equipmentIds = [
@@ -682,25 +595,19 @@ app.post('/api/bookings', rateLimit({ windowMs: 60_000, max: 20 }), asyncHandler
   ];
 
   if (!customer_name || !phone || equipmentIds.length === 0 || !start_date || !end_date) {
-    return res.status(400).json({
-      error: 'กรุณากรอกชื่อลูกค้า เบอร์โทร กล้อง และช่วงเวลาเช่า',
-    });
+    return res.status(400).json({ error: 'กรุณากรอกชื่อลูกค้า เบอร์โทร กล้อง และช่วงเวลาเช่า' });
   }
 
-  if (!['daily', 'hourly'].includes(rental_type)) {
-    return res.status(400).json({ error: 'รูปแบบการเช่าไม่ถูกต้อง' });
-  }
-  if (!['local', 'south', 'other'].includes(rental_region)) {
-    return res.status(400).json({ error: 'พื้นที่เช่าไม่ถูกต้อง' });
-  }
-  if (!['meetup', 'van', 'grab', 'post'].includes(delivery_method)) {
-    return res.status(400).json({ error: 'วิธีรับกล้องไม่ถูกต้อง' });
-  }
+  if (!['daily', 'hourly'].includes(rental_type)) return res.status(400).json({ error: 'รูปแบบการเช่าไม่ถูกต้อง' });
+  if (!['local', 'south', 'other'].includes(rental_region)) return res.status(400).json({ error: 'พื้นที่เช่าไม่ถูกต้อง' });
+  if (!['meetup', 'van', 'grab', 'post'].includes(delivery_method)) return res.status(400).json({ error: 'วิธีรับกล้องไม่ถูกต้อง' });
 
-  const start = toDateTime(start_date);
-  const end = toDateTime(end_date);
-  const startDate = new Date(String(start).replace(' ', 'T'));
-  const endDate = new Date(String(end).replace(' ', 'T'));
+  const startIso = toISO(start_date);
+  const endIso = toISO(end_date);
+  if (!startIso || !endIso) return res.status(400).json({ error: 'รูปแบบวันที่ไม่ถูกต้อง' });
+
+  const startDate = new Date(startIso);
+  const endDate = new Date(endIso);
   const durationMs = endDate.getTime() - startDate.getTime();
 
   if (!Number.isFinite(durationMs) || durationMs <= 0) {
@@ -711,9 +618,7 @@ app.post('/api/bookings', rateLimit({ windowMs: 60_000, max: 20 }), asyncHandler
   let hours = null;
   if (rental_type === 'hourly') {
     hours = Number(rental_hours);
-    if (rental_region !== 'local') {
-      return res.status(400).json({ error: 'รายชั่วโมงให้บริการเฉพาะพื้นที่สงขลา–เก้าเส้ง' });
-    }
+    if (rental_region !== 'local') return res.status(400).json({ error: 'รายชั่วโมงให้บริการเฉพาะพื้นที่สงขลา–เก้าเส้ง' });
     if (!Number.isInteger(hours) || hours < 2 || hours > 23) {
       return res.status(400).json({ error: 'การเช่ารายชั่วโมงเริ่มต้น 2 ชั่วโมง และเลือกได้สูงสุด 23 ชั่วโมง' });
     }
@@ -757,604 +662,352 @@ app.post('/api/bookings', rateLimit({ windowMs: 60_000, max: 20 }), asyncHandler
     return res.status(400).json({ error: 'ราคา ส่วนลด หรือเงินประกันไม่ถูกต้อง' });
   }
 
-  const connection = await db.getConnection();
-  try {
-    await connection.beginTransaction();
+  // Customer Management
+  const { data: existingCustomer } = await supabase.from('customers').select('id').eq('phone', phone).limit(1);
+  let customerId;
+  if (existingCustomer && existingCustomer.length) {
+    customerId = existingCustomer[0].id;
+    await supabase.from('customers').update({ fullname: customer_name }).eq('id', customerId);
+  } else {
+    const { data: newCust, error: custErr } = await supabase.from('customers').insert([{ fullname: customer_name, phone }]).select();
+    if (custErr) throw custErr;
+    customerId = newCust[0].id;
+  }
 
-    const [customerRows] = await connection.query(
-      'SELECT id FROM customers WHERE phone = ? LIMIT 1 FOR UPDATE',
-      [phone]
-    );
+  // Check Equipment & Conflict Check
+  let calculatedSubtotal = 0;
+  const itemRates = [];
+  for (const eqId of equipmentIds) {
+    if (!Number.isInteger(eqId) || eqId <= 0) throw new Error('รหัสกล้องไม่ถูกต้อง');
 
-    let customerId;
-    if (customerRows.length) {
-      customerId = customerRows[0].id;
-      await connection.query('UPDATE customers SET fullname = ? WHERE id = ?', [customer_name, customerId]);
-    } else {
-      const [customerResult] = await connection.query(
-        'INSERT INTO customers (fullname, phone) VALUES (?, ?)',
-        [customer_name, phone]
-      );
-      customerId = customerResult.insertId;
+    const { data: eqData } = await supabase.from('equipments').select('*').eq('id', eqId).single();
+    if (!eqData) throw new Error(`ไม่พบกล้องรหัส ${eqId}`);
+    if (eqData.status === 'maintenance') throw new Error(`กล้อง ${eqData.name} อยู่ระหว่างซ่อมบำรุง`);
+
+    // Conflict Check
+    const { data: conflicts } = await supabase
+      .from('booking_items')
+      .select('bookings!inner(id, booking_no, start_date, end_date, status)')
+      .eq('equipment_id', eqId)
+      .in('bookings.status', ['pending', 'confirmed', 'picked_up'])
+      .lt('bookings.start_date', endIso)
+      .gt('bookings.end_date', startIso)
+      .limit(1);
+
+    if (conflicts && conflicts.length) {
+      const cBk = conflicts[0].bookings;
+      throw new Error(`กล้อง ${eqData.name} ถูกจองซ้ำกับรายการ ${cBk.booking_no} (${cBk.start_date} ถึง ${cBk.end_date})`);
     }
 
-    let calculatedSubtotal = 0;
-    const itemRates = [];
-    for (const equipmentId of equipmentIds) {
-      if (!Number.isInteger(equipmentId) || equipmentId <= 0) {
-        throw new Error('รหัสกล้องไม่ถูกต้อง');
-      }
+    const rate = Number(eqData.rental_rate_per_day || 0);
+    itemRates.push({ equipmentId: eqId, rate });
+    calculatedSubtotal += rental_type === 'hourly' ? (rate / 24) * hours : rate * totalDays;
+  }
 
-      const [equipmentRows] = await connection.query(
-        'SELECT * FROM equipments WHERE id = ? FOR UPDATE',
-        [equipmentId]
-      );
-      if (!equipmentRows.length) throw new Error(`ไม่พบกล้องรหัส ${equipmentId}`);
+  const subtotal = suppliedPrice === null ? calculatedSubtotal : suppliedPrice;
+  if (discountAmount > subtotal) throw new Error('ส่วนลดต้องไม่เกินราคาเช่าที่ตกลง');
+  const netTotal = Math.max(0, subtotal - discountAmount);
 
-      const equipment = equipmentRows[0];
-      if (equipment.status === 'maintenance') throw new Error(`กล้อง ${equipment.name} อยู่ระหว่างซ่อมบำรุง`);
-
-      const [conflicts] = await connection.query(
-        `SELECT b.id, b.booking_no, b.start_date, b.end_date
-         FROM bookings b
-         JOIN booking_items bi ON bi.booking_id = b.id
-         WHERE bi.equipment_id = ?
-           AND b.status IN ('pending', 'confirmed', 'picked_up')
-           AND b.start_date < ?
-           AND b.end_date > ?
-         LIMIT 1
-         FOR UPDATE`,
-        [equipmentId, end, start]
-      );
-      if (conflicts.length) {
-        throw new Error(
-          `กล้อง ${equipment.name} ถูกจองซ้ำกับรายการ ${conflicts[0].booking_no} (${conflicts[0].start_date} ถึง ${conflicts[0].end_date})`
-        );
-      }
-
-      const rate = Number(equipment.rental_rate_per_day || 0);
-      itemRates.push({ equipmentId, rate });
-      calculatedSubtotal += rental_type === 'hourly' ? (rate / 24) * hours : rate * totalDays;
-    }
-
-    const subtotal = suppliedPrice === null ? calculatedSubtotal : suppliedPrice;
-    if (discountAmount > subtotal) throw new Error('ส่วนลดต้องไม่เกินราคาเช่าที่ตกลง');
-    const netTotal = Math.max(0, subtotal - discountAmount);
-
-    const [bookingResult] = await connection.query(
-      `INSERT INTO bookings
-        (booking_no, customer_id, start_date, end_date, total_days,
-         subtotal, discount, deposit, extra_charges, fine_amount,
-         net_total, status, notes, rental_type, rental_hours, rental_region,
-         delivery_method, custom_price)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 0, ?, 'confirmed', ?, ?, ?, ?, ?, ?)`,
-      [
-        makeBookingNo(),
-        customerId,
-        start,
-        end,
-        totalDays,
-        subtotal,
-        discountAmount,
-        depositAmount,
-        netTotal,
-        notes || null,
-        rental_type,
-        hours,
-        rental_region,
-        delivery_method,
-        suppliedPrice,
-      ]
-    );
-
-    const bookingId = bookingResult.insertId;
-    for (const item of itemRates) {
-      await connection.query(
-        'INSERT INTO booking_items (booking_id, equipment_id, daily_rate) VALUES (?, ?, ?)',
-        [bookingId, item.equipmentId, item.rate]
-      );
-    }
-
-    await connection.commit();
-    res.status(201).json({
-      id: bookingId,
-      message: 'สร้างรายการจองสำเร็จ',
+  // Create Booking Record
+  const { data: bookingData, error: bkInsertErr } = await supabase
+    .from('bookings')
+    .insert([{
+      booking_no: makeBookingNo(),
+      customer_id: customerId,
+      start_date: startIso,
+      end_date: endIso,
       total_days: totalDays,
+      subtotal,
+      discount: discountAmount,
+      deposit: depositAmount,
+      extra_charges: 0,
+      fine_amount: 0,
+      net_total: netTotal,
+      status: 'confirmed',
+      notes: notes || null,
       rental_type,
       rental_hours: hours,
       rental_region,
       delivery_method,
-      subtotal,
-      discount: discountAmount,
-      deposit: depositAmount,
-      net_total: netTotal,
-    });
-  } catch (err) {
-    await connection.rollback();
-    res.status(400).json({ error: err.message });
-  } finally {
-    connection.release();
-  }
+      custom_price: suppliedPrice,
+    }])
+    .select();
+
+  if (bkInsertErr) throw bkInsertErr;
+
+  const bookingId = bookingData[0].id;
+  const itemsToInsert = itemRates.map(item => ({
+    booking_id: bookingId,
+    equipment_id: item.equipmentId,
+    daily_rate: item.rate
+  }));
+
+  const { error: itemsErr } = await supabase.from('booking_items').insert(itemsToInsert);
+  if (itemsErr) throw itemsErr;
+
+  res.status(201).json({
+    id: bookingId,
+    message: 'สร้างรายการจองสำเร็จ',
+    total_days: totalDays,
+    rental_type,
+    rental_hours: hours,
+    rental_region,
+    delivery_method,
+    subtotal,
+    discount: discountAmount,
+    deposit: depositAmount,
+    net_total: netTotal,
+  });
 }));
 
 // CANCEL booking
 app.patch('/api/bookings/:id/cancel', asyncHandler(async (req, res) => {
-  const connection = await db.getConnection();
+  const { data: booking } = await supabase.from('bookings').select('*').eq('id', req.params.id).single();
+  if (!booking) return res.status(404).json({ error: 'ไม่พบรายการจองนี้' });
 
-  try {
-    await connection.beginTransaction();
-
-    const [rows] = await connection.query(
-      'SELECT * FROM bookings WHERE id = ? FOR UPDATE',
-      [req.params.id]
-    );
-
-    if (!rows.length) {
-      await connection.rollback();
-      return res.status(404).json({ error: 'ไม่พบรายการจองนี้' });
-    }
-
-    const booking = rows[0];
-
-    if (!['pending', 'confirmed'].includes(booking.status)) {
-      await connection.rollback();
-      return res.status(400).json({
-        error: 'ยกเลิกได้เฉพาะรายการที่ยังไม่ได้รับอุปกรณ์',
-      });
-    }
-
-    await connection.query(
-      "UPDATE bookings SET status = 'cancelled' WHERE id = ?",
-      [booking.id]
-    );
-
-    await connection.commit();
-
-    res.json({ message: 'ยกเลิกรายการจองสำเร็จ' });
-  } catch (err) {
-    await connection.rollback();
-    throw err;
-  } finally {
-    connection.release();
+  if (!['pending', 'confirmed'].includes(booking.status)) {
+    return res.status(400).json({ error: 'ยกเลิกได้เฉพาะรายการที่ยังไม่ได้รับอุปกรณ์' });
   }
+
+  const { error } = await supabase.from('bookings').update({ status: 'cancelled' }).eq('id', booking.id);
+  if (error) throw error;
+
+  res.json({ message: 'ยกเลิกรายการจองสำเร็จ' });
 }));
 
 // ==========================================
-// 4. CHECKOUT: HAND OVER EQUIPMENT
+// 4. CHECKOUT & RETURN
 // ==========================================
 app.post('/api/bookings/:id/checkout', asyncHandler(async (req, res) => {
-  const connection = await db.getConnection();
+  const { data: booking } = await supabase.from('bookings').select('*').eq('id', req.params.id).single();
+  if (!booking) return res.status(404).json({ error: 'ไม่พบรายการจองนี้' });
 
-  try {
-    await connection.beginTransaction();
-
-    const [rows] = await connection.query(
-      'SELECT * FROM bookings WHERE id = ? FOR UPDATE',
-      [req.params.id]
-    );
-
-    if (!rows.length) {
-      await connection.rollback();
-      return res.status(404).json({ error: 'ไม่พบรายการจองนี้' });
-    }
-
-    const booking = rows[0];
-
-    if (!['pending', 'confirmed'].includes(booking.status)) {
-      await connection.rollback();
-      return res.status(400).json({
-        error: 'รายการนี้ไม่สามารถรับอุปกรณ์ออกได้',
-      });
-    }
-
-    const equipmentIds = await getBookingEquipmentIds(
-      connection,
-      booking.id
-    );
-
-    if (!equipmentIds.length) {
-      await connection.rollback();
-      return res.status(400).json({
-        error: 'รายการจองนี้ไม่มีอุปกรณ์',
-      });
-    }
-
-    for (const equipmentId of equipmentIds) {
-      const [equipmentRows] = await connection.query(
-        'SELECT * FROM equipments WHERE id = ? FOR UPDATE',
-        [equipmentId]
-      );
-
-      if (!equipmentRows.length) {
-        throw new Error(`ไม่พบอุปกรณ์รหัส ${equipmentId}`);
-      }
-
-      if (equipmentRows[0].status === 'maintenance') {
-        throw new Error(
-          `อุปกรณ์ ${equipmentRows[0].name} อยู่ระหว่างซ่อมบำรุง`
-        );
-      }
-
-      await connection.query(
-        "UPDATE equipments SET status = 'rented' WHERE id = ?",
-        [equipmentId]
-      );
-    }
-
-    await saveInspection(
-      connection,
-      booking.id,
-      'checkout',
-      req.body
-    );
-
-    await connection.query(
-      "UPDATE bookings SET status = 'picked_up' WHERE id = ?",
-      [booking.id]
-    );
-
-    await connection.commit();
-
-    res.json({ message: 'บันทึกการรับอุปกรณ์ออกสำเร็จ' });
-  } catch (err) {
-    await connection.rollback();
-    res.status(400).json({ error: err.message });
-  } finally {
-    connection.release();
+  if (!['pending', 'confirmed'].includes(booking.status)) {
+    return res.status(400).json({ error: 'รายการนี้ไม่สามารถรับอุปกรณ์ออกได้' });
   }
+
+  const equipmentIds = await getBookingEquipmentIds(booking.id);
+  if (!equipmentIds.length) return res.status(400).json({ error: 'รายการจองนี้ไม่มีอุปกรณ์' });
+
+  for (const eqId of equipmentIds) {
+    const { data: eq } = await supabase.from('equipments').select('*').eq('id', eqId).single();
+    if (!eq) throw new Error(`ไม่พบอุปกรณ์รหัส ${eqId}`);
+    if (eq.status === 'maintenance') throw new Error(`อุปกรณ์ ${eq.name} อยู่ระหว่างซ่อมบำรุง`);
+
+    await supabase.from('equipments').update({ status: 'rented' }).eq('id', eqId);
+  }
+
+  await saveInspection(booking.id, 'checkout', req.body);
+  await supabase.from('bookings').update({ status: 'picked_up' }).eq('id', booking.id);
+
+  res.json({ message: 'บันทึกการรับอุปกรณ์ออกสำเร็จ' });
 }));
 
-// ==========================================
-// 5. RETURN: RECEIVE EQUIPMENT
-// ==========================================
 app.post('/api/bookings/:id/return', asyncHandler(async (req, res) => {
-  const connection = await db.getConnection();
+  const { data: booking } = await supabase.from('bookings').select('*').eq('id', req.params.id).single();
+  if (!booking) return res.status(404).json({ error: 'ไม่พบรายการจองนี้' });
 
-  try {
-    await connection.beginTransaction();
-
-    const [rows] = await connection.query(
-      'SELECT * FROM bookings WHERE id = ? FOR UPDATE',
-      [req.params.id]
-    );
-
-    if (!rows.length) {
-      await connection.rollback();
-      return res.status(404).json({ error: 'ไม่พบรายการจองนี้' });
-    }
-
-    const booking = rows[0];
-
-    if (booking.status !== 'picked_up') {
-      await connection.rollback();
-      return res.status(400).json({
-        error: 'รับคืนได้เฉพาะรายการที่รับอุปกรณ์ออกแล้ว',
-      });
-    }
-
-    const equipmentIds = await getBookingEquipmentIds(
-      connection,
-      booking.id
-    );
-
-    const extraCharges = Number(req.body.extra_charges ?? 0);
-    const fineAmount = Number(req.body.fine_amount ?? 0);
-
-    if (
-      !Number.isFinite(extraCharges) ||
-      !Number.isFinite(fineAmount) ||
-      extraCharges < 0 ||
-      fineAmount < 0
-    ) {
-      await connection.rollback();
-      return res.status(400).json({
-        error: 'ค่าใช้จ่ายเพิ่มเติมหรือค่าปรับไม่ถูกต้อง',
-      });
-    }
-
-    for (const equipmentId of equipmentIds) {
-      const [equipmentRows] = await connection.query(
-        'SELECT * FROM equipments WHERE id = ? FOR UPDATE',
-        [equipmentId]
-      );
-
-      if (!equipmentRows.length) continue;
-
-      // ไม่เปลี่ยนอุปกรณ์ที่อยู่ระหว่างซ่อมกลับเป็น available
-      if (equipmentRows[0].status !== 'maintenance') {
-        await connection.query(
-          "UPDATE equipments SET status = 'available' WHERE id = ?",
-          [equipmentId]
-        );
-      }
-    }
-
-    await saveInspection(
-      connection,
-      booking.id,
-      'checkin',
-      req.body
-    );
-
-    const netTotal =
-      Number(booking.subtotal) -
-      Number(booking.discount) +
-      extraCharges +
-      fineAmount;
-
-    await connection.query(
-      `UPDATE bookings
-       SET status = 'returned',
-           extra_charges = ?,
-           fine_amount = ?,
-           net_total = ?
-       WHERE id = ?`,
-      [
-        extraCharges,
-        fineAmount,
-        Math.max(0, netTotal),
-        booking.id,
-      ]
-    );
-
-    // บันทึกรายรับเข้าระบบการเงินอัตโนมัติเมื่อรับคืนอุปกรณ์
-    const rentalIncome = Math.max(
-      0,
-      Number(booking.subtotal) - Number(booking.discount)
-    );
-
-    const incomeRows = [
-      ['ค่าเช่าอุปกรณ์', rentalIncome, `รับชำระค่าเช่าจอง ${booking.booking_no}`],
-      ['ค่าใช้จ่ายเพิ่มเติม', extraCharges, `ค่าใช้จ่ายเพิ่มเติม ${booking.booking_no}`],
-      ['ค่าปรับ', fineAmount, `ค่าปรับ ${booking.booking_no}`],
-    ];
-
-    for (const [category, amount, description] of incomeRows) {
-      if (amount > 0) {
-        await connection.query(
-          `INSERT INTO transactions
-            (type, category, booking_id, amount, transaction_date, description)
-           VALUES ('income', ?, ?, ?, NOW(), ?)`,
-          [category, booking.id, amount, description]
-        );
-      }
-    }
-
-    await connection.commit();
-
-    res.json({
-      message: 'บันทึกการคืนอุปกรณ์สำเร็จ',
-      extra_charges: extraCharges,
-      fine_amount: fineAmount,
-      net_total: Math.max(0, netTotal),
-    });
-  } catch (err) {
-    await connection.rollback();
-    res.status(400).json({ error: err.message });
-  } finally {
-    connection.release();
+  if (booking.status !== 'picked_up') {
+    return res.status(400).json({ error: 'รับคืนได้เฉพาะรายการที่รับอุปกรณ์ออกแล้ว' });
   }
+
+  const equipmentIds = await getBookingEquipmentIds(booking.id);
+  const extraCharges = Number(req.body.extra_charges ?? 0);
+  const fineAmount = Number(req.body.fine_amount ?? 0);
+
+  if (!Number.isFinite(extraCharges) || !Number.isFinite(fineAmount) || extraCharges < 0 || fineAmount < 0) {
+    return res.status(400).json({ error: 'ค่าใช้จ่ายเพิ่มเติมหรือค่าปรับไม่ถูกต้อง' });
+  }
+
+  for (const eqId of equipmentIds) {
+    const { data: eq } = await supabase.from('equipments').select('*').eq('id', eqId).single();
+    if (eq && eq.status !== 'maintenance') {
+      await supabase.from('equipments').update({ status: 'available' }).eq('id', eqId);
+    }
+  }
+
+  await saveInspection(booking.id, 'checkin', req.body);
+
+  const netTotal = Number(booking.subtotal) - Number(booking.discount) + extraCharges + fineAmount;
+
+  await supabase.from('bookings').update({
+    status: 'returned',
+    extra_charges: extraCharges,
+    fine_amount: fineAmount,
+    net_total: Math.max(0, netTotal)
+  }).eq('id', booking.id);
+
+  const rentalIncome = Math.max(0, Number(booking.subtotal) - Number(booking.discount));
+  const incomeRows = [
+    ['ค่าเช่าอุปกรณ์', rentalIncome, `รับชำระค่าเช่าจอง ${booking.booking_no}`],
+    ['ค่าใช้จ่ายเพิ่มเติม', extraCharges, `ค่าใช้จ่ายเพิ่มเติม ${booking.booking_no}`],
+    ['ค่าปรับ', fineAmount, `ค่าปรับ ${booking.booking_no}`],
+  ];
+
+  for (const [category, amount, description] of incomeRows) {
+    if (amount > 0) {
+      await supabase.from('transactions').insert([{
+        type: 'income',
+        category,
+        booking_id: booking.id,
+        amount,
+        transaction_date: new Date().toISOString(),
+        description
+      }]);
+    }
+  }
+
+  res.json({
+    message: 'บันทึกการคืนอุปกรณ์สำเร็จ',
+    extra_charges: extraCharges,
+    fine_amount: fineAmount,
+    net_total: Math.max(0, netTotal),
+  });
 }));
 
 // ==========================================
-// 6. RENTAL HISTORY
+// 5. OTHER API ENDPOINTS
 // ==========================================
 app.get('/api/history', asyncHandler(async (req, res) => {
-  const [rows] = await db.query(`
-    SELECT
-      b.*,
-      c.fullname AS customer_name,
-      c.phone,
-      (
-        SELECT GROUP_CONCAT(e.name SEPARATOR ', ')
-        FROM booking_items bi
-        JOIN equipments e ON e.id = bi.equipment_id
-        WHERE bi.booking_id = b.id
-      ) AS equipment_names
-    FROM bookings b
-    JOIN customers c ON c.id = b.customer_id
-    WHERE b.status IN ('returned', 'cancelled')
-    ORDER BY b.id DESC
-  `);
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*, customers!inner(fullname, phone), booking_items(equipments(name))')
+    .in('status', ['returned', 'cancelled'])
+    .order('id', { ascending: false });
 
-  res.json(rows);
+  if (error) throw error;
+
+  const formatted = (data || []).map(b => ({
+    ...b,
+    customer_name: b.customers?.fullname,
+    phone: b.customers?.phone,
+    equipment_names: (b.booking_items || []).map(bi => bi.equipments?.name).filter(Boolean).join(', ')
+  }));
+
+  res.json(formatted);
 }));
 
-// ==========================================
-// 7. INSPECTIONS
-// ==========================================
 app.get('/api/bookings/:id/inspections', asyncHandler(async (req, res) => {
-  const [rows] = await db.query(
-    'SELECT * FROM inspections WHERE booking_id = ? ORDER BY id DESC',
-    [req.params.id]
-  );
+  const { data, error } = await supabase
+    .from('inspections')
+    .select('*')
+    .eq('booking_id', req.params.id)
+    .order('id', { ascending: false });
 
-  res.json(rows);
+  if (error) throw error;
+  res.json(data);
 }));
 
-// ==========================================
-// 8. MAINTENANCE RECORDS
-// ==========================================
 app.get('/api/maintenance', asyncHandler(async (req, res) => {
-  const [rows] = await db.query(`
-    SELECT m.*, e.code AS equipment_code, e.name AS equipment_name
-    FROM maintenance_records m
-    JOIN equipments e ON e.id = m.equipment_id
-    ORDER BY m.id DESC
-  `);
+  const { data, error } = await supabase
+    .from('maintenance_records')
+    .select('*, equipments!inner(code, name)')
+    .order('id', { ascending: false });
 
-  res.json(rows);
+  if (error) throw error;
+
+  const formatted = (data || []).map(m => ({
+    ...m,
+    equipment_code: m.equipments?.code,
+    equipment_name: m.equipments?.name,
+  }));
+
+  res.json(formatted);
 }));
 
 app.post('/api/maintenance', asyncHandler(async (req, res) => {
-  const {
-    equipment_id,
-    title,
-    description,
-    cost = 0,
-    maintenance_date,
-  } = req.body;
-
+  const { equipment_id, title, description, cost = 0, maintenance_date } = req.body;
   if (!equipment_id || !title || !maintenance_date) {
-    return res.status(400).json({
-      error: 'กรุณาระบุอุปกรณ์ หัวข้อ และวันที่ซ่อมบำรุง',
-    });
+    return res.status(400).json({ error: 'กรุณาระบุอุปกรณ์ หัวข้อ และวันที่ซ่อมบำรุง' });
   }
 
-  const connection = await db.getConnection();
+  const { data: eq } = await supabase.from('equipments').select('id').eq('id', equipment_id).single();
+  if (!eq) return res.status(404).json({ error: 'ไม่พบอุปกรณ์นี้' });
 
-  try {
-    await connection.beginTransaction();
+  const { data, error } = await supabase
+    .from('maintenance_records')
+    .insert([{
+      equipment_id,
+      title,
+      description: description || null,
+      cost,
+      maintenance_date,
+      status: 'in_progress'
+    }])
+    .select();
 
-    const [equipmentRows] = await connection.query(
-      'SELECT id FROM equipments WHERE id = ? FOR UPDATE',
-      [equipment_id]
-    );
+  if (error) throw error;
 
-    if (!equipmentRows.length) {
-      await connection.rollback();
-      return res.status(404).json({ error: 'ไม่พบอุปกรณ์นี้' });
-    }
+  await supabase.from('equipments').update({ status: 'maintenance' }).eq('id', equipment_id);
 
-    const [result] = await connection.query(
-      `INSERT INTO maintenance_records
-        (equipment_id, title, description, cost, maintenance_date, status)
-       VALUES (?, ?, ?, ?, ?, 'in_progress')`,
-      [
-        equipment_id,
-        title,
-        description || null,
-        cost,
-        maintenance_date,
-      ]
-    );
-
-    await connection.query(
-      "UPDATE equipments SET status = 'maintenance' WHERE id = ?",
-      [equipment_id]
-    );
-
-    await connection.commit();
-
-    res.status(201).json({
-      id: result.insertId,
-      message: 'บันทึกงานซ่อมบำรุงสำเร็จ',
-    });
-  } catch (err) {
-    await connection.rollback();
-    throw err;
-  } finally {
-    connection.release();
-  }
+  res.status(201).json({ id: data[0].id, message: 'บันทึกงานซ่อมบำรุงสำเร็จ' });
 }));
 
-app.patch(
-  '/api/maintenance/:id/complete',
-  asyncHandler(async (req, res) => {
-    const connection = await db.getConnection();
+app.patch('/api/maintenance/:id/complete', asyncHandler(async (req, res) => {
+  const { data: record } = await supabase.from('maintenance_records').select('*').eq('id', req.params.id).single();
+  if (!record) return res.status(404).json({ error: 'ไม่พบรายการซ่อมบำรุง' });
+  if (record.status === 'completed') return res.status(400).json({ error: 'งานซ่อมนี้ปิดไปแล้ว' });
 
-    try {
-      await connection.beginTransaction();
+  const finalCost = req.body.cost !== undefined && Number.isFinite(Number(req.body.cost))
+    ? Math.max(0, Number(req.body.cost))
+    : Number(record.cost || 0);
 
-      const [rows] = await connection.query(
-        'SELECT * FROM maintenance_records WHERE id = ? FOR UPDATE',
-        [req.params.id]
-      );
+  await supabase
+    .from('maintenance_records')
+    .update({ status: 'completed', cost: finalCost })
+    .eq('id', record.id);
 
-      if (!rows.length) {
-        await connection.rollback();
-        return res.status(404).json({ error: 'ไม่พบรายการซ่อมบำรุง' });
-      }
+  if (req.body.record_expense && finalCost > 0) {
+    await supabase.from('transactions').insert([{
+      type: 'expense',
+      category: 'ซ่อมบำรุง',
+      booking_id: null,
+      amount: finalCost,
+      transaction_date: new Date().toISOString(),
+      description: `ค่าซ่อมบำรุง: ${record.title}`
+    }]);
+  }
 
-      const record = rows[0];
+  const { data: activeJobs } = await supabase
+    .from('maintenance_records')
+    .select('id')
+    .eq('equipment_id', record.equipment_id)
+    .eq('status', 'in_progress');
 
-      if (record.status === 'completed') {
-        await connection.rollback();
-        return res.status(400).json({ error: 'งานซ่อมนี้ปิดไปแล้ว' });
-      }
+  if (!activeJobs || activeJobs.length === 0) {
+    const { data: activeRentals } = await supabase
+      .from('booking_items')
+      .select('bookings!inner(id, status)')
+      .eq('equipment_id', record.equipment_id)
+      .eq('bookings.status', 'picked_up');
 
-      const finalCost =
-        req.body.cost !== undefined && Number.isFinite(Number(req.body.cost))
-          ? Math.max(0, Number(req.body.cost))
-          : Number(record.cost || 0);
+    await supabase.from('equipments').update({
+      status: (activeRentals && activeRentals.length > 0) ? 'rented' : 'available'
+    }).eq('id', record.equipment_id);
+  }
 
-      await connection.query(
-        "UPDATE maintenance_records SET status = 'completed', cost = ? WHERE id = ?",
-        [finalCost, record.id]
-      );
+  res.json({ message: 'ปิดงานซ่อมบำรุงสำเร็จ' });
+}));
 
-      // บันทึกค่าซ่อมเป็นรายจ่ายอัตโนมัติ (ถ้าผู้ใช้เลือก)
-      if (req.body.record_expense && finalCost > 0) {
-        await connection.query(
-          `INSERT INTO transactions
-            (type, category, booking_id, amount, transaction_date, description)
-           VALUES ('expense', 'ซ่อมบำรุง', NULL, ?, NOW(), ?)`,
-          [finalCost, `ค่าซ่อมบำรุง: ${record.title}`]
-        );
-      }
-
-      const [activeJobs] = await connection.query(
-        `SELECT COUNT(*) AS count
-         FROM maintenance_records
-         WHERE equipment_id = ?
-           AND status = 'in_progress'`,
-        [record.equipment_id]
-      );
-
-      if (Number(activeJobs[0].count) === 0) {
-        const [activeRentals] = await connection.query(
-          `SELECT COUNT(*) AS count
-           FROM booking_items bi
-           JOIN bookings b ON b.id = bi.booking_id
-           WHERE bi.equipment_id = ?
-             AND b.status = 'picked_up'`,
-          [record.equipment_id]
-        );
-
-        await connection.query(
-          'UPDATE equipments SET status = ? WHERE id = ?',
-          [
-            Number(activeRentals[0].count) > 0 ? 'rented' : 'available',
-            record.equipment_id,
-          ]
-        );
-      }
-
-      await connection.commit();
-
-      res.json({ message: 'ปิดงานซ่อมบำรุงสำเร็จ' });
-    } catch (err) {
-      await connection.rollback();
-      throw err;
-    } finally {
-      connection.release();
-    }
-  })
-);
-
-// ==========================================
-// 9. TRANSACTIONS
-// ==========================================
 app.get('/api/transactions', asyncHandler(async (req, res) => {
-  const [rows] = await db.query(`
-    SELECT t.*, b.booking_no
-    FROM transactions t
-    LEFT JOIN bookings b ON b.id = t.booking_id
-    ORDER BY t.transaction_date DESC, t.id DESC
-  `);
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('*, bookings(booking_no)')
+    .order('transaction_date', { ascending: false })
+    .order('id', { ascending: false });
 
-  res.json(rows);
+  if (error) throw error;
+
+  const formatted = (data || []).map(t => ({
+    ...t,
+    booking_no: t.bookings?.booking_no
+  }));
+
+  res.json(formatted);
 }));
 
 app.post('/api/transactions', asyncHandler(async (req, res) => {
-  const {
-    type,
-    category,
-    booking_id = null,
-    amount,
-    transaction_date,
-    description,
-  } = req.body;
+  const { type, category, booking_id = null, amount, transaction_date, description } = req.body;
 
   if (
     !['income', 'expense'].includes(type) ||
@@ -1364,151 +1017,157 @@ app.post('/api/transactions', asyncHandler(async (req, res) => {
     Number(amount) < 0 ||
     !transaction_date
   ) {
-    return res.status(400).json({
-      error: 'กรุณาตรวจสอบประเภท หมวดหมู่ จำนวนเงิน และวันที่',
-    });
+    return res.status(400).json({ error: 'กรุณาตรวจสอบประเภท หมวดหมู่ จำนวนเงิน และวันที่' });
   }
 
-  const [result] = await db.query(
-    `INSERT INTO transactions
-      (type, category, booking_id, amount, transaction_date, description)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [
+  const { data, error } = await supabase
+    .from('transactions')
+    .insert([{
       type,
       category,
-      booking_id || null,
+      booking_id: booking_id || null,
       amount,
-      toDateTime(transaction_date),
-      description || null,
-    ]
-  );
+      transaction_date: toISO(transaction_date),
+      description: description || null,
+    }])
+    .select();
 
-  res.status(201).json({
-    id: result.insertId,
-    message: 'บันทึกรายการทางการเงินสำเร็จ',
-  });
+  if (error) throw error;
+
+  res.status(201).json({ id: data[0].id, message: 'บันทึกรายการทางการเงินสำเร็จ' });
 }));
 
 app.delete('/api/transactions/:id', asyncHandler(async (req, res) => {
-  const [result] = await db.query(
-    'DELETE FROM transactions WHERE id = ?',
-    [req.params.id]
-  );
-
-  if (!result.affectedRows) {
-    return res.status(404).json({ error: 'ไม่พบรายการนี้' });
-  }
+  const { data, error } = await supabase.from('transactions').delete().eq('id', req.params.id).select();
+  if (error) throw error;
+  if (!data || !data.length) return res.status(404).json({ error: 'ไม่พบรายการนี้' });
 
   res.json({ message: 'ลบรายการสำเร็จ' });
 }));
 
-// ==========================================
-// 10. CUSTOMERS
-// ==========================================
 app.get('/api/customers', asyncHandler(async (req, res) => {
-  const [rows] = await db.query(`
-    SELECT
-      c.*,
-      COUNT(b.id) AS booking_count,
-      COALESCE(SUM(CASE WHEN b.status = 'returned' THEN b.net_total END), 0)
-        AS total_spent,
-      MAX(b.start_date) AS last_booking
-    FROM customers c
-    LEFT JOIN bookings b ON b.customer_id = c.id
-    GROUP BY c.id
-    ORDER BY last_booking DESC, c.id DESC
-  `);
+  const { data, error } = await supabase
+    .from('customers')
+    .select('*, bookings(id, net_total, status, start_date)')
+    .order('id', { ascending: false });
 
-  res.json(rows);
+  if (error) throw error;
+
+  const formatted = (data || []).map(c => {
+    const validBookings = c.bookings || [];
+    const returnedBookings = validBookings.filter(b => b.status === 'returned');
+    const totalSpent = returnedBookings.reduce((sum, b) => sum + Number(b.net_total || 0), 0);
+    const startDates = validBookings.map(b => b.start_date).filter(Boolean).sort();
+    const lastBooking = startDates.length ? startDates[startDates.length - 1] : null;
+
+    return {
+      id: c.id,
+      fullname: c.fullname,
+      phone: c.phone,
+      email: c.email,
+      id_card_no: c.id_card_no,
+      contact_channel: c.contact_channel,
+      notes: c.notes,
+      created_at: c.created_at,
+      booking_count: validBookings.length,
+      total_spent: totalSpent,
+      last_booking: lastBooking,
+    };
+  }).sort((a, b) => {
+    if (a.last_booking && b.last_booking) return new Date(b.last_booking) - new Date(a.last_booking);
+    if (a.last_booking) return -1;
+    if (b.last_booking) return 1;
+    return b.id - a.id;
+  });
+
+  res.json(formatted);
 }));
 
-// ==========================================
-// 11. AVAILABILITY (อุปกรณ์ที่ไม่ว่างในช่วงเวลาที่เลือก)
-// ==========================================
 app.get('/api/availability', asyncHandler(async (req, res) => {
-  const start = toDateTime(req.query.start);
-  const end = toDateTime(req.query.end);
+  const startIso = toISO(req.query.start);
+  const endIso = toISO(req.query.end);
 
-  if (!start || !end) {
+  if (!startIso || !endIso) {
     return res.status(400).json({ error: 'กรุณาระบุช่วงเวลา' });
   }
 
-  const [rows] = await db.query(
-    `SELECT DISTINCT bi.equipment_id, b.booking_no, b.start_date, b.end_date
-     FROM booking_items bi
-     JOIN bookings b ON b.id = bi.booking_id
-     WHERE b.status IN ('pending', 'confirmed', 'picked_up')
-       AND b.start_date < ?
-       AND b.end_date > ?`,
-    [end, start]
-  );
+  const { data, error } = await supabase
+    .from('booking_items')
+    .select('equipment_id, bookings!inner(booking_no, start_date, end_date, status)')
+    .in('bookings.status', ['pending', 'confirmed', 'picked_up'])
+    .lt('bookings.start_date', endIso)
+    .gt('bookings.end_date', startIso);
 
-  res.json(rows);
+  if (error) throw error;
+
+  const formatted = (data || []).map(row => ({
+    equipment_id: row.equipment_id,
+    booking_no: row.bookings?.booking_no,
+    start_date: row.bookings?.start_date,
+    end_date: row.bookings?.end_date,
+  }));
+
+  res.json(formatted);
 }));
 
-// ==========================================
-// 12. REPORTS
-// ==========================================
 app.get('/api/reports/summary', asyncHandler(async (req, res) => {
-  const [monthly] = await db.query(`
-    SELECT
-      DATE_FORMAT(transaction_date, '%Y-%m') AS month,
-      COALESCE(SUM(CASE WHEN type = 'income' THEN amount END), 0) AS income,
-      COALESCE(SUM(CASE WHEN type = 'expense' THEN amount END), 0) AS expense
-    FROM transactions
-    WHERE transaction_date >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL 11 MONTH)
-    GROUP BY month
-    ORDER BY month ASC
-  `);
+  const { data: transactions } = await supabase.from('transactions').select('type, amount, transaction_date');
+  const { data: bookingItems } = await supabase
+    .from('booking_items')
+    .select('id, daily_rate, equipment_id, equipments(id, name, code, image_url), bookings!inner(status, total_days)')
+    .in('bookings.status', ['picked_up', 'returned']);
 
-  const [topEquipment] = await db.query(`
-    SELECT
-      e.id, e.name, e.code, e.image_url,
-      COUNT(bi.id) AS rental_count,
-      COALESCE(SUM(bi.daily_rate * b.total_days), 0) AS revenue
-    FROM booking_items bi
-    JOIN bookings b ON b.id = bi.booking_id
-    JOIN equipments e ON e.id = bi.equipment_id
-    WHERE b.status IN ('picked_up', 'returned')
-    GROUP BY e.id
-    ORDER BY rental_count DESC, revenue DESC
-    LIMIT 5
-  `);
+  const { data: equipments } = await supabase.from('equipments').select('cost_price, current_value');
 
-  const [[totals]] = await db.query(`
-    SELECT
-      COALESCE(SUM(CASE WHEN type = 'income' THEN amount END), 0) AS income,
-      COALESCE(SUM(CASE WHEN type = 'expense' THEN amount END), 0) AS expense
-    FROM transactions
-  `);
+  // 1. Monthly Summary
+  const monthlyMap = {};
+  for (const t of transactions || []) {
+    const monthKey = String(t.transaction_date || '').substring(0, 7);
+    if (!monthKey) continue;
+    if (!monthlyMap[monthKey]) monthlyMap[monthKey] = { month: monthKey, income: 0, expense: 0 };
+    if (t.type === 'income') monthlyMap[monthKey].income += Number(t.amount || 0);
+    if (t.type === 'expense') monthlyMap[monthKey].expense += Number(t.amount || 0);
+  }
+  const monthly = Object.values(monthlyMap).sort((a, b) => a.month.localeCompare(b.month)).slice(-12);
 
-  const [[assets]] = await db.query(`
-    SELECT
-      COUNT(*) AS equipment_count,
-      COALESCE(SUM(cost_price), 0) AS total_cost,
-      COALESCE(SUM(current_value), 0) AS total_value
-    FROM equipments
-  `);
+  // 2. Top Equipment
+  const topMap = {};
+  for (const bi of bookingItems || []) {
+    const eq = bi.equipments;
+    if (!eq) continue;
+    if (!topMap[eq.id]) {
+      topMap[eq.id] = { id: eq.id, name: eq.name, code: eq.code, image_url: eq.image_url, rental_count: 0, revenue: 0 };
+    }
+    topMap[eq.id].rental_count += 1;
+    topMap[eq.id].revenue += Number(bi.daily_rate || 0) * Number(bi.bookings?.total_days || 1);
+  }
+  const topEquipment = Object.values(topMap)
+    .sort((a, b) => b.rental_count - a.rental_count || b.revenue - a.revenue)
+    .slice(0, 5);
+
+  // 3. Totals & Assets
+  let totalIncome = 0;
+  let totalExpense = 0;
+  for (const t of transactions || []) {
+    if (t.type === 'income') totalIncome += Number(t.amount || 0);
+    if (t.type === 'expense') totalExpense += Number(t.amount || 0);
+  }
+
+  let totalCost = 0;
+  let totalValue = 0;
+  for (const e of equipments || []) {
+    totalCost += Number(e.cost_price || 0);
+    totalValue += Number(e.current_value || 0);
+  }
 
   res.json({
-    monthly: monthly.map((m) => ({
-      month: m.month,
-      income: Number(m.income),
-      expense: Number(m.expense),
-    })),
-    topEquipment: topEquipment.map((t) => ({
-      ...t,
-      rental_count: Number(t.rental_count),
-      revenue: Number(t.revenue),
-    })),
-    totals: {
-      income: Number(totals.income),
-      expense: Number(totals.expense),
-    },
+    monthly,
+    topEquipment,
+    totals: { income: totalIncome, expense: totalExpense },
     assets: {
-      equipment_count: Number(assets.equipment_count),
-      total_cost: Number(assets.total_cost),
-      total_value: Number(assets.total_value),
+      equipment_count: (equipments || []).length,
+      total_cost: totalCost,
+      total_value: totalValue,
     },
   });
 }));
@@ -1526,55 +1185,18 @@ app.use((err, req, res, next) => {
   }
 
   if (err.message === 'INVALID_FILE_TYPE') {
-    return res.status(415).json({
-      error: 'รองรับเฉพาะไฟล์ JPG, PNG, WEBP หรือ GIF',
-    });
+    return res.status(415).json({ error: 'รองรับเฉพาะไฟล์ JPG, PNG, WEBP หรือ GIF' });
   }
 
-  if (err.code === 'ER_DUP_ENTRY') {
-    return res.status(409).json({
-      error: 'ข้อมูลซ้ำ เช่น รหัสอุปกรณ์หรือหมายเลขซีเรียล',
-    });
-  }
-
-  if (
-    err.code === 'ER_NO_REFERENCED_ROW_2' ||
-    err.code === 'ER_ROW_IS_REFERENCED_2'
-  ) {
-    return res.status(409).json({
-      error: 'ข้อมูลเชื่อมโยงกับรายการอื่นในฐานข้อมูล',
-    });
-  }
-
-  res.status(500).json({
-    error: 'เกิดข้อผิดพลาดในเซิร์ฟเวอร์',
-  });
+  res.status(500).json({ error: 'เกิดข้อผิดพลาดในเซิร์ฟเวอร์' });
 });
 
 // ==========================================
-// START SERVER
+// START SERVER & SEED DEFAULT DATA
 // ==========================================
 const PORT = process.env.PORT || 5001;
 
-async function ensureBookingColumns(connection) {
-  const additions = [
-    ['rental_type', "ALTER TABLE bookings ADD COLUMN rental_type ENUM('daily','hourly') NOT NULL DEFAULT 'daily'"],
-    ['rental_hours', 'ALTER TABLE bookings ADD COLUMN rental_hours INT NULL'],
-    ['rental_region', "ALTER TABLE bookings ADD COLUMN rental_region ENUM('local','south','other') NOT NULL DEFAULT 'local'"],
-    ['delivery_method', "ALTER TABLE bookings ADD COLUMN delivery_method ENUM('meetup','van','grab','post') NOT NULL DEFAULT 'meetup'"],
-    ['custom_price', 'ALTER TABLE bookings ADD COLUMN custom_price DECIMAL(10,2) NULL'],
-  ];
-
-  for (const [column, alterSql] of additions) {
-    const [rows] = await connection.query('SHOW COLUMNS FROM bookings LIKE ?', [column]);
-    if (!rows.length) {
-      await connection.query(alterSql);
-      console.log(`Database migration: added bookings.${column}`);
-    }
-  }
-}
-
-async function ensureDefaultCameras(connection) {
+async function ensureDefaultCameras() {
   const cameras = [
     { code: 'RIC-GR3-1', name: 'Ricoh gr iiix (1)', brand: 'Ricoh', model: 'GR IIIx' },
     { code: 'RIC-GR3-2', name: 'Ricoh gr iiix (2)', brand: 'Ricoh', model: 'GR IIIx' },
@@ -1583,49 +1205,48 @@ async function ensureDefaultCameras(connection) {
   ];
 
   for (const camera of cameras) {
-    const [found] = await connection.query(
-      'SELECT id FROM equipments WHERE name = ? OR code = ? LIMIT 1',
-      [camera.name, camera.code]
-    );
-    if (found.length) continue;
-    await connection.query(
-      `INSERT INTO equipments
-        (code, name, category, brand, model, rental_rate_per_day, status, defects)
-       VALUES (?, ?, 'camera', ?, ?, 0, 'available', '')`,
-      [camera.code, camera.name, camera.brand, camera.model]
-    );
+    const { data: found } = await supabase
+      .from('equipments')
+      .select('id')
+      .or(`name.eq."${camera.name}",code.eq."${camera.code}"`)
+      .limit(1);
+
+    if (found && found.length) continue;
+
+    await supabase.from('equipments').insert([{
+      code: camera.code,
+      name: camera.name,
+      category: 'camera',
+      brand: camera.brand,
+      model: camera.model,
+      rental_rate_per_day: 0,
+      status: 'available',
+      defects: '',
+    }]);
     console.log(`Seeded default camera: ${camera.name}`);
   }
 }
 
 async function startServer() {
   try {
-    const connection = await db.getConnection();
-    await connection.ping();
-    await connection.query(`CREATE TABLE IF NOT EXISTS api_idempotency (
-      idem_key VARCHAR(128) NOT NULL PRIMARY KEY,
-      body_hash CHAR(64) NOT NULL,
-      state ENUM('processing','complete') NOT NULL DEFAULT 'processing',
-      response_status SMALLINT NULL,
-      response_body MEDIUMTEXT NULL,
-      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      INDEX idx_api_idempotency_created (created_at)
-    ) ENGINE=InnoDB`);
-    // Remove old idempotency records after 7 days to keep the table bounded.
-    await connection.query('DELETE FROM api_idempotency WHERE created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)').catch(() => {});
-    await ensureBookingColumns(connection);
-    await ensureDefaultCameras(connection);
-    connection.release();
+    const { error } = await supabase.from('equipments').select('id').limit(1);
+    if (error) throw error;
+
+    await ensureDefaultCameras();
 
     const HOST = process.env.HOST || '127.0.0.1';
     app.listen(PORT, HOST, () => {
       console.log(`Server running on http://${HOST}:${PORT}`);
-      console.log('MariaDB connected successfully');
+      console.log('Supabase PostgreSQL connected successfully');
     });
   } catch (err) {
-    console.error('Cannot connect to MariaDB:', err.message);
+    console.error('Cannot connect to Supabase:', err.message);
     process.exit(1);
   }
 }
 
-startServer();
+module.exports = app;
+
+if (require.main === module) {
+  startServer();
+}
