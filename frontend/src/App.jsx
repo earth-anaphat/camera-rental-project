@@ -1704,21 +1704,22 @@ const DEFAULT_SETTINGS = {
 
 
 /* ═════ lib/api.js ═════ */
-// ตรวจจับว่าฟรอนต์เอนด์รันอยู่บน Vercel หรือ Localhost
+// ใส่ URL ของ Backend Vercel ที่เพิ่งได้มาตรงนี้
+const PRODUCTION_BACKEND_URL = 'https://camera-rental-project-g37m.vercel.app'; 
+
 const isVercel = window.location.hostname.includes('vercel.app');
 
 const API_ORIGIN =
   import.meta.env.VITE_API_URL ||
   (isVercel
-    ? `${window.location.protocol}//${window.location.hostname}` // บน Vercel ไม่ต้องใส่ :5001
-    : `${window.location.protocol}//${window.location.hostname}:5001`); // บน Local ใส่ :5001 ปกติ
+    ? PRODUCTION_BACKEND_URL
+    : `${window.location.protocol}//${window.location.hostname}:5001`);
 
 const AUTH_TOKEN_KEY = 'lensdesk.ownerToken';
 const api = axios.create({
   baseURL: `${API_ORIGIN}/api`,
   timeout: 15000,
 });
-
 api.interceptors.request.use((config) => {
   const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
   if (token) config.headers.Authorization = `Bearer ${token}`;
