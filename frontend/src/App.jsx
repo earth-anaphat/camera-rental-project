@@ -954,6 +954,59 @@ select.input {
 .auth-login-popup .sw-actions .btn { min-height: 46px; border-radius: 12px !important; }
 @media (max-width: 480px) { .auth-login-popup { padding: 1.7rem 1.1rem 1.2rem !important; border-radius: 21px !important; } .auth-login-popup .sw-title { font-size: 1.2rem !important; } .auth-login-popup .sw-actions { gap: .5rem !important; } }
 
+
+/* ===== Login / Password dialogs (dark glass card) ===== */
+.swal2-popup.lg-popup {
+  width: min(430px, calc(100vw - 28px)) !important;
+  padding: 2.1rem 1.8rem 1.6rem !important;
+  border: 1px solid rgb(157 115 250 / .35) !important;
+  border-radius: 26px !important;
+  background:
+    radial-gradient(420px 260px at 85% -10%, rgb(132 82 224 / .55), transparent 62%),
+    radial-gradient(320px 220px at -10% 110%, rgb(85 44 156 / .5), transparent 60%),
+    linear-gradient(165deg, #2b1556, #1a0a37) !important;
+  box-shadow: 0 50px 100px -30px rgb(37 16 71 / .9), inset 0 1px 0 rgb(255 255 255 / .12) !important;
+  color: #f3edff !important;
+}
+.swal2-popup.lg-popup::before { display: none !important; }
+.lg-popup .swal2-title { display: none !important; }
+.lg-popup .lg-html { margin: 0 !important; padding: 0 !important; color: #f3edff !important; overflow: visible !important; }
+.lg-mark { position: relative; display: grid; width: 64px; height: 64px; margin: 0 auto 1.1rem; place-items: center; border-radius: 20px; background: linear-gradient(145deg, #a78bfa, #6333b5); color: #fff; box-shadow: 0 14px 34px -10px rgb(157 115 250 / .9), inset 0 1px 0 rgb(255 255 255 / .35); }
+.lg-mark::after { content: ''; position: absolute; inset: -9px; border-radius: 26px; border: 1px solid rgb(196 181 253 / .35); animation: lgPulse 2.8s ease-out infinite; }
+.lg-mark svg { animation: lgSpin 14s linear infinite; }
+.lg-eyebrow { margin: 0; text-align: center; font-size: .68rem; letter-spacing: .28em; color: #c4b5fd; }
+.lg-title { margin: .35rem 0 .4rem; text-align: center; font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; color: #fff; }
+.lg-sub { margin: 0 auto 1.3rem; max-width: 320px; text-align: center; font-size: .86rem; line-height: 1.7; color: rgb(243 237 255 / .66); }
+.lg-label { display: block; margin: 0 0 .4rem; text-align: left; font-size: .74rem; font-weight: 500; color: rgb(243 237 255 / .75); }
+.lg-field { position: relative; display: flex; align-items: center; margin-bottom: .85rem; border: 1px solid rgb(196 181 253 / .28); border-radius: 14px; background: rgb(255 255 255 / .06); transition: border-color .2s, box-shadow .2s, background .2s; }
+.lg-field:focus-within { border-color: #a78bfa; background: rgb(255 255 255 / .09); box-shadow: 0 0 0 4px rgb(167 139 250 / .2); }
+.lg-field > svg { flex: none; margin-left: 14px; color: #c4b5fd; }
+.lg-field input { flex: 1; min-width: 0; height: 50px; padding: 0 .75rem; border: 0 !important; outline: 0 !important; background: transparent !important; color: #fff !important; font-size: 16px !important; letter-spacing: .02em; box-shadow: none !important; }
+.lg-field input::placeholder { color: rgb(243 237 255 / .38); letter-spacing: 0; }
+.lg-eye { flex: none; height: 38px; margin-right: 6px; padding: 0 .7rem; border: 0; border-radius: 10px; background: transparent; color: #c4b5fd; font-size: .74rem; cursor: pointer; transition: background .2s; }
+.lg-eye:hover { background: rgb(255 255 255 / .1); }
+.lg-caps { margin: -.25rem 0 .8rem; text-align: left; font-size: .76rem; color: #fcd34d; }
+.lg-hint { margin: .2rem 0 0; text-align: center; font-size: .74rem; color: rgb(243 237 255 / .5); }
+.lg-shake { animation: lgShake .42s cubic-bezier(.36, .07, .19, .97); border-color: #f87171 !important; }
+.lg-meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin: -.2rem 0 .35rem; }
+.lg-meter i { height: 4px; border-radius: 99px; background: rgb(255 255 255 / .14); transition: background .25s; }
+.lg-meter[data-s='1'] i:nth-child(-n+1) { background: #f87171; }
+.lg-meter[data-s='2'] i:nth-child(-n+2) { background: #fbbf24; }
+.lg-meter[data-s='3'] i:nth-child(-n+3) { background: #a3e635; }
+.lg-meter[data-s='4'] i { background: #4ade80; }
+.lg-meter-t { margin: 0 0 .85rem; text-align: left; font-size: .72rem; color: rgb(243 237 255 / .55); }
+.lg-popup .swal2-validation-message { margin: .9rem 0 0 !important; border: 1px solid rgb(248 113 113 / .45) !important; background: rgb(248 113 113 / .12) !important; color: #fecaca !important; font-size: .82rem !important; }
+.lg-popup .sw-actions { display: grid !important; grid-template-columns: 1fr; gap: .55rem !important; width: 100%; margin: 1.15rem 0 0 !important; }
+.lg-popup .sw-actions .btn { width: 100%; min-height: 48px; border-radius: 14px !important; }
+.lg-popup .sw-actions .btn-primary { background: linear-gradient(135deg, #a78bfa, #7c4ddb) !important; color: #fff !important; box-shadow: 0 16px 34px -14px rgb(167 139 250 / .95) !important; }
+.lg-popup .sw-actions .btn-ghost { border-color: transparent !important; background: transparent !important; color: rgb(243 237 255 / .7) !important; }
+.lg-popup .sw-actions .btn-ghost:hover { background: rgb(255 255 255 / .08) !important; }
+.lg-popup .swal2-loader { border-color: #fff transparent #fff transparent !important; }
+@keyframes lgPulse { 0% { transform: scale(.92); opacity: .9; } 100% { transform: scale(1.28); opacity: 0; } }
+@keyframes lgSpin { to { transform: rotate(360deg); } }
+@keyframes lgShake { 10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); } 30%, 50%, 70% { transform: translateX(-7px); } 40%, 60% { transform: translateX(7px); } }
+@media (prefers-reduced-motion: reduce) { .lg-mark::after, .lg-mark svg, .lg-shake { animation: none !important; } }
+
 /* =====================================================
    APP — เลย์เอาต์พิเศษ
    ===================================================== */
@@ -7011,7 +7064,11 @@ function Settings() {
           </div>
         </Group>
 
-
+        <Group index={2} title="ความปลอดภัย" caption="เปลี่ยนรหัสผ่านเข้าระบบของเจ้าของร้านได้ที่นี่ ไม่ต้องแก้โค้ดหรือตั้งค่าเซิร์ฟเวอร์">
+          <button type="button" className="btn btn-primary" onClick={() => changePasswordFlow()}>
+            เปลี่ยนรหัสผ่าน
+          </button>
+        </Group>
       </div>
     </>
   );
@@ -7058,40 +7115,179 @@ class PageBoundary extends React.Component {
   }
 }
 
+/* ═════ รหัสผ่าน: หน้าต่างเข้าสู่ระบบ + เปลี่ยนรหัสผ่าน ═════ */
+const LG_MARK = '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m14.31 8 5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16 3.95 6.06M14.31 16H2.83M16.62 12l-5.74 9.94"/></svg>';
+const LG_LOCK = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+
+const lgField = (id, label, placeholder, autocomplete) => `
+  <label class="lg-label" for="${id}">${label}</label>
+  <div class="lg-field">${LG_LOCK}
+    <input id="${id}" type="password" placeholder="${placeholder}" autocomplete="${autocomplete}" autocapitalize="off" spellcheck="false" />
+    <button type="button" class="lg-eye" data-eye="${id}">แสดง</button>
+  </div>`;
+
+// ปุ่มแสดง/ซ่อนรหัสผ่าน + เตือน Caps Lock
+const bindPasswordFields = (root) => {
+  root.querySelectorAll('[data-eye]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const input = root.querySelector(`#${btn.dataset.eye}`);
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      btn.textContent = show ? 'ซ่อน' : 'แสดง';
+      input.focus();
+    });
+  });
+  const caps = root.querySelector('.lg-caps');
+  root.querySelectorAll('input[type="password"], input[type="text"]').forEach((input) => {
+    input.addEventListener('keyup', (e) => {
+      if (caps && e.getModifierState) caps.hidden = !e.getModifierState('CapsLock');
+    });
+  });
+};
+
+const shakeField = (root, id) => {
+  const box = root.querySelector(`#${id}`)?.closest('.lg-field');
+  if (!box) return;
+  box.classList.remove('lg-shake');
+  void box.offsetWidth;
+  box.classList.add('lg-shake');
+};
+
+const passwordScore = (pw) => {
+  let score = 0;
+  if (pw.length >= 8) score += 1;
+  if (pw.length >= 12) score += 1;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score += 1;
+  if (/\d/.test(pw) && /[^A-Za-z0-9]/.test(pw)) score += 1;
+  return Math.min(4, score);
+};
+
+const lgPopupClasses = {
+  popup: 'sw-popup sw-in auth-login-popup lg-popup',
+  htmlContainer: 'sw-html lg-html',
+  actions: 'sw-actions',
+  confirmButton: 'btn btn-primary',
+  cancelButton: 'btn btn-ghost',
+};
+
+async function changePasswordFlow({ force = false, current = '' } = {}) {
+  const result = await Swal.fire({
+    title: '',
+    html: `
+      <div class="lg-mark">${LG_MARK}</div>
+      <p class="lg-eyebrow">SECURITY</p>
+      <h2 class="lg-title">${force ? 'ตั้งรหัสผ่านของคุณเอง' : 'เปลี่ยนรหัสผ่าน'}</h2>
+      <p class="lg-sub">${force
+        ? 'ตอนนี้ยังใช้รหัสชั่วคราวอยู่ กรุณาตั้งรหัสผ่านใหม่ที่มีแต่เจ้าของร้านรู้'
+        : 'ใช้รหัสที่คาดเดายาก ยาวอย่างน้อย 8 ตัวอักษร'}</p>
+      ${current ? '' : lgField('pw-cur', 'รหัสผ่านปัจจุบัน', 'รหัสผ่านปัจจุบัน', 'current-password')}
+      ${lgField('pw-new', 'รหัสผ่านใหม่', 'อย่างน้อย 8 ตัวอักษร', 'new-password')}
+      <div class="lg-meter" data-s="0"><i></i><i></i><i></i><i></i></div>
+      <p class="lg-meter-t" id="pw-meter-t">ผสมตัวพิมพ์เล็ก-ใหญ่ ตัวเลข และสัญลักษณ์ให้รหัสแข็งแรงขึ้น</p>
+      ${lgField('pw-new2', 'ยืนยันรหัสผ่านใหม่', 'พิมพ์รหัสใหม่อีกครั้ง', 'new-password')}
+      <p class="lg-caps" hidden>⚠ Caps Lock เปิดอยู่</p>`,
+    customClass: lgPopupClasses,
+    showClass: { popup: 'sw-in' },
+    hideClass: { popup: 'sw-out' },
+    showCancelButton: true,
+    confirmButtonText: force ? 'ตั้งรหัสผ่านและเข้าใช้งาน' : 'บันทึกรหัสผ่านใหม่',
+    cancelButtonText: force ? 'ข้ามไปก่อน (จะถามอีกครั้งตอนเข้าครั้งหน้า)' : 'ยกเลิก',
+    focusConfirm: false,
+    showLoaderOnConfirm: true,
+    allowOutsideClick: () => !Swal.isLoading() && !force,
+    didOpen: (popup) => {
+      bindPasswordFields(popup);
+      const next = popup.querySelector('#pw-new');
+      const meter = popup.querySelector('.lg-meter');
+      const text = popup.querySelector('#pw-meter-t');
+      const labels = ['', 'อ่อน', 'พอใช้', 'ดี', 'แข็งแรง'];
+      next.addEventListener('input', () => {
+        const s = next.value ? passwordScore(next.value) : 0;
+        meter.dataset.s = String(s);
+        text.textContent = s ? `ความแข็งแรง: ${labels[s]}` : 'ผสมตัวพิมพ์เล็ก-ใหญ่ ตัวเลข และสัญลักษณ์ให้รหัสแข็งแรงขึ้น';
+      });
+      popup.querySelectorAll('input').forEach((input) => input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); Swal.clickConfirm(); }
+      }));
+      (popup.querySelector('#pw-cur') || next).focus();
+    },
+    preConfirm: async () => {
+      const popup = Swal.getPopup();
+      const cur = current || popup.querySelector('#pw-cur')?.value || '';
+      const next = popup.querySelector('#pw-new').value;
+      const again = popup.querySelector('#pw-new2').value;
+      const fail = (id, msg) => { shakeField(popup, id); Swal.showValidationMessage(msg); return false; };
+      if (!cur) return fail('pw-cur', 'กรุณากรอกรหัสผ่านปัจจุบัน');
+      if (next.length < 8) return fail('pw-new', 'รหัสผ่านใหม่ต้องยาวอย่างน้อย 8 ตัวอักษร');
+      if (next === cur) return fail('pw-new', 'รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสเดิม');
+      if (next !== again) return fail('pw-new2', 'รหัสผ่านใหม่และช่องยืนยันไม่ตรงกัน');
+      try {
+        await api.post('/auth/change-password', { current: cur, next }, { timeout: 15000 });
+        return true;
+      } catch (error) {
+        return fail(current ? 'pw-new' : 'pw-cur', errMsg(error, 'เปลี่ยนรหัสผ่านไม่สำเร็จ'));
+      }
+    },
+  });
+  if (result.isConfirmed) toast('success', 'ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว');
+  return result.isConfirmed;
+}
+
 function Root() {
   const { entered, enter, page, bookingModal, equipmentModal, detailId } = useApp();
   const [iris, setIris] = useState({ state: '', x: '50%', y: '50%' });
 
   // เอฟเฟกต์ชัตเตอร์: วงกลมสีม่วงขยายเต็มจอ → เข้าระบบ → หดเปิดออก
   const handleEnter = useCallback(async (x, y) => {
+    let mustChange = false;
+    let typed = '';
     const result = await Swal.fire({
-      title: 'เข้าสู่ระบบเจ้าของร้าน',
-      html: '<div class="auth-login-brand"><span class="auth-login-brand-mark">L</span> LENSDESK · OWNER ACCESS</div><div>กรอกรหัสผ่านเจ้าของร้านเพื่อเข้าถึงข้อมูลการจองและอุปกรณ์อย่างปลอดภัย</div>',
-      customClass: { popup: 'sw-popup sw-in auth-login-popup', title: 'sw-title', htmlContainer: 'sw-html', actions: 'sw-actions', confirmButton: 'btn btn-primary', cancelButton: 'btn btn-ghost', input: 'sw-input' },
+      title: '',
+      html: `
+        <div class="lg-mark">${LG_MARK}</div>
+        <p class="lg-eyebrow">OWNER ACCESS</p>
+        <h2 class="lg-title">เข้าสู่ระบบเจ้าของร้าน</h2>
+        <p class="lg-sub">กรอกรหัสผ่านเพื่อเข้าถึงข้อมูลการจอง อุปกรณ์ และรายรับ–รายจ่ายอย่างปลอดภัย</p>
+        ${lgField('lg-pass', 'รหัสผ่าน', 'กรอกรหัสผ่านเจ้าของร้าน', 'current-password')}
+        <p class="lg-caps" hidden>⚠ Caps Lock เปิดอยู่</p>
+        <p class="lg-hint">ลืมรหัสผ่าน? ติดต่อผู้ดูแลระบบที่ส่งมอบเว็บให้คุณ</p>`,
+      customClass: lgPopupClasses,
       showClass: { popup: 'sw-in' },
       hideClass: { popup: 'sw-out' },
-      input: 'password',
-      inputPlaceholder: 'รหัสผ่านเจ้าของระบบ',
-      inputAttributes: { autocomplete: 'current-password', autocapitalize: 'off' },
       showCancelButton: true,
       confirmButtonText: 'เข้าสู่ระบบ',
       cancelButtonText: 'ยกเลิก',
-      confirmButtonColor: '#7041c5',
+      focusConfirm: false,
       showLoaderOnConfirm: true,
       allowOutsideClick: () => !Swal.isLoading(),
-      preConfirm: async (password) => {
-        if (!password) { Swal.showValidationMessage('กรุณากรอกรหัสผ่าน'); return false; }
+      didOpen: (popup) => {
+        bindPasswordFields(popup);
+        const input = popup.querySelector('#lg-pass');
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') { e.preventDefault(); Swal.clickConfirm(); }
+        });
+        input.focus();
+      },
+      preConfirm: async () => {
+        const popup = Swal.getPopup();
+        const password = popup.querySelector('#lg-pass').value;
+        if (!password) { shakeField(popup, 'lg-pass'); Swal.showValidationMessage('กรุณากรอกรหัสผ่าน'); return false; }
         try {
-          const { data } = await axios.post(`${API_ORIGIN}/api/auth/login`, { password }, { timeout: 10000 });
+          const { data } = await axios.post(`${API_ORIGIN}/api/auth/login`, { password }, { timeout: 15000 });
           sessionStorage.setItem(AUTH_TOKEN_KEY, data.token);
+          mustChange = Boolean(data.mustChange);
+          typed = password;
           return true;
         } catch (error) {
-          Swal.showValidationMessage(error?.response?.data?.error || 'เข้าสู่ระบบไม่สำเร็จ ตรวจสอบ Backend และการตั้งค่า .env');
+          shakeField(popup, 'lg-pass');
+          Swal.showValidationMessage(error?.response?.data?.error || 'เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อ');
           return false;
         }
       },
     });
     if (!result.isConfirmed) return;
+    if (mustChange) await changePasswordFlow({ force: true, current: typed });
+    typed = '';
     setIris({ state: 'close', x: `${x}px`, y: `${y}px` });
     setTimeout(() => {
       enter();

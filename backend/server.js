@@ -77,17 +77,68 @@ function verifyToken(token) {
   } catch { return null; }
 }
 
-app.post('/api/auth/login', rateLimit({ windowMs: 15 * 60_000, max: 8, message: 'เข้าสู่ระบบไม่สำเร็จหลายครั้ง กรุณารอ 15 นาที' }), (req, res) => {
-  if (!OWNER_PASSWORD || !AUTH_SECRET) return res.status(503).json({ error: 'ยังไม่ได้ตั้งค่า OWNER_PASSWORD และ AUTH_SECRET ในไฟล์ .env' });
-  const password = req.body?.password;
-  if (typeof password !== 'string' || !safeEqual(password, OWNER_PASSWORD)) {
-    return res.status(401).json({ error: 'รหัสผ่านไม่ถูกต้อง' });
+// ห่อ async handler (asyncHandler ถูกประกาศไว้ท้ายไฟล์ จึงใช้ตัวของส่วนนี้เอง)
+const authAsync = (handler) => (req, res, next) =>
+  Promise.resolve(handler(req, res, next)).catch(next);
+
+// ---------- รหัสผ่านเจ้าของร้าน ----------
+// ลำดับการตรวจ: 1) hash ที่เจ้าของตั้งเองในตาราง app_settings  2) ถ้ายังไม่เคยตั้ง ใช้ OWNER_PASSWORD จาก env
+const PASSWORD_KEY = 'owner_password_hash';
+
+const hashPassword = (plain) => {
+  const salt = crypto.randomBytes(16);
+  const hash = crypto.scryptSync(plain, salt, 64);
+  return `scrypt$${salt.toString('hex')}$${hash.toString('hex')}`;
+};
+
+const verifyHash = (plain, stored) => {
+  try {
+    const [alg, saltHex, hashHex] = String(stored).split('$');
+    if (alg !== 'scrypt' || !saltHex || !hashHex) return false;
+    const expected = Buffer.from(hashHex, 'hex');
+    const actual = crypto.scryptSync(plain, Buffer.from(saltHex, 'hex'), expected.length);
+    return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+  } catch {
+    return false;
   }
+};
+
+async function getStoredHash() {
+  const { data, error } = await supabase
+    .from('app_settings')
+    .select('value')
+    .eq('key', PASSWORD_KEY)
+    .maybeSingle();
+  if (error) {
+    // ตารางยังไม่ถูกสร้าง => ใช้รหัสผ่านจาก env ต่อไป
+    console.warn('app_settings unavailable:', error.message);
+    return null;
+  }
+  return data?.value || null;
+}
+
+// คืนค่า { ok, mustChange } — mustChange = ยังใช้รหัสตั้งต้นจาก env อยู่
+async function checkOwnerPassword(plain) {
+  if (typeof plain !== 'string' || !plain) return { ok: false, mustChange: false };
+  const stored = await getStoredHash();
+  if (stored) return { ok: verifyHash(plain, stored), mustChange: false };
+  if (OWNER_PASSWORD) {
+    const ok = safeEqual(plain, OWNER_PASSWORD);
+    return { ok, mustChange: ok };
+  }
+  return { ok: false, mustChange: false, notConfigured: true };
+}
+
+app.post('/api/auth/login', rateLimit({ windowMs: 15 * 60_000, max: 8, message: 'เข้าสู่ระบบไม่สำเร็จหลายครั้ง กรุณารอ 15 นาที' }), authAsync(async (req, res) => {
+  if (!AUTH_SECRET) return res.status(503).json({ error: 'ยังไม่ได้ตั้งค่า AUTH_SECRET ใน Environment Variables' });
+  const result = await checkOwnerPassword(req.body?.password);
+  if (result.notConfigured) return res.status(503).json({ error: 'ยังไม่ได้ตั้งรหัสผ่านเริ่มต้น (OWNER_PASSWORD) ใน Environment Variables' });
+  if (!result.ok) return res.status(401).json({ error: 'รหัสผ่านไม่ถูกต้อง' });
   const now = Math.floor(Date.now() / 1000);
   const token = signToken({ sub: 'owner', role: 'owner', iat: now, exp: now + TOKEN_TTL_SECONDS });
   res.setHeader('Cache-Control', 'no-store');
-  res.json({ token, expiresIn: TOKEN_TTL_SECONDS, role: 'owner' });
-});
+  res.json({ token, expiresIn: TOKEN_TTL_SECONDS, role: 'owner', mustChange: result.mustChange });
+}));
 app.get('/api/auth/verify', (req, res) => {
   const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
   const user = verifyToken(token);
@@ -103,6 +154,26 @@ app.use('/api', (req, res, next) => {
   next();
 });
 app.use('/api', rateLimit({ windowMs: 60_000, max: 240 }));
+
+// เปลี่ยนรหัสผ่าน (ต้องล็อกอินอยู่ และยืนยันรหัสเดิมอีกครั้ง)
+app.post('/api/auth/change-password', rateLimit({ windowMs: 15 * 60_000, max: 10, message: 'ลองเปลี่ยนรหัสผ่านถี่เกินไป กรุณารอสักครู่' }), authAsync(async (req, res) => {
+  const { current, next } = req.body || {};
+  if (typeof next !== 'string' || next.length < 8 || next.length > 128) {
+    return res.status(400).json({ error: 'รหัสผ่านใหม่ต้องยาว 8–128 ตัวอักษร' });
+  }
+  const check = await checkOwnerPassword(current);
+  if (!check.ok) return res.status(401).json({ error: 'รหัสผ่านปัจจุบันไม่ถูกต้อง' });
+  if (current === next) return res.status(400).json({ error: 'รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสเดิม' });
+
+  const { error } = await supabase
+    .from('app_settings')
+    .upsert({ key: PASSWORD_KEY, value: hashPassword(next), updated_at: new Date().toISOString() }, { onConflict: 'key' });
+  if (error) {
+    console.error('change-password failed:', error.message);
+    return res.status(500).json({ error: 'บันทึกรหัสผ่านไม่สำเร็จ — ตรวจว่าสร้างตาราง app_settings ใน Supabase แล้ว' });
+  }
+  res.json({ ok: true, message: 'เปลี่ยนรหัสผ่านสำเร็จ' });
+}));
 
 // ==========================================
 // FILE UPLOAD (รูปอุปกรณ์จากเครื่องของผู้ใช้)
@@ -1223,47 +1294,14 @@ app.use((err, req, res, next) => {
 });
 
 // ==========================================
-// START SERVER & SEED DEFAULT DATA
+// START SERVER
 // ==========================================
 const PORT = process.env.PORT || 5001;
-
-async function ensureDefaultCameras() {
-  const cameras = [
-    { code: 'RIC-GR3-1', name: 'Ricoh gr iiix (1)', brand: 'Ricoh', model: 'GR IIIx' },
-    { code: 'RIC-GR3-2', name: 'Ricoh gr iiix (2)', brand: 'Ricoh', model: 'GR IIIx' },
-    { code: 'CAN-IXUS-285-HS-A', name: 'Canon ixus 285 hs a', brand: 'Canon', model: 'IXUS 285 HS A' },
-    { code: 'FUJI-XT100', name: 'Fuji film x-t100', brand: 'Fujifilm', model: 'X-T100' },
-  ];
-
-  for (const camera of cameras) {
-    const { data: found } = await supabase
-      .from('equipments')
-      .select('id')
-      .or(`name.eq."${camera.name}",code.eq."${camera.code}"`)
-      .limit(1);
-
-    if (found && found.length) continue;
-
-    await supabase.from('equipments').insert([{
-      code: camera.code,
-      name: camera.name,
-      category: 'camera',
-      brand: camera.brand,
-      model: camera.model,
-      rental_rate_per_day: 0,
-      status: 'available',
-      defects: '',
-    }]);
-    console.log(`Seeded default camera: ${camera.name}`);
-  }
-}
 
 async function startServer() {
   try {
     const { error } = await supabase.from('equipments').select('id').limit(1);
     if (error) throw error;
-
-    await ensureDefaultCameras();
 
     const HOST = process.env.HOST || '127.0.0.1';
     app.listen(PORT, HOST, () => {
