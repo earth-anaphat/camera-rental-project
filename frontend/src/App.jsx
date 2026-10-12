@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertTriangle, Aperture, ArrowDown, ArrowRight, Ban, Bell, CalendarClock, CalendarDays, CalendarPlus, CalendarRange, Camera, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, ClipboardCheck, Clock3, Download, History as HistoryIcon, Home, ImagePlus, Landmark, LayoutDashboard, LayoutGrid, List, LogIn, LogOut, Menu, Monitor, Package, Pencil, Phone, Plus, RefreshCw, Replace, RotateCcw, Search, ShieldCheck, SlidersHorizontal, Smartphone, StickyNote, Tablet, Trash2, TrendingDown, TrendingUp, UploadCloud, Users, Wallet, WifiOff, Wrench, X, Zap } from 'lucide-react';
+import { AlertTriangle, Aperture, ArrowDown, ArrowRight, Ban, Bell, CalendarClock, CalendarDays, CalendarPlus, CalendarRange, Camera, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, ClipboardCheck, Clock3, Download, History as HistoryIcon, Home, ImagePlus, Landmark, LayoutDashboard, LayoutGrid, List, LogIn, LogOut, Menu, Monitor, Package, Pencil, Phone, Plus, Printer, RefreshCw, Replace, RotateCcw, Search, ShieldCheck, SlidersHorizontal, Smartphone, StickyNote, Tablet, Trash2, TrendingDown, TrendingUp, UploadCloud, Users, Wallet, WifiOff, Wrench, X, Zap } from 'lucide-react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
@@ -1104,6 +1104,8 @@ select.input {
 }
 .ld-btn-purple { background: #8452e0; color: #ffffff; box-shadow: 0 10px 22px -14px rgb(60 30 120 / 0.8); }
 .ld-btn-purple:hover { background: #9461ee; }
+.tbl td, .tbl th, table td { font-variant-numeric: tabular-nums; }
+.grid > * { min-width: 0; }
 .ld-btn-line { border: 1px solid rgb(250 247 255 / 0.26); color: #faf7ff; }
 .ld-btn-line:hover { background: rgb(250 247 255 / 0.08); border-color: rgb(239 232 218 / 0.5); }
 .ld-dot { position: relative; }
@@ -1746,13 +1748,29 @@ const FINANCE_CATEGORIES = {
   expense: ['ซ่อมบำรุง', 'ซื้ออุปกรณ์', 'อุปกรณ์สิ้นเปลือง', 'ค่าโฆษณา', 'ค่าขนส่ง', 'อื่นๆ'],
 };
 
+/* ───────────────────────────────────────────────────────────
+   ข้อมูลร้าน — แก้ที่นี่ที่เดียว แล้วทุกหน้า/ใบจอง/ชื่อแท็บจะเปลี่ยนตาม
+   name   : ชื่อร้าน
+   logo   : ลิงก์รูปโลโก้ (เช่น '/logo.png' หรือ URL) เว้นว่างไว้ = ใช้ไอคอนเลนส์
+   phone  : เบอร์ติดต่อ แสดงในใบจอง
+   line   : LINE ID (ถ้ามี) แสดงในใบจอง
+   pickup : จุดนัดรับกล้องปกติ แสดงในใบจอง
+   ─────────────────────────────────────────────────────────── */
+const SHOP = {
+  name: 'LensDesk',
+  logo: '',
+  phone: '',
+  line: '',
+  pickup: 'สงขลา / เก้าเส้ง',
+};
+
 const DEFAULT_SETTINGS = {
   navStyle: 'sidebar',
   side: 'left',
   radius: 'soft',
   density: 'comfortable',
   motion: true,
-  shopName: 'LensDesk',
+  shopName: SHOP.name,
 };
 
 
@@ -2127,7 +2145,8 @@ const ENTER_KEY = 'lensdesk.entered';
 
 const parseHash = () => {
   const h = window.location.hash.replace(/^#\/?/, '');
-  return NAV_ITEMS.some((n) => n.id === h) ? h : 'dashboard';
+  if (!h) return 'dashboard';
+  return NAV_ITEMS.some((n) => n.id === h) ? h : 'notfound';
 };
 
 const EMPTY_DASH = {
@@ -2634,7 +2653,7 @@ function Preloader({ onDone }) {
   return (
     <div className={`pre ${out ? 'out' : ''}`} aria-hidden="true">
       <div className="mono flex justify-between text-[#faf7ff]/60">
-        <span>LensDesk — Personal Edition</span>
+        <span>{SHOP.name}</span>
         <span>{n < 100 ? 'กำลังล้างฟิล์ม' : 'พร้อมแล้ว'}</span>
       </div>
       <div className="flex items-end justify-between">
@@ -4037,6 +4056,48 @@ const parseList = (value) => {
   }
 };
 
+/* ใบยืนยันการจอง — พิมพ์ผ่าน iframe ซ่อน ไม่โดน popup blocker */
+function printSlip(d) {
+  const esc = (v) => String(v ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const delivery = ({ meetup: 'นัดรับ', van: 'รถตู้', grab: 'แกร๊ป', post: 'ไปรษณีย์' })[d.delivery_method] || 'นัดรับ';
+  const region = ({ local: 'สงขลา / เก้าเส้ง', south: 'ต่างจังหวัดภาคใต้', other: 'ต่างจังหวัดภาคอื่น ๆ' })[d.rental_region] || '-';
+  const rows = (d.items || []).map((i) => '<tr><td>' + esc(i.name) + '<small>' + esc(i.code) + '</small></td><td class="r">' + esc(baht(i.daily_rate)) + '/วัน</td></tr>').join('');
+  const line = (k, v, cls) => '<div class="ln ' + (cls || '') + '"><span>' + k + '</span><b>' + v + '</b></div>';
+  const contact = [SHOP.phone && ('โทร ' + esc(SHOP.phone)), SHOP.line && ('LINE ' + esc(SHOP.line))].filter(Boolean).join(' · ');
+  const html = '<!doctype html><html lang="th"><head><meta charset="utf-8"><title>' + esc(d.booking_no) + '</title>'
+    + '<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">'
+    + '<style>@page{size:A5;margin:12mm}*{box-sizing:border-box}body{font-family:Prompt,sans-serif;color:#1d1530;font-size:12px;line-height:1.55;margin:0}'
+    + 'h1{font-size:20px;margin:0}.top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #1d1530;padding-bottom:8px;margin-bottom:12px}'
+    + '.no{font-size:11px;text-align:right}.no b{display:block;font-size:15px}h2{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6d6385;margin:14px 0 4px}'
+    + 'table{width:100%;border-collapse:collapse}td{padding:5px 0;border-bottom:1px dashed #cfc7e0;vertical-align:top}td small{display:block;color:#6d6385;font-size:10px}.r{text-align:right;white-space:nowrap}'
+    + '.ln{display:flex;justify-content:space-between;padding:2px 0}.tot{border-top:2px solid #1d1530;margin-top:6px;padding-top:6px;font-size:15px}'
+    + '.sig{display:flex;gap:24px;margin-top:34px}.sig div{flex:1;border-top:1px solid #1d1530;text-align:center;padding-top:4px;font-size:10px;color:#6d6385}'
+    + '.note{margin-top:12px;font-size:10px;color:#6d6385}</style></head><body>'
+    + '<div class="top"><div><h1>' + esc(SHOP.name) + '</h1><div>ใบยืนยันการเช่ากล้อง' + (contact ? ' · ' + contact : '') + '</div></div>'
+    + '<div class="no">เลขที่<b>' + esc(d.booking_no) + '</b>' + esc(fmtDateTime(d.created_at)) + '</div></div>'
+    + '<h2>ผู้เช่า</h2><div>' + esc(d.customer_name) + ' · ' + esc(d.phone) + '</div>'
+    + '<h2>ช่วงเวลาเช่า</h2>' + line('รับกล้อง', esc(fmtDateTime(d.start_date))) + line('คืนกล้อง', esc(fmtDateTime(d.end_date)))
+    + line('รูปแบบ', d.rental_type === 'hourly' ? esc(d.rental_hours) + ' ชั่วโมง' : esc(d.total_days) + ' วัน')
+    + line('การรับกล้อง', esc(delivery) + ' · ' + esc(region))
+    + '<h2>อุปกรณ์</h2><table>' + rows + '</table>'
+    + '<h2>ค่าใช้จ่าย</h2>' + line('ค่าเช่า', esc(baht(d.subtotal)))
+    + (Number(d.discount) > 0 ? line('ส่วนลด', '−' + esc(baht(d.discount))) : '')
+    + (Number(d.extra_charges) > 0 ? line('ค่าใช้จ่ายเพิ่มเติม', esc(baht(d.extra_charges))) : '')
+    + line('ยอดสุทธิ', esc(baht(d.net_total)), 'tot')
+    + line('เงินประกัน (ชำระวันรับกล้อง คืนให้วันคืนกล้อง)', esc(baht(d.deposit)))
+    + (d.notes ? '<h2>หมายเหตุ</h2><div>' + esc(d.notes) + '</div>' : '')
+    + '<div class="sig"><div>ผู้เช่า</div><div>ผู้ให้เช่า</div></div>'
+    + '<p class="note">รับกล้องเวลาไหน คืนเวลาเดียวกันของวันครบกำหนด · จุดนัดรับปกติ ' + esc(SHOP.pickup) + '</p>'
+    + '</body></html>';
+  const f = document.createElement('iframe');
+  f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
+  document.body.appendChild(f);
+  const w = f.contentWindow;
+  w.document.open(); w.document.write(html); w.document.close();
+  const go = () => { try { w.focus(); w.print(); } finally { setTimeout(() => f.remove(), 2000); } };
+  setTimeout(go, 600);
+}
+
 function BookingDetail() {
   const { detailId, closeDetail, refresh } = useApp();
   const [detail, setDetail] = useState(null);
@@ -4076,8 +4137,11 @@ function BookingDetail() {
       subtitle={detail ? `สร้างเมื่อ ${fmtDateTime(detail.created_at)}` : ''}
       onClose={closeDetail}
       footer={
-        detail && (canCheckout || canReturn) ? (
+        detail ? (
           <div className="flex gap-2">
+            <button onClick={() => printSlip(detail)} className="btn" title="พิมพ์ใบจอง">
+              <Printer size={16} /> พิมพ์ใบจอง
+            </button>
             {canCheckout && (
               <>
                 <button onClick={() => run(cancelFlow)} className="btn btn-danger">
@@ -4529,7 +4593,11 @@ function Brand({ name, compact = false, dark = true }) {
   return (
     <div className="group flex items-center gap-3">
       <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-[11px] bg-accent text-accent-fg shadow-[inset_0_1px_0_rgb(255_255_255/0.3)]">
-        <Aperture size={21} strokeWidth={1.6} className="transition-transform duration-700 group-hover:rotate-[120deg]" />
+        {SHOP.logo ? (
+          <img src={SHOP.logo} alt={name} className="h-full w-full rounded-[11px] object-cover" />
+        ) : (
+          <Aperture size={21} strokeWidth={1.6} className="transition-transform duration-700 group-hover:rotate-[120deg]" />
+        )}
       </span>
       {!compact && (
         <div className="min-w-0 leading-tight">
@@ -4761,7 +4829,7 @@ function Shell({ children }) {
                   № {pad2(idx + 1)}
                   <span className="hidden sm:inline"> · {fmtLongDate()}</span>
                 </p>
-                <p className="mt-0.5 truncate font-serif text-[1.02rem] font-medium">{current?.label}</p>
+                <p className="mt-0.5 truncate font-serif text-[1.02rem] font-medium">{page === 'notfound' ? 'ไม่พบหน้า' : current?.label}</p>
               </div>
             </div>
 
@@ -4881,8 +4949,6 @@ const STATEMENT = [
 
 const MARQUEE = ['อุปกรณ์', 'การจอง', 'รับ–คืน', 'ปฏิทิน', 'ลูกค้า', 'การเงิน', 'ซ่อมบำรุง'];
 
-const PHRASES_A = ['ช่างภาพที่ปล่อยเช่าเอง', 'ร้านเล็กที่มีคนดูแลคนเดียว', 'เช่ารายวัน', 'เช่าหลายชิ้นในใบเดียว', 'รับมัดจำ', 'คิดค่าปรับคืนช้า'];
-const PHRASES_B = ['ตรวจเวลาซ้อนให้', 'บันทึกรายรับอัตโนมัติ', 'เช็กลิสต์ตอนส่งมอบ', 'อัปโหลดรูปจากเครื่อง', 'ส่งออกไฟล์ CSV', 'ใช้ได้ทั้งมือถือและแท็บเล็ต'];
 
 const STEPS = [
   { no: '01', title: 'เพิ่มอุปกรณ์', text: 'เลือกรูปจากเครื่อง ใส่ราคาเช่าต่อวัน เท่านี้คลังของคุณก็พร้อมรับจอง' },
@@ -5261,6 +5327,15 @@ function DeviceShowcase() {
 /* =====================================================
    หน้า Landing
    ===================================================== */
+const RULES = [
+  ['เวลาเช่า', 'รับกล้องเวลาไหน คืนเวลาเดียวกันของวันครบกำหนด'],
+  ['รายชั่วโมง', 'เช่าได้ตั้งแต่ 2 ชั่วโมงขึ้นไป เฉพาะในพื้นที่สงขลา'],
+  ['ต่างจังหวัด', 'ภาคใต้ขั้นต่ำ 2 วัน · ภาคอื่น ๆ ขั้นต่ำ 5 วัน'],
+  ['การรับกล้อง', 'นัดรับที่สงขลา / เก้าเส้ง ไม่มีค่าใช้จ่าย · รถตู้ แกร๊ป ไปรษณีย์ ลูกค้าจ่ายค่าส่งทั้งไปและกลับ'],
+  ['เงินประกัน', '500 บาทต่อกล้อง จ่ายวันรับกล้อง คืนให้เมื่อนำกล้องมาคืน'],
+  ['จองซ้ำ', 'ระบบเตือนทันทีถ้ากล้องตัวนั้นมีคนจองช่วงเวลาเดียวกันแล้ว'],
+];
+
 function Landing({ onEnter }) {
   const skipPre = (() => {
     try { return sessionStorage.getItem('ld.pre') === '1'; } catch { return false; }
@@ -5365,7 +5440,7 @@ function Landing({ onEnter }) {
       <header ref={navRef} data-hide="false" className="ld-nav safe-t">
         <span className="flex items-center gap-2.5 pr-3">
           <span className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-[#8452e0] text-white"><Aperture size={17} strokeWidth={1.7} /></span>
-          <span className="font-display text-[1.3rem] font-semibold tracking-tight">LensDesk</span>
+          <span className="font-display text-[1.3rem] font-semibold tracking-tight">{SHOP.name}</span>
         </span>
         <span className="hidden items-center md:flex">
           {[['features', 'ฟีเจอร์'], ['flow', 'ขั้นตอน'], ['devices', 'ทุกอุปกรณ์']].map(([id, label]) => (
@@ -5461,7 +5536,7 @@ function Landing({ onEnter }) {
       {/* FEATURES — sticky scroll reveal */}
       <section id="features" className="relative mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:py-32">
         <Reveal><span className="eyebrow !text-[#9d73fa]">ฟีเจอร์</span></Reveal>
-        <h2 className="ld-title mt-5 max-w-2xl text-[clamp(1.9rem,4.6vw,3.4rem)]">
+        <h2 className="ld-title mt-5 max-w-2xl text-[clamp(1.9rem,4.6vw,3.4rem)] lg:ml-16">
           <GenerateText words={['ครบทุกงาน', 'ของร้านเช่า', 'ในหน้าจอเดียว']} />
         </h2>
         <div className="mt-8 grid gap-6 lg:mt-16 lg:grid-cols-2 lg:gap-20">
@@ -5518,27 +5593,30 @@ function Landing({ onEnter }) {
 
       {/* DEVICES */}
       <section id="devices" className="relative overflow-hidden border-t border-[#faf7ff]/10 px-5 py-24 sm:px-8 md:py-36">
-        <div className="mx-auto max-w-5xl text-center">
-          <Reveal><span className="eyebrow !text-[#9d73fa]">Responsive</span></Reveal>
-          <Reveal a="zoom"><h2 className="ld-title mx-auto mt-5 max-w-3xl text-[clamp(1.9rem,4.6vw,3.4rem)]">ที่ร้าน ระหว่างทาง หรือบนโซฟา<br /><span className="ld-purple">ก็จัดการได้เหมือนกัน</span></h2></Reveal>
+        <div className="mx-auto max-w-5xl">
+          <Reveal><span className="eyebrow !text-[#9d73fa]">ใช้ได้ทุกจอ</span></Reveal>
+          <Reveal a="zoom"><h2 className="ld-title mt-5 max-w-3xl text-[clamp(1.9rem,4.6vw,3.4rem)]">ที่ร้าน ระหว่างทาง หรือบนโซฟา<br /><span className="ld-purple">ก็จัดการได้เหมือนกัน</span></h2></Reveal>
           <Reveal a="rotate" delay={200}><DeviceShowcase /></Reveal>
         </div>
       </section>
 
-      {/* PHRASES */}
-      <div className="overflow-hidden border-y border-[#faf7ff]/10 py-7">
-        {[[PHRASES_A, ''], [PHRASES_B, 'rev']].map(([list, cls], r) => (
-          <div key={r} className={`ld-marquee ${cls} ${r ? 'mt-4' : ''}`}>
-            {[0, 1].map((k) => (
-              <div key={k} className="flex shrink-0 items-center gap-4 pr-4" aria-hidden={k === 1}>
-                {list.map((p) => (
-                  <span key={p + k} className="rounded-full border border-[#faf7ff]/15 px-6 py-3 text-sm text-[#faf7ff]/70">{p}</span>
-                ))}
+      {/* กติกาการเช่า — ข้อมูลจริงของร้าน */}
+      <section className="border-y border-[#faf7ff]/10 px-5 py-16 sm:px-8 md:py-24">
+        <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)] md:gap-16">
+          <div>
+            <span className="eyebrow !text-[#9d73fa]">กติกาการเช่า</span>
+            <h2 className="ld-title mt-5 text-[clamp(1.7rem,3.8vw,2.7rem)]">สิ่งที่ระบบเช็กให้<br />ทุกครั้งที่จอง</h2>
+          </div>
+          <dl className="divide-y divide-[#faf7ff]/10 border-y border-[#faf7ff]/10">
+            {RULES.map(([k, v]) => (
+              <div key={k} className="grid gap-1 py-4 sm:grid-cols-[11rem_1fr] sm:gap-6">
+                <dt className="text-sm text-[#faf7ff]/45">{k}</dt>
+                <dd className="text-[#faf7ff]/85">{v}</dd>
               </div>
             ))}
-          </div>
-        ))}
-      </div>
+          </dl>
+        </div>
+      </section>
 
       {/* CTA — Lamp */}
       <section className="relative overflow-hidden px-5 pb-28 pt-12 sm:px-8 md:pb-40">
@@ -5563,7 +5641,7 @@ function Landing({ onEnter }) {
       </section>
 
       <footer className="border-t border-[#faf7ff]/10 px-5 py-10 text-center">
-        <p className="mono !text-[10px] text-[#faf7ff]/40">LensDesk — ระบบจัดการร้านเช่ากล้อง</p>
+        <p className="mono !text-[10px] text-[#faf7ff]/40">{SHOP.name} — ระบบจัดการร้านเช่ากล้อง</p>
       </footer>
     </div>
   );
@@ -6320,15 +6398,15 @@ function Equipments() {
 
       <div className="mb-6 space-y-3">
         <div className="flex flex-col gap-3 sm:flex-row">
-          <SearchBox className="flex-1" value={q} onChange={setQ} placeholder="ค้นหาชื่อ ยี่ห้อ รหัส หรือ Serial..." />
-          <div className="flex gap-2">
-            <select className="input min-w-0 flex-1 sm:w-44 sm:flex-none" value={status} onChange={(e) => setStatus(e.target.value)}>
+          <SearchBox className="min-w-0 flex-1" value={q} onChange={setQ} placeholder="ค้นหาชื่อ ยี่ห้อ รหัส หรือ Serial..." />
+          <div className="flex gap-2 sm:shrink-0">
+            <select className="input min-w-0 flex-1 sm:!w-44 sm:flex-none" value={status} onChange={(e) => setStatus(e.target.value)}>
               <option value="all">ทุกสถานะ</option>
               <option value="available">พร้อมใช้งาน</option>
               <option value="rented">กำลังถูกเช่า</option>
               <option value="maintenance">ซ่อมบำรุง</option>
             </select>
-            <div className="flex rounded-xl border border-line bg-surface p-1">
+            <div className="flex shrink-0 rounded-xl border border-line bg-surface p-1">
               {[['card', LayoutGrid], ['table', List]].map(([id, Icon]) => (
                 <button
                   key={id}
@@ -6416,7 +6494,21 @@ function Equipments() {
           })}
         </div>
       ) : (
-        <div className="card overflow-hidden">
+        <>
+        <ul className="space-y-2.5 md:hidden">
+          {list.map((item) => (
+            <li key={item.id} className="card flex items-center gap-3 p-2.5">
+              <EquipmentPhoto item={item} className="h-14 w-14 shrink-0 rounded-xl" iconSize={18} />
+              <div className="min-w-0 flex-1" onClick={() => setSelectedEquipment(item)}>
+                <p className="truncate text-sm font-medium">{item.name}</p>
+                <p className="truncate font-mono text-[11px] text-mute">{item.code}</p>
+                <div className="mt-1 flex items-center gap-2"><StatusBadge status={item.status} /><span className="text-xs text-mute">{baht(item.rental_rate_per_day)}/วัน</span></div>
+              </div>
+              <button onClick={() => openBooking([item.id])} disabled={item.status === 'maintenance'} className="icon-btn !h-10 !w-10" aria-label="จอง"><CalendarPlus size={17} /></button>
+            </li>
+          ))}
+        </ul>
+        <div className="card hidden overflow-hidden md:block">
           <div className="scroll-thin overflow-x-auto">
             <table className="tbl min-w-[780px]">
               <thead>
@@ -6454,6 +6546,7 @@ function Equipments() {
             </table>
           </div>
         </div>
+        </>
       )}
       <p className="mt-4 text-xs text-mute">แสดง {list.length} จาก {equipments.length} รายการ</p>
 
@@ -6792,15 +6885,15 @@ function Finance() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-sm">
+          <table className="w-full text-sm sm:min-w-[560px]">
             <thead>
               <tr className="text-left text-xs text-mute">
                 <th className="pb-2 font-medium">เดือน</th>
                 <th className="pb-2 text-right font-medium">รายรับ</th>
                 <th className="pb-2 text-right font-medium">รายจ่าย</th>
                 <th className="pb-2 text-right font-medium">กำไร</th>
-                <th className="pb-2 text-right font-medium">เทียบเดือนก่อน</th>
-                <th className="w-32 pb-2" />
+                <th className="hidden pb-2 text-right font-medium sm:table-cell">เทียบเดือนก่อน</th>
+                <th className="hidden w-32 pb-2 sm:table-cell" />
               </tr>
             </thead>
             <tbody>
@@ -6813,10 +6906,10 @@ function Finance() {
                     <td className="py-2.5 text-right">{baht(m.income)}</td>
                     <td className="py-2.5 text-right text-mute">{baht(m.expense)}</td>
                     <td className={`py-2.5 text-right ${m.income - m.expense < 0 ? 'text-bad' : ''}`}>{baht(m.income - m.expense)}</td>
-                    <td className={`py-2.5 text-right text-xs ${!prev || p === 0 ? 'text-mute' : p === null || p > 0 ? 'text-ok' : 'text-bad'}`}>
+                    <td className={`hidden py-2.5 text-right text-xs sm:table-cell ${!prev || p === 0 ? 'text-mute' : p === null || p > 0 ? 'text-ok' : 'text-bad'}`}>
                       {!prev ? '—' : p === null ? 'ใหม่' : p === 0 ? '—' : `${p > 0 ? '▲ +' : '▼ '}${p}%`}
                     </td>
-                    <td className="py-2.5 pl-3">
+                    <td className="hidden py-2.5 pl-3 sm:table-cell">
                       <div className="h-2 rounded-full bg-line/50">
                         <div className="h-2 rounded-full bg-accent" style={{ width: `${(m.income / maxIncome) * 100}%` }} />
                       </div>
@@ -7075,7 +7168,23 @@ function Settings() {
 }
 
 /* ═════ App.jsx ═════ */
+function NotFound() {
+  const { navigate } = useApp();
+  return (
+    <div className="mx-auto flex min-h-[60vh] max-w-xl flex-col justify-center py-10">
+      <p className="font-num text-[clamp(5rem,18vw,9rem)] font-semibold leading-none text-accent/80">404</p>
+      <h1 className="mt-4 font-display text-2xl font-semibold">หน้านี้ไม่มีอยู่ หรือถูกย้ายไปแล้ว</h1>
+      <p className="mt-2 text-sm leading-relaxed text-mute">ลิงก์ที่เปิดอาจพิมพ์ผิด ลองกลับไปที่หน้าภาพรวม หรือเลือกเมนูด้านข้างได้เลย</p>
+      <div className="mt-6 flex flex-wrap gap-2">
+        <button onClick={() => navigate('dashboard')} className="btn btn-primary">ไปหน้าภาพรวม</button>
+        <button onClick={() => navigate('bookings')} className="btn">ดูรายการจอง</button>
+      </div>
+    </div>
+  );
+}
+
 const PAGES = {
+  notfound: NotFound,
   dashboard: Dashboard,
   bookings: Bookings,
   operations: Operations,
@@ -7303,6 +7412,15 @@ function Root() {
   }, []);
 
   const Page = PAGES[page] || Dashboard;
+
+  const { settings: shopSettings } = useSettings();
+  useEffect(() => {
+    const name = shopSettings.shopName || SHOP.name;
+    document.title = page === 'notfound' ? `ไม่พบหน้า — ${name}` : `${name} — ระบบจัดการร้านเช่ากล้อง`;
+    let link = document.querySelector('link[rel="icon"]');
+    if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+    link.href = SHOP.logo || 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#8452e0"/><circle cx="16" cy="16" r="8" fill="none" stroke="#fff" stroke-width="2"/><circle cx="16" cy="16" r="3" fill="#fff"/></svg>');
+  }, [shopSettings.shopName, page]);
 
   return (
     <>
