@@ -288,11 +288,26 @@ const asyncHandler = (handler) => (req, res, next) => {
   Promise.resolve(handler(req, res, next)).catch(next);
 };
 
+// เวลาที่หน้าเว็บส่งมาไม่มี timezone (เช่น 2026-10-12T14:30) ให้ถือเป็นเวลาไทย (+07:00)
+// เพราะ Vercel รันเป็น UTC ถ้าไม่ระบุ เวลาจะเลื่อนไป 7 ชั่วโมงและทำให้เช็กจองซ้ำผิด
+const SHOP_TZ = process.env.SHOP_TZ_OFFSET || '+07:00';
 const toISO = (value) => {
   if (!value) return null;
-  const str = String(value).trim().replace(' ', 'T');
+  let str = String(value).trim().replace(' ', 'T');
+  const hasZone = /(Z|[+-]\d{2}:?\d{2})$/i.test(str);
+  if (!hasZone) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) str += 'T00:00:00';
+    else if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(str)) str += ':00';
+    str += SHOP_TZ;
+  }
   const d = new Date(str);
   return Number.isNaN(d.getTime()) ? null : d.toISOString();
+};
+
+// เดือน/ปีตามเวลาไทย (ไม่ขึ้นกับ timezone ของเซิร์ฟเวอร์)
+const bkkParts = (value) => {
+  const d = new Date(new Date(value).getTime() + 7 * 3600000);
+  return { y: d.getUTCFullYear(), m: d.getUTCMonth(), key: d.toISOString().slice(0, 7) };
 };
 
 const makeBookingNo = () => {
@@ -377,16 +392,16 @@ app.get('/api/dashboard', asyncHandler(async (req, res) => {
   const { data: txData, error: txErr } = await supabase.from('transactions').select('type, amount, transaction_date');
   if (txErr) throw txErr;
 
-  const now = new Date();
-  const curYear = now.getFullYear();
-  const curMonth = now.getMonth();
+  const nowBkk = bkkParts(new Date());
+  const curYear = nowBkk.y;
+  const curMonth = nowBkk.m;
 
   let monthIncome = 0;
   let monthExpense = 0;
 
   for (const t of txData || []) {
-    const tDate = new Date(t.transaction_date);
-    if (tDate.getFullYear() === curYear && tDate.getMonth() === curMonth) {
+    const tp = bkkParts(t.transaction_date);
+    if (tp.y === curYear && tp.m === curMonth) {
       if (t.type === 'income') monthIncome += Number(t.amount || 0);
       if (t.type === 'expense') monthExpense += Number(t.amount || 0);
     }
@@ -1224,8 +1239,8 @@ app.get('/api/reports/summary', asyncHandler(async (req, res) => {
   // 1. Monthly Summary
   const monthlyMap = {};
   for (const t of transactions || []) {
-    const monthKey = String(t.transaction_date || '').substring(0, 7);
-    if (!monthKey) continue;
+    if (!t.transaction_date) continue;
+    const monthKey = bkkParts(t.transaction_date).key;
     if (!monthlyMap[monthKey]) monthlyMap[monthKey] = { month: monthKey, income: 0, expense: 0 };
     if (t.type === 'income') monthlyMap[monthKey].income += Number(t.amount || 0);
     if (t.type === 'expense') monthlyMap[monthKey].expense += Number(t.amount || 0);
