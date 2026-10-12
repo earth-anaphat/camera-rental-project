@@ -593,7 +593,7 @@ select.input {
   width: 3px;
   border-radius: 99px;
   background: rgb(var(--accent));
-  box-shadow: 0 0 14px rgb(var(--accent) / 0.8);
+  box-shadow: none;
   animation: growY 0.45s var(--ease) both;
 }
 .nav-item[data-on='true'] svg { color: rgb(var(--accent)); }
@@ -626,7 +626,7 @@ select.input {
   height: 2px;
   border-radius: 2px;
   background: rgb(var(--accent));
-  box-shadow: 0 0 12px rgb(var(--accent) / 0.8);
+  box-shadow: none;
   transition: transform 0.5s var(--ease), width 0.5s var(--ease);
 }
 
@@ -1102,8 +1102,8 @@ select.input {
   cursor: pointer;
   transition: transform 0.3s var(--ease), background-color 0.3s, color 0.3s, box-shadow 0.4s, border-color 0.3s;
 }
-.ld-btn-purple { background: linear-gradient(135deg, #b999ff, #8452e0); color: #ffffff; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 18px 40px -16px rgb(157 115 250 / 0.7); }
-.ld-btn-purple:hover { background: linear-gradient(135deg, #d3bcff, #9d73fa); }
+.ld-btn-purple { background: #8452e0; color: #ffffff; box-shadow: 0 10px 22px -14px rgb(60 30 120 / 0.8); }
+.ld-btn-purple:hover { background: #9461ee; }
 .ld-btn-line { border: 1px solid rgb(250 247 255 / 0.26); color: #faf7ff; }
 .ld-btn-line:hover { background: rgb(250 247 255 / 0.08); border-color: rgb(239 232 218 / 0.5); }
 .ld-dot { position: relative; }
@@ -1142,7 +1142,7 @@ select.input {
 .reticle::before { left: 50%; top: -10px; bottom: -10px; width: 1px; opacity: 0.35; }
 .reticle::after { top: 50%; left: -10px; right: -10px; height: 1px; opacity: 0.35; }
 .reticle i { position: absolute; inset: 0; border: 1.5px solid #9d73fa; border-radius: 4px; }
-.reticle[data-lock='1'] i { animation: lock 0.6s var(--ease) both; box-shadow: 0 0 26px rgb(157 115 250 / 0.55); }
+.reticle[data-lock='1'] i { animation: lock 0.6s var(--ease) both; box-shadow: none; }
 .reticle[data-lock='0'] i { border-color: rgb(239 232 218 / 0.5); transform: scale(1.35); transition: transform 0.9s var(--ease), border-color 0.5s; }
 .exif-v { display: inline-block; animation: exifIn 0.6s var(--ease) both; }
 
@@ -1182,9 +1182,9 @@ select.input {
 .lamp-cone.l { right: 50%; background: conic-gradient(from 180deg at right top, rgb(157 115 250 / 0.8), transparent 23%); }
 .lamp-cone.r { left: 50%; background: conic-gradient(from 90deg at left top, transparent 2%, rgb(157 115 250 / 0.8) 25%, transparent 25.4%); }
 .lamp.on .lamp-cone { width: min(34rem, 48vw); opacity: 1; }
-.lamp-line { position: absolute; top: 0; left: 50%; height: 2px; width: 14rem; transform: translateX(-50%); background: #d3bcff; box-shadow: 0 0 26px 5px rgb(157 115 250 / 0.7); transition: width 1.2s var(--ease); }
+.lamp-line { position: absolute; top: 0; left: 50%; height: 2px; width: 14rem; transform: translateX(-50%); background: #d3bcff; box-shadow: none; transition: width 1.2s var(--ease); }
 .lamp.on .lamp-line { width: min(34rem, 60vw); }
-.lamp-glow { position: absolute; top: -2rem; left: 50%; width: min(30rem, 80vw); height: 9rem; transform: translateX(-50%); background: radial-gradient(closest-side, rgb(157 115 250 / 0.4), transparent); filter: blur(26px); }
+.lamp-glow { position: absolute; top: -2rem; left: 50%; width: min(30rem, 80vw); height: 9rem; transform: translateX(-50%); background: radial-gradient(closest-side, rgb(157 115 250 / 0.4), transparent); filter: blur(40px); opacity: .45; }
 
 .pre {
   position: fixed;
@@ -3845,7 +3845,7 @@ function BookingForm() {
         </div>
       }
     >
-      <form id="booking-form" onSubmit={submit} className="grid gap-7 lg:grid-cols-[1fr_300px]">
+      <form id="booking-form" onSubmit={submit} className="grid grid-cols-1 gap-7 lg:grid-cols-[minmax(0,1fr)_300px] [&>*]:min-w-0">
         <div className="space-y-6">
           <section>
             <h3 className="eyebrow mb-3">ข้อมูลผู้เช่า</h3>
@@ -3983,7 +3983,7 @@ function BookingForm() {
                   </button>
                 );
               })}
-              {!list.length && <p className="col-span-full py-8 text-center text-sm text-mute">ไม่พบกล้องในรายการอุปกรณ์</p>}
+              {!list.length && <p className="col-span-full py-8 text-center text-sm text-mute">ยังไม่มีกล้องในรายการ — เพิ่มได้ที่หน้าอุปกรณ์</p>}
             </div>
           </section>
 
@@ -4612,7 +4612,7 @@ function Sidebar({ rail, side, overdue }) {
         {!rail && (
           <p className="mono mb-3 flex items-center gap-2 px-1 !text-[9.5px] text-side-mute">
             <i className={`live-dot h-1.5 w-1.5 rounded-full ${offline ? 'bg-bad' : 'bg-ok'}`} />
-            {offline ? 'Offline — ไม่พบ API' : 'Online · API 5001'}
+            {offline ? 'ออฟไลน์ — เชื่อมต่อเซิร์ฟเวอร์ไม่ได้' : 'ออนไลน์'}
           </p>
         )}
         <button onClick={leave} className="nav-item" title="กลับหน้าแนะนำระบบ">
@@ -5386,7 +5386,7 @@ function Landing({ onEnter }) {
 
         <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 px-5 pb-20 pt-32 sm:px-8 lg:grid-cols-[1.12fr_0.88fr] lg:gap-8">
           <div>
-            <p className="eyebrow ld-fade !text-[#9d73fa]" style={{ '--i': 0 }}>Personal Edition · ระบบจัดการร้านเช่ากล้อง</p>
+            <p className="eyebrow ld-fade !text-[#9d73fa]" style={{ '--i': 0 }}>ระบบจัดการร้านเช่ากล้อง</p>
             <h1 className="ld-title mt-7 text-[clamp(2.7rem,8.2vw,6.8rem)]">
               {heroLines.map((line, li) => (
                 <span key={li} className="block">
@@ -5402,8 +5402,8 @@ function Landing({ onEnter }) {
               ))}
             </h1>
             <p className="ld-fade mt-8 max-w-xl text-base leading-[1.95] text-[#faf7ff]/65 sm:text-lg" style={{ '--i': 6 }}>
-              อุปกรณ์ การจอง การรับ–คืน และรายรับรายจ่าย อยู่ในที่เดียว
-              สำหรับคนที่ปล่อยเช่ากล้องเองคนเดียว ใช้ได้ทั้งมือถือ แท็บเล็ต และคอมพิวเตอร์
+              เก็บเรื่องอุปกรณ์ ใบจอง นัดรับ–คืน และรายรับรายจ่ายไว้ที่เดียว
+              ทำมาให้ร้านที่มีคนดูแลคนเดียว เปิดจากมือถือหน้างานก็ได้
             </p>
             <div className="ld-fade mt-10 flex flex-wrap items-center gap-4" style={{ '--i': 8 }}>
               <Magnetic>
@@ -5411,7 +5411,7 @@ function Landing({ onEnter }) {
                   <button onClick={go} data-cursor="เข้าระบบ" className="ld-btn ld-btn-purple">เข้าใช้งานระบบ <ArrowRight size={18} /></button>
                 </span>
               </Magnetic>
-              <button onClick={() => scrollTo('statement')} className="ld-btn ld-btn-line">ดูว่ามีอะไรบ้าง <ArrowDown size={17} /></button>
+              <button onClick={() => scrollTo('statement')} className="ld-btn ld-btn-line">ดูว่าทำอะไรได้ <ArrowDown size={17} /></button>
             </div>
             <div className="ld-fade mt-12 flex items-center gap-4 text-[#faf7ff]/50" style={{ '--i': 10 }}>
               <span className="h-px w-10 bg-[#faf7ff]/25" />
@@ -5548,12 +5548,12 @@ function Landing({ onEnter }) {
             <h2 className="ld-title text-[clamp(2.4rem,8vw,6rem)]">
               <GenerateText words={['พร้อมเปิด', 'ชัตเตอร์', 'แล้วหรือยัง']} step={140} />
             </h2>
-            <p className="mx-auto mt-6 max-w-md text-[#faf7ff]/55">เปิดระบบแล้วเริ่มจากเพิ่มอุปกรณ์ชิ้นแรกได้เลย ใช้เวลาไม่ถึงนาที</p>
+            <p className="mx-auto mt-6 max-w-md text-[#faf7ff]/55">เข้าระบบแล้วเพิ่มกล้องตัวแรกได้เลย</p>
             <div className="mt-12">
               <Magnetic>
                 <span className="mb">
                   <button onClick={go} data-cursor="เข้าระบบ" className="ld-btn ld-btn-purple !min-h-[66px] !px-11 text-lg">
-                    เริ่มใช้งานเลย <ArrowRight size={19} />
+                    เข้าสู่ระบบ <ArrowRight size={19} />
                   </button>
                 </span>
               </Magnetic>
@@ -5563,7 +5563,7 @@ function Landing({ onEnter }) {
       </section>
 
       <footer className="border-t border-[#faf7ff]/10 px-5 py-10 text-center">
-        <p className="mono !text-[10px] text-[#faf7ff]/40">LensDesk · Personal Edition — ระบบจัดการร้านเช่ากล้อง</p>
+        <p className="mono !text-[10px] text-[#faf7ff]/40">LensDesk — ระบบจัดการร้านเช่ากล้อง</p>
       </footer>
     </div>
   );
@@ -5836,7 +5836,7 @@ function Dashboard() {
 
         <Panel index={5} no="№ 04 · 7 วันข้างหน้า" title="กำลังจะมาถึง" caption="การจองที่ยังไม่ได้ส่งมอบ">
           {(dashboard.upcomingBookings || []).length === 0 ? (
-            <EmptyState icon={CalendarClock} title="ยังไม่มีการจองใหม่" description="สร้างการจองเพื่อวางแผนการส่งมอบ" />
+            <EmptyState icon={CalendarClock} title="ยังไม่มีการจองใหม่" description="ยังไม่มีใบจองที่รอรับกล้อง" />
           ) : (
             <ul className="stagger divide-y divide-line/70">
               {dashboard.upcomingBookings.map((b, i) => (
@@ -5860,7 +5860,7 @@ function Dashboard() {
 
         <Panel index={6} no="№ 05 · ยอดนิยม" title="เช่าบ่อยที่สุด" caption="นับจากรายการที่ส่งมอบแล้ว" className="lg:col-span-2 xl:col-span-1">
           {top.length === 0 ? (
-            <EmptyState title="ยังไม่มีข้อมูล" description="จะแสดงเมื่อมีการส่งมอบอุปกรณ์" />
+            <EmptyState title="ยังไม่มีข้อมูล" description="ยังไม่มีการรับ–คืนกล้อง" />
           ) : (
             <ul className="space-y-4">
               {top.map((t, i) => {
@@ -6606,7 +6606,7 @@ function Customers() {
       <SearchBox className="mb-5" value={q} onChange={setQ} placeholder="ค้นหาชื่อ เบอร์โทร หรืออีเมล..." />
 
       {list.length === 0 ? (
-        <EmptyState icon={Users} title="ยังไม่มีลูกค้า" description="ลูกค้าจะถูกบันทึกอัตโนมัติเมื่อสร้างการจอง" />
+        <EmptyState icon={Users} title="ยังไม่มีลูกค้า" description="พอมีใบจองแรก ชื่อลูกค้าจะมาอยู่ตรงนี้เอง" />
       ) : (
         <ul className="stagger space-y-3">
           {list.map((c, i) => {
