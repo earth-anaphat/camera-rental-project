@@ -916,6 +916,13 @@ app.post('/api/bookings/:id/checkout', asyncHandler(async (req, res) => {
   await saveInspection(booking.id, 'checkout', req.body);
   await supabase.from('bookings').update({ status: 'picked_up' }).eq('id', booking.id);
 
+  // รับกล้องออก = ถือว่ารับเงินประกันแล้ว (ถ้ายังไม่ได้กำหนดสถานะ) — ไม่ error ถ้ายังไม่ได้เพิ่มคอลัมน์
+  if (Number(booking.deposit) > 0 && (!booking.deposit_status || booking.deposit_status === 'pending')) {
+    await supabase.from('bookings')
+      .update({ deposit_status: 'held', deposit_updated_at: new Date().toISOString() })
+      .eq('id', booking.id);
+  }
+
   res.json({ message: 'บันทึกการรับอุปกรณ์ออกสำเร็จ' });
 }));
 
@@ -984,6 +991,116 @@ app.post('/api/bookings/:id/return', asyncHandler(async (req, res) => {
 // ==========================================
 // 5. OTHER API ENDPOINTS
 // ==========================================
+
+// ==========================================
+// เงินประกัน + สำรองข้อมูล
+// ==========================================
+const DEPOSIT_STATUSES = ['pending', 'held', 'returned', 'partial'];
+const DEPOSIT_DEDUCT_CATEGORY = 'หักเงินประกัน';
+const columnMissing = (error) => !!error && /deposit_status|deposit_deducted|deposit_note|deposit_updated_at|column/i.test(error.message || '');
+
+app.patch('/api/bookings/:id/deposit', asyncHandler(async (req, res) => {
+  const status = String(req.body.status || '');
+  if (!DEPOSIT_STATUSES.includes(status)) return res.status(400).json({ error: 'สถานะเงินประกันไม่ถูกต้อง' });
+
+  const { data: booking } = await supabase.from('bookings').select('*').eq('id', req.params.id).maybeSingle();
+  if (!booking) return res.status(404).json({ error: 'ไม่พบรายการจองนี้' });
+
+  const deposit = Number(booking.deposit || 0);
+  if (deposit <= 0) return res.status(400).json({ error: 'รายการนี้ไม่มีเงินประกัน' });
+
+  let deducted = 0;
+  if (status === 'partial') {
+    deducted = Number(req.body.deducted);
+    if (!Number.isFinite(deducted) || deducted <= 0 || deducted > deposit) {
+      return res.status(400).json({ error: `จำนวนเงินที่หักต้องมากกว่า 0 และไม่เกิน ${deposit} บาท` });
+    }
+  }
+  const note = String(req.body.note || '').trim().slice(0, 300);
+  if (status === 'partial' && !note) return res.status(400).json({ error: 'กรุณาระบุเหตุผลที่หักเงินประกัน' });
+
+  const { error } = await supabase.from('bookings').update({
+    deposit_status: status,
+    deposit_deducted: deducted,
+    deposit_note: note || null,
+    deposit_updated_at: new Date().toISOString(),
+  }).eq('id', booking.id);
+
+  if (error) {
+    if (columnMissing(error)) {
+      return res.status(500).json({ error: 'ยังไม่ได้เพิ่มคอลัมน์เงินประกันในฐานข้อมูล กรุณารัน SQL ที่แนะนำใน Supabase ก่อน' });
+    }
+    throw error;
+  }
+
+  // เงินที่หักไว้ถือเป็นรายรับของร้าน — ลบรายการเก่าของใบนี้ก่อน กันบันทึกซ้ำเมื่อแก้ไข
+  await supabase.from('transactions').delete().eq('booking_id', booking.id).eq('category', DEPOSIT_DEDUCT_CATEGORY);
+  if (status === 'partial') {
+    await supabase.from('transactions').insert([{
+      type: 'income',
+      category: DEPOSIT_DEDUCT_CATEGORY,
+      booking_id: booking.id,
+      amount: deducted,
+      transaction_date: new Date().toISOString(),
+      description: `หักเงินประกัน ${booking.booking_no}: ${note}`,
+    }]);
+  }
+
+  res.json({ message: 'บันทึกสถานะเงินประกันแล้ว', deposit_status: status, deposit_deducted: deducted });
+}));
+
+app.get('/api/deposits', asyncHandler(async (req, res) => {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('id, booking_no, deposit, deposit_status, status, end_date, customers(fullname, phone)')
+    .eq('deposit_status', 'held')
+    .gt('deposit', 0)
+    .order('end_date', { ascending: true });
+
+  if (error) {
+    if (columnMissing(error)) return res.json({ held_total: 0, count: 0, rows: [], needs_setup: true });
+    throw error;
+  }
+
+  const rows = (data || []).map((b) => ({
+    id: b.id,
+    booking_no: b.booking_no,
+    deposit: Number(b.deposit || 0),
+    status: b.status,
+    end_date: b.end_date,
+    customer_name: b.customers?.fullname,
+    phone: b.customers?.phone,
+  }));
+  res.json({ held_total: rows.reduce((sum, r) => sum + r.deposit, 0), count: rows.length, rows });
+}));
+
+const BACKUP_TABLES = ['customers', 'equipments', 'bookings', 'booking_items', 'inspections', 'maintenance_records', 'transactions'];
+
+async function fetchAllRows(table) {
+  const out = [];
+  const size = 1000;
+  for (let from = 0; ; from += size) {
+    const { data, error } = await supabase.from(table).select('*').order('id', { ascending: true }).range(from, from + size - 1);
+    if (error) throw new Error(`${table}: ${error.message}`);
+    out.push(...(data || []));
+    if (!data || data.length < size) break;
+  }
+  return out;
+}
+
+// ไม่รวม app_settings (รหัสผ่าน) และ api_idempotency
+app.get('/api/backup', rateLimit({ windowMs: 60_000, max: 5, message: 'ขอสำรองข้อมูลถี่เกินไป ลองใหม่ในอีกสักครู่' }), asyncHandler(async (req, res) => {
+  const tables = {};
+  for (const t of BACKUP_TABLES) tables[t] = await fetchAllRows(t);
+  res.json({
+    app: 'LensDesk',
+    version: 1,
+    exported_at: new Date().toISOString(),
+    counts: Object.fromEntries(Object.entries(tables).map(([k, v]) => [k, v.length])),
+    tables,
+  });
+}));
+
 app.get('/api/history', asyncHandler(async (req, res) => {
   const { data, error } = await supabase
     .from('bookings')

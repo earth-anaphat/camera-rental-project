@@ -3235,6 +3235,10 @@ async function returnFlow(booking, refresh) {
       html: `ยอดสุทธิ <b>${baht(data.net_total)}</b><br/><span style="font-size:.8rem">บันทึกรายรับเข้าระบบการเงินให้อัตโนมัติแล้ว</span>`,
       confirmButtonText: 'เรียบร้อย',
     });
+    if (deposit > 0) {
+      // ถามต่อทันทีว่าคืนเงินประกันอย่างไร จะได้ไม่ลืม
+      await settleDepositFlow({ ...booking, deposit }, refresh);
+    }
     return true;
   } catch (error) {
     await showError(errMsg(error, 'บันทึกการรับคืนไม่สำเร็จ'));
@@ -3265,6 +3269,101 @@ async function cancelFlow(booking, refresh) {
     await showError(errMsg(error, 'ยกเลิกไม่สำเร็จ'));
     return false;
   }
+}
+
+/* ---------------- เงินประกัน ---------------- */
+const DEPOSIT_LABEL = { pending: 'ยังไม่ได้รับ', held: 'ถือไว้อยู่', returned: 'คืนแล้ว', partial: 'หักบางส่วน' };
+const DEPOSIT_TONE = {
+  pending: 'bg-surface2 text-mute',
+  held: 'bg-warn/15 text-warn',
+  returned: 'bg-ok/15 text-ok',
+  partial: 'bg-info/15 text-info',
+};
+
+async function saveDeposit(booking, payload, okText) {
+  try {
+    showLoading('กำลังบันทึก...');
+    await api.patch(`/bookings/${booking.id}/deposit`, payload);
+    Swal.close();
+    toast('success', okText);
+    return true;
+  } catch (error) {
+    await showError(errMsg(error, 'บันทึกเงินประกันไม่สำเร็จ'));
+    return false;
+  }
+}
+
+async function receiveDepositFlow(booking, refresh) {
+  const ok = await confirmAsk({
+    title: 'รับเงินประกันแล้ว?',
+    html: `<b>${esc(booking.customer_name)}</b><br/>เงินประกัน <b>${baht(booking.deposit)}</b> จะถูกบันทึกว่าถือไว้อยู่`,
+    confirmText: 'รับแล้ว',
+    cancelText: 'ยังไม่รับ',
+  });
+  if (!ok) return false;
+  const done = await saveDeposit(booking, { status: 'held' }, 'บันทึกว่ารับเงินประกันแล้ว');
+  if (done) await refresh();
+  return done;
+}
+
+async function settleDepositFlow(booking, refresh) {
+  const deposit = Number(booking.deposit || 0);
+  const choice = await fire({
+    icon: 'question',
+    title: 'คืนเงินประกัน',
+    html: `<b>${esc(booking.customer_name)}</b> · ${esc(booking.booking_no)}<br/>เงินประกัน <b>${baht(deposit)}</b>`,
+    showDenyButton: true,
+    showCancelButton: true,
+    confirmButtonText: `คืนเต็ม ${baht(deposit)}`,
+    denyButtonText: 'หักบางส่วน…',
+    cancelButtonText: 'ยังไม่คืน',
+  });
+
+  if (choice.isConfirmed) {
+    const done = await saveDeposit(booking, { status: 'returned' }, 'บันทึกว่าคืนเงินประกันแล้ว');
+    if (done) await refresh();
+    return done;
+  }
+  if (!choice.isDenied) return false;
+
+  const form = await fire({
+    title: 'หักเงินประกัน',
+    html: `
+      <div class="sw-form">
+        <div class="sw-note">เงินที่หักจะบันทึกเป็นรายรับในหน้ารายรับ–รายจ่าย ส่วนที่เหลือคืนลูกค้า</div>
+        <div><label>จำนวนที่หัก (บาท) — ไม่เกิน ${baht(deposit)}</label><input id="sw-ded" type="number" min="1" max="${deposit}" class="input" value="" /></div>
+        <div><label>เหตุผล</label><textarea id="sw-dnote" class="input" rows="2" placeholder="เช่น เลนส์มีรอย / คืนช้า 1 วัน"></textarea></div>
+        <div class="sw-note"><div class="sw-sum"><span>คืนลูกค้า</span><span id="sw-back">${baht(deposit)}</span></div></div>
+      </div>`,
+    didOpen: () => {
+      const root = Swal.getPopup();
+      const el = root.querySelector('#sw-ded');
+      el.addEventListener('input', () => {
+        root.querySelector('#sw-back').textContent = baht(Math.max(0, deposit - num(el)));
+      });
+    },
+    showCancelButton: true,
+    confirmButtonText: 'บันทึกการหัก',
+    cancelButtonText: 'ยกเลิก',
+    preConfirm: () => {
+      const root = Swal.getPopup();
+      const amount = num(root.querySelector('#sw-ded'));
+      const note = root.querySelector('#sw-dnote').value.trim();
+      if (!Number.isFinite(amount) || amount <= 0 || amount > deposit) {
+        Swal.showValidationMessage(`จำนวนที่หักต้องมากกว่า 0 และไม่เกิน ${baht(deposit)}`);
+        return false;
+      }
+      if (!note) {
+        Swal.showValidationMessage('กรุณาระบุเหตุผลที่หักเงินประกัน');
+        return false;
+      }
+      return { status: 'partial', deducted: amount, note };
+    },
+  });
+  if (!form.isConfirmed) return false;
+  const done = await saveDeposit(booking, form.value, 'บันทึกการหักเงินประกันแล้ว');
+  if (done) await refresh();
+  return done;
 }
 
 /* ---------------- ส่งซ่อม ---------------- */
@@ -4233,6 +4332,31 @@ function BookingDetail() {
               {Number(detail.deposit) > 0 && <div className="flex justify-between text-xs"><dt className="text-mute">มัดจำ</dt><dd>{baht(detail.deposit)}</dd></div>}
             </dl>
           </section>
+
+          {Number(detail.deposit) > 0 && (() => {
+            const ds = detail.deposit_status || 'pending';
+            const deducted = Number(detail.deposit_deducted || 0);
+            return (
+              <section style={{ '--i': 4 }} className="card card-pad">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="eyebrow">เงินประกัน</h3>
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${DEPOSIT_TONE[ds] || DEPOSIT_TONE.pending}`}>{DEPOSIT_LABEL[ds] || DEPOSIT_LABEL.pending}</span>
+                </div>
+                <p className="font-num mt-2 text-2xl font-semibold">{baht(detail.deposit)}</p>
+                {ds === 'partial' && (
+                  <p className="mt-1 text-sm text-mute">
+                    หัก {baht(deducted)} · คืนลูกค้า {baht(Number(detail.deposit) - deducted)}
+                    {detail.deposit_note ? ` · ${detail.deposit_note}` : ''}
+                  </p>
+                )}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {ds === 'pending' && <button onClick={() => run(receiveDepositFlow)} className="btn btn-sm">รับเงินประกันแล้ว</button>}
+                  {ds === 'held' && <button onClick={() => run(settleDepositFlow)} className="btn btn-sm btn-primary">คืนเงินประกัน</button>}
+                  {(ds === 'returned' || ds === 'partial') && <button onClick={() => run(settleDepositFlow)} className="btn btn-sm btn-ghost">แก้ไขการคืน</button>}
+                </div>
+              </section>
+            );
+          })()}
 
           {detail.notes && (
             <section style={{ '--i': 4 }} className="flex gap-3 rounded-2xl bg-warn/10 p-4 text-sm text-warn">
@@ -6765,8 +6889,17 @@ function Customers() {
 
 /* ═════ pages/Finance.jsx ═════ */
 function Finance() {
-  const { transactions, bookings, report, refresh } = useApp();
+  const { transactions, bookings, report, refresh, openDetail } = useApp();
   const [type, setType] = useState('all');
+  const [deposits, setDeposits] = useState(null);
+
+  useEffect(() => {
+    let off = false;
+    api.get('/deposits')
+      .then(({ data }) => { if (!off) setDeposits(data); })
+      .catch(() => { if (!off) setDeposits(null); });
+    return () => { off = true; };
+  }, [bookings, transactions]);
 
   const months = useMemo(() => {
     const map = new Map((report?.monthly || []).map((m) => [m.month, m]));
@@ -6841,6 +6974,34 @@ function Finance() {
         <Stat index={2} label="กำไรสุทธิ" value={profit} prefix="฿" icon={Wallet} tone={profit >= 0 ? 'accent' : 'bad'} caption="รายรับ − รายจ่าย" />
         <Stat index={3} label="มูลค่าอุปกรณ์" value={assets.total_value} prefix="฿" icon={Landmark} tone="info" caption={`ทุน ${baht(assets.total_cost)} · ${assets.equipment_count} ชิ้น`} />
       </div>
+
+      {deposits?.needs_setup && (
+        <p className="mb-6 rounded-xl bg-warn/10 p-4 text-sm text-warn">ยังไม่ได้เพิ่มคอลัมน์เงินประกันในฐานข้อมูล รัน SQL เงินประกันใน Supabase ก่อน จึงจะเห็นยอดเงินประกันที่ถือไว้ที่นี่</p>
+      )}
+      {deposits?.count > 0 && (
+        <section className="card card-pad mb-6 anim-i" style={{ '--i': 4 }}>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="font-serif text-lg font-semibold">เงินประกันที่ถือไว้</h2>
+              <p className="text-xs text-mute">ยังไม่ใช่รายรับของร้าน ต้องคืนลูกค้าเมื่อรับกล้องคืน</p>
+            </div>
+            <p className="font-num text-3xl font-semibold text-warn">{baht(deposits.held_total)}</p>
+          </div>
+          <ul className="mt-4 divide-y divide-line/60">
+            {deposits.rows.map((d) => (
+              <li key={d.id}>
+                <button onClick={() => openDetail(d.id)} className="flex w-full items-center justify-between gap-3 py-2.5 text-left text-sm">
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium">{d.customer_name || '-'}</span>
+                    <span className="block font-mono text-[11px] text-mute">{d.booking_no} · คืนกล้อง {fmtDateTime(d.end_date)}</span>
+                  </span>
+                  <span className="font-num shrink-0 font-medium">{baht(d.deposit)}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="card card-pad mb-6 anim-i" style={{ '--i': 4 }}>
         <h2 className="mb-5 font-serif text-lg font-semibold">แนวโน้ม 12 เดือน</h2>
@@ -7162,12 +7323,39 @@ function Settings() {
             เปลี่ยนรหัสผ่าน
           </button>
         </Group>
+
+        <Group index={3} title="สำรองข้อมูล" caption="ดาวน์โหลดข้อมูลทั้งหมด (ลูกค้า อุปกรณ์ การจอง รายรับรายจ่าย) เก็บไว้เป็นไฟล์ แนะนำให้ทำสัปดาห์ละครั้ง ไฟล์นี้ไม่มีรหัสผ่าน">
+          <button type="button" className="btn btn-primary" onClick={backupFlow}>
+            <Download size={16} /> ดาวน์โหลดไฟล์สำรอง
+          </button>
+        </Group>
       </div>
     </>
   );
 }
 
 /* ═════ App.jsx ═════ */
+async function backupFlow() {
+  try {
+    showLoading('กำลังรวบรวมข้อมูล...');
+    const { data } = await api.get('/backup');
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${SHOP.name.replace(/\s+/g, '-')}-backup-${toDateOnly(new Date())}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    Swal.close();
+    const c = data.counts || {};
+    toast('success', `สำรองแล้ว: การจอง ${c.bookings ?? 0} · ลูกค้า ${c.customers ?? 0} · อุปกรณ์ ${c.equipments ?? 0}`);
+  } catch (error) {
+    await showError(errMsg(error, 'สำรองข้อมูลไม่สำเร็จ'));
+  }
+}
+
 function NotFound() {
   const { navigate } = useApp();
   return (
