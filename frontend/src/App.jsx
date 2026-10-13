@@ -4157,13 +4157,6 @@ const parseList = (value) => {
 
 /* เปิดเอกสารสำหรับพิมพ์ / บันทึกเป็น PDF ในแท็บใหม่
    ทำงานได้ทั้งคอมพิวเตอร์ แท็บเล็ต iPad และมือถือ (กดปุ่มพิมพ์ในหน้านั้น แล้วเลือก "บันทึกเป็น PDF") */
-const SHEET_CSS_RAW = 'h1{font-size:20px;margin:0}h2{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6d6385;margin:16px 0 4px}.top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;border-bottom:2px solid #1d1530;padding-bottom:8px;margin-bottom:12px}.no{font-size:11px;text-align:right}.no b{display:block;font-size:15px}.tw{overflow-x:auto}table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11px;color:#6d6385;border-bottom:1px solid #1d1530}td,th{padding:5px 6px 5px 0;vertical-align:top}td{border-bottom:1px dashed #cfc7e0}td small{display:block;color:#6d6385;font-size:10px}.r{text-align:right;white-space:nowrap}thead{display:table-header-group}tr{break-inside:avoid}.ln{display:flex;justify-content:space-between;gap:12px;padding:2px 0}.tot{border-top:2px solid #1d1530;margin-top:6px;padding-top:6px;font-size:15px}.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.kpi div{border:1px solid #cfc7e0;border-radius:8px;padding:8px 10px}.kpi b{display:block;font-size:16px}.sig{display:flex;gap:24px;margin-top:34px}.sig div{flex:1;border-top:1px solid #1d1530;text-align:center;padding-top:4px;font-size:10px;color:#6d6385}.note{margin-top:12px;font-size:10px;color:#6d6385}';
-// ใส่ prefix (เช่น '.pdf-root ') ให้ทุก selector เพื่อไม่ให้ CSS ไปชนกับหน้าหลัก
-function SHEET_CSS(scope) {
-  if (!scope) return SHEET_CSS_RAW;
-  return SHEET_CSS_RAW.replace(/(^|\})([^{}@]+)\{/g, (m, a, sel) => a + sel.split(',').map((x) => scope + ' ' + x.trim()).join(',') + '{');
-}
-
 function openPrintDoc({ title, size = 'A5', body }) {
   const sheetW = size === 'A4' ? '190mm' : '135mm';
   const html = '<!doctype html><html lang="th"><head><meta charset="utf-8">'
@@ -4175,7 +4168,12 @@ function openPrintDoc({ title, size = 'A5', body }) {
     + '.bar{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 14px;background:#2a1a4d;color:#fff;font-size:12px}'
     + '.bar button{font:inherit;font-weight:500;border:0;border-radius:10px;padding:9px 14px;background:#8452e0;color:#fff;cursor:pointer}.bar button.g{background:transparent;border:1px solid #ffffff55}'
     + '.sheet{background:#fff;margin:14px auto;max-width:' + sheetW + ';padding:18px 16px;box-shadow:0 10px 30px -12px #2a1a4d66;overflow-wrap:anywhere}'
-    + SHEET_CSS('')
+    + 'h1{font-size:20px;margin:0}h2{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6d6385;margin:16px 0 4px}'
+    + '.top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;border-bottom:2px solid #1d1530;padding-bottom:8px;margin-bottom:12px}.no{font-size:11px;text-align:right}.no b{display:block;font-size:15px}'
+    + '.tw{overflow-x:auto}table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11px;color:#6d6385;border-bottom:1px solid #1d1530}td,th{padding:5px 6px 5px 0;vertical-align:top}td{border-bottom:1px dashed #cfc7e0}td small{display:block;color:#6d6385;font-size:10px}.r{text-align:right;white-space:nowrap}'
+    + 'thead{display:table-header-group}tr{break-inside:avoid}.ln{display:flex;justify-content:space-between;gap:12px;padding:2px 0}.tot{border-top:2px solid #1d1530;margin-top:6px;padding-top:6px;font-size:15px}'
+    + '.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.kpi div{border:1px solid #cfc7e0;border-radius:8px;padding:8px 10px}.kpi b{display:block;font-size:16px}'
+    + '.sig{display:flex;gap:24px;margin-top:34px}.sig div{flex:1;border-top:1px solid #1d1530;text-align:center;padding-top:4px;font-size:10px;color:#6d6385}.note{margin-top:12px;font-size:10px;color:#6d6385}'
     + '@media print{.bar{display:none}body{background:#fff}.sheet{margin:0;max-width:none;padding:0;box-shadow:none}.tw{overflow:visible}}</style></head><body>'
     + '<div class="bar"><span>มือถือ: กด “พิมพ์ / บันทึกเป็น PDF” แล้วเลือก “บันทึกเป็น PDF” หรือ “แชร์”</span>'
     + '<span><button onclick="window.print()">พิมพ์ / บันทึกเป็น PDF</button> <button class="g" onclick="window.close()">ปิด</button></span></div>'
@@ -4196,8 +4194,8 @@ function openPrintDoc({ title, size = 'A5', body }) {
   }
 }
 
-/* ใบยืนยันการจอง — สร้างเนื้อหา HTML */
-function slipBody(d) {
+/* ใบยืนยันการจอง */
+function printSlip(d) {
   const x = (v) => esc(v ?? '');
   const delivery = ({ meetup: 'นัดรับ', van: 'รถตู้', grab: 'แกร๊ป', post: 'ไปรษณีย์' })[d.delivery_method] || 'นัดรับ';
   const region = ({ local: 'สงขลา / เก้าเส้ง', south: 'ต่างจังหวัดภาคใต้', other: 'ต่างจังหวัดภาคอื่น ๆ' })[d.rental_region] || '-';
@@ -4223,65 +4221,8 @@ function slipBody(d) {
     + (d.notes ? '<h2>หมายเหตุ</h2><div>' + x(d.notes) + '</div>' : '')
     + '<div class="sig"><div>ผู้เช่า</div><div>ผู้ให้เช่า</div></div>'
     + '<p class="note">รับกล้องเวลาไหน คืนเวลาเดียวกันของวันครบกำหนด · จุดนัดรับปกติ ' + x(SHOP.pickup) + '</p>';
-  return body;
+  openPrintDoc({ title: d.booking_no, size: 'A5', body });
 }
-
-const printSlip = (d) => openPrintDoc({ title: d.booking_no, size: 'A5', body: slipBody(d) });
-
-/* ───────── ดาวน์โหลด PDF ตรง ๆ (html2pdf.js โหลดจาก CDN ตอนกดครั้งแรก) ─────────
-   วาดจากหน้าเว็บจริง จึงใช้ฟอนต์ Prompt ที่โหลดอยู่แล้ว สระ/วรรณยุกต์ไทยไม่เพี้ยน
-   ถ้าโหลดไลบรารีไม่ได้ (ออฟไลน์) จะเปิดหน้าพิมพ์แทนให้อัตโนมัติ */
-let h2pPromise = null;
-function loadHtml2Pdf() {
-  if (window.html2pdf) return Promise.resolve(window.html2pdf);
-  if (!h2pPromise) {
-    h2pPromise = new Promise((resolve, reject) => {
-      const el = document.createElement('script');
-      el.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-      el.async = true;
-      const timer = setTimeout(() => reject(new Error('timeout')), 20000);
-      el.onload = () => { clearTimeout(timer); window.html2pdf ? resolve(window.html2pdf) : reject(new Error('missing')); };
-      el.onerror = () => { clearTimeout(timer); reject(new Error('load failed')); };
-      document.head.appendChild(el);
-    }).catch((e) => { h2pPromise = null; throw e; });
-  }
-  return h2pPromise;
-}
-
-async function savePdf({ body, size = 'A4', filename, title }) {
-  showLoading('กำลังสร้างไฟล์ PDF...');
-  try {
-    const html2pdf = await loadHtml2Pdf();
-    await Promise.all([document.fonts.load('400 14px Prompt'), document.fonts.load('600 14px Prompt')]).catch(() => {});
-    await document.fonts.ready;
-    const widthPx = size === 'A4' ? 718 : 484; // ความกว้างพื้นที่พิมพ์ (หักขอบ 10 มม.)
-    const host = document.createElement('div');
-    host.className = 'pdf-root';
-    host.style.cssText = 'width:' + widthPx + 'px;background:#fff;color:#1d1530;font-family:Prompt,"Noto Sans Thai",Tahoma,sans-serif;font-size:13px;line-height:1.55';
-    host.innerHTML = '<style>' + SHEET_CSS('.pdf-root') + '</style>' + body;
-    await html2pdf()
-      .set({
-        margin: 10,
-        filename,
-        image: { type: 'jpeg', quality: 0.96 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', windowWidth: widthPx },
-        jsPDF: { unit: 'mm', format: size.toLowerCase(), orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.kpi div', '.sig'] },
-      })
-      .from(host)
-      .save();
-    Swal.close();
-    toast('success', 'บันทึกไฟล์ PDF แล้ว');
-    return true;
-  } catch (error) {
-    Swal.close();
-    toast('info', 'สร้าง PDF ตรงไม่ได้ในตอนนี้ เปิดหน้าพิมพ์แทนให้แล้ว');
-    openPrintDoc({ title: title || filename, size, body });
-    return false;
-  }
-}
-
-const downloadSlipPdf = (d) => savePdf({ body: slipBody(d), size: 'A5', filename: `${d.booking_no}.pdf`, title: d.booking_no });
 
 function BookingDetail() {
   const { detailId, closeDetail, refresh } = useApp();
@@ -4324,11 +4265,8 @@ function BookingDetail() {
       footer={
         detail ? (
           <div className="flex gap-2">
-            <button onClick={() => downloadSlipPdf(detail)} className="btn" title="ดาวน์โหลดใบจองเป็น PDF">
-              <Download size={16} /> ใบจอง PDF
-            </button>
-            <button onClick={() => printSlip(detail)} className="btn !px-3" title="พิมพ์ใบจอง" aria-label="พิมพ์ใบจอง">
-              <Printer size={16} />
+            <button onClick={() => printSlip(detail)} className="btn" title="พิมพ์ใบจอง">
+              <Printer size={16} /> พิมพ์ใบจอง
             </button>
             {canCheckout && (
               <>
@@ -7417,7 +7355,7 @@ function Settings() {
         <Group index={3} title="สำรองข้อมูลและส่งออก" caption="เลือกรูปแบบที่ต้องการ ไฟล์ไม่มีรหัสผ่านร้าน แนะนำให้สำรองไฟล์เต็ม (JSON) สัปดาห์ละครั้ง">
           <div className="grid gap-3 sm:grid-cols-3">
             <button type="button" className="btn btn-primary" onClick={backupPdfFlow}>
-              <Download size={16} /> รายงาน PDF
+              <Printer size={16} /> รายงาน PDF
             </button>
             <div className="flex gap-2 sm:col-span-1">
               <select className="input min-w-0 flex-1" value={csvTable} onChange={(e) => setCsvTable(e.target.value)} aria-label="เลือกข้อมูลที่จะส่งออก">
@@ -7538,7 +7476,9 @@ async function backupJsonFlow() {
   toast('success', `สำรองแล้ว: การจอง ${c.bookings ?? 0} · ลูกค้า ${c.customers ?? 0} · อุปกรณ์ ${c.equipments ?? 0}`);
 }
 
-function reportBody(data) {
+async function backupPdfFlow() {
+  const data = await fetchBackup();
+  if (!data) return;
   const { t, customers, itemsByBooking } = backupMaps(data);
   const x = (v) => esc(v ?? '');
   const income = (t.transactions || []).filter((r) => r.type === 'income').reduce((a, r) => a + Number(r.amount || 0), 0);
@@ -7562,14 +7502,7 @@ function reportBody(data) {
     + '<h2>รายรับ–รายจ่าย (' + (t.transactions || []).length + ')</h2><div class="tw"><table><thead><tr><th>วันที่</th><th>รายการ</th><th class="r">จำนวน</th></tr></thead><tbody>' + txRows + '</tbody></table></div>'
     + '<h2>ลูกค้า (' + (t.customers || []).length + ')</h2><div class="tw"><table><thead><tr><th>ชื่อ</th><th>เบอร์โทร</th><th>อีเมล</th></tr></thead><tbody>' + customerRows + '</tbody></table></div>'
     + '<h2>อุปกรณ์ (' + (t.equipments || []).length + ')</h2><div class="tw"><table><thead><tr><th>ชื่อ</th><th>สถานะ</th><th class="r">ค่าเช่า</th></tr></thead><tbody>' + equipmentRows + '</tbody></table></div>';
-  return body;
-}
-
-async function backupPdfFlow() {
-  const data = await fetchBackup();
-  if (!data) return;
-  const day = toDateOnly(new Date());
-  await savePdf({ body: reportBody(data), size: 'A4', filename: `${SHOP.name.replace(/\s+/g, '-')}-report-${day}.pdf`, title: `${SHOP.name} รายงาน ${day}` });
+  openPrintDoc({ title: `${SHOP.name} รายงาน ${toDateOnly(new Date())}`, size: 'A4', body });
 }
 
 function NotFound() {
