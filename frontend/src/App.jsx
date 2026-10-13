@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertTriangle, Aperture, ArrowDown, ArrowRight, Ban, Bell, CalendarClock, CalendarDays, CalendarPlus, CalendarRange, Camera, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, ClipboardCheck, Clock3, Download, History as HistoryIcon, Home, ImagePlus, Landmark, LayoutDashboard, LayoutGrid, List, LogIn, LogOut, Menu, Monitor, Package, Pencil, Phone, Plus, Printer, RefreshCw, Replace, RotateCcw, Search, ShieldCheck, SlidersHorizontal, Smartphone, StickyNote, Tablet, Trash2, TrendingDown, TrendingUp, UploadCloud, Users, Wallet, WifiOff, Wrench, X, Zap } from 'lucide-react';
+import { AlertTriangle, Aperture, ArrowDown, ArrowRight, Ban, Bell, CalendarClock, CalendarDays, CalendarPlus, CalendarRange, Camera, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, ClipboardCheck, Clock3, Download, History as HistoryIcon, Home, ImagePlus, Landmark, LayoutDashboard, LayoutGrid, List, LogIn, LogOut, Menu, Monitor, Package, Pencil, Phone, Plus, RefreshCw, Replace, RotateCcw, Search, ShieldCheck, SlidersHorizontal, Smartphone, StickyNote, Tablet, Trash2, TrendingDown, TrendingUp, UploadCloud, Users, Wallet, WifiOff, Wrench, X, Zap } from 'lucide-react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
@@ -593,7 +593,7 @@ select.input {
   width: 3px;
   border-radius: 99px;
   background: rgb(var(--accent));
-  box-shadow: none;
+  box-shadow: 0 0 14px rgb(var(--accent) / 0.8);
   animation: growY 0.45s var(--ease) both;
 }
 .nav-item[data-on='true'] svg { color: rgb(var(--accent)); }
@@ -626,7 +626,7 @@ select.input {
   height: 2px;
   border-radius: 2px;
   background: rgb(var(--accent));
-  box-shadow: none;
+  box-shadow: 0 0 12px rgb(var(--accent) / 0.8);
   transition: transform 0.5s var(--ease), width 0.5s var(--ease);
 }
 
@@ -954,59 +954,6 @@ select.input {
 .auth-login-popup .sw-actions .btn { min-height: 46px; border-radius: 12px !important; }
 @media (max-width: 480px) { .auth-login-popup { padding: 1.7rem 1.1rem 1.2rem !important; border-radius: 21px !important; } .auth-login-popup .sw-title { font-size: 1.2rem !important; } .auth-login-popup .sw-actions { gap: .5rem !important; } }
 
-
-/* ===== Login / Password dialogs (dark glass card) ===== */
-.swal2-popup.lg-popup {
-  width: min(430px, calc(100vw - 28px)) !important;
-  padding: 2.1rem 1.8rem 1.6rem !important;
-  border: 1px solid rgb(157 115 250 / .35) !important;
-  border-radius: 26px !important;
-  background:
-    radial-gradient(420px 260px at 85% -10%, rgb(132 82 224 / .55), transparent 62%),
-    radial-gradient(320px 220px at -10% 110%, rgb(85 44 156 / .5), transparent 60%),
-    linear-gradient(165deg, #2b1556, #1a0a37) !important;
-  box-shadow: 0 50px 100px -30px rgb(37 16 71 / .9), inset 0 1px 0 rgb(255 255 255 / .12) !important;
-  color: #f3edff !important;
-}
-.swal2-popup.lg-popup::before { display: none !important; }
-.lg-popup .swal2-title { display: none !important; }
-.lg-popup .lg-html { margin: 0 !important; padding: 0 !important; color: #f3edff !important; overflow: visible !important; }
-.lg-mark { position: relative; display: grid; width: 64px; height: 64px; margin: 0 auto 1.1rem; place-items: center; border-radius: 20px; background: linear-gradient(145deg, #a78bfa, #6333b5); color: #fff; box-shadow: 0 14px 34px -10px rgb(157 115 250 / .9), inset 0 1px 0 rgb(255 255 255 / .35); }
-.lg-mark::after { content: ''; position: absolute; inset: -9px; border-radius: 26px; border: 1px solid rgb(196 181 253 / .35); animation: lgPulse 2.8s ease-out infinite; }
-.lg-mark svg { animation: lgSpin 14s linear infinite; }
-.lg-eyebrow { margin: 0; text-align: center; font-size: .68rem; letter-spacing: .28em; color: #c4b5fd; }
-.lg-title { margin: .35rem 0 .4rem; text-align: center; font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; color: #fff; }
-.lg-sub { margin: 0 auto 1.3rem; max-width: 320px; text-align: center; font-size: .86rem; line-height: 1.7; color: rgb(243 237 255 / .66); }
-.lg-label { display: block; margin: 0 0 .4rem; text-align: left; font-size: .74rem; font-weight: 500; color: rgb(243 237 255 / .75); }
-.lg-field { position: relative; display: flex; align-items: center; margin-bottom: .85rem; border: 1px solid rgb(196 181 253 / .28); border-radius: 14px; background: rgb(255 255 255 / .06); transition: border-color .2s, box-shadow .2s, background .2s; }
-.lg-field:focus-within { border-color: #a78bfa; background: rgb(255 255 255 / .09); box-shadow: 0 0 0 4px rgb(167 139 250 / .2); }
-.lg-field > svg { flex: none; margin-left: 14px; color: #c4b5fd; }
-.lg-field input { flex: 1; min-width: 0; height: 50px; padding: 0 .75rem; border: 0 !important; outline: 0 !important; background: transparent !important; color: #fff !important; font-size: 16px !important; letter-spacing: .02em; box-shadow: none !important; }
-.lg-field input::placeholder { color: rgb(243 237 255 / .38); letter-spacing: 0; }
-.lg-eye { flex: none; height: 38px; margin-right: 6px; padding: 0 .7rem; border: 0; border-radius: 10px; background: transparent; color: #c4b5fd; font-size: .74rem; cursor: pointer; transition: background .2s; }
-.lg-eye:hover { background: rgb(255 255 255 / .1); }
-.lg-caps { margin: -.25rem 0 .8rem; text-align: left; font-size: .76rem; color: #fcd34d; }
-.lg-hint { margin: .2rem 0 0; text-align: center; font-size: .74rem; color: rgb(243 237 255 / .5); }
-.lg-shake { animation: lgShake .42s cubic-bezier(.36, .07, .19, .97); border-color: #f87171 !important; }
-.lg-meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin: -.2rem 0 .35rem; }
-.lg-meter i { height: 4px; border-radius: 99px; background: rgb(255 255 255 / .14); transition: background .25s; }
-.lg-meter[data-s='1'] i:nth-child(-n+1) { background: #f87171; }
-.lg-meter[data-s='2'] i:nth-child(-n+2) { background: #fbbf24; }
-.lg-meter[data-s='3'] i:nth-child(-n+3) { background: #a3e635; }
-.lg-meter[data-s='4'] i { background: #4ade80; }
-.lg-meter-t { margin: 0 0 .85rem; text-align: left; font-size: .72rem; color: rgb(243 237 255 / .55); }
-.lg-popup .swal2-validation-message { margin: .9rem 0 0 !important; border: 1px solid rgb(248 113 113 / .45) !important; background: rgb(248 113 113 / .12) !important; color: #fecaca !important; font-size: .82rem !important; }
-.lg-popup .sw-actions { display: grid !important; grid-template-columns: 1fr; gap: .55rem !important; width: 100%; margin: 1.15rem 0 0 !important; }
-.lg-popup .sw-actions .btn { width: 100%; min-height: 48px; border-radius: 14px !important; }
-.lg-popup .sw-actions .btn-primary { background: linear-gradient(135deg, #a78bfa, #7c4ddb) !important; color: #fff !important; box-shadow: 0 16px 34px -14px rgb(167 139 250 / .95) !important; }
-.lg-popup .sw-actions .btn-ghost { border-color: transparent !important; background: transparent !important; color: rgb(243 237 255 / .7) !important; }
-.lg-popup .sw-actions .btn-ghost:hover { background: rgb(255 255 255 / .08) !important; }
-.lg-popup .swal2-loader { border-color: #fff transparent #fff transparent !important; }
-@keyframes lgPulse { 0% { transform: scale(.92); opacity: .9; } 100% { transform: scale(1.28); opacity: 0; } }
-@keyframes lgSpin { to { transform: rotate(360deg); } }
-@keyframes lgShake { 10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); } 30%, 50%, 70% { transform: translateX(-7px); } 40%, 60% { transform: translateX(7px); } }
-@media (prefers-reduced-motion: reduce) { .lg-mark::after, .lg-mark svg, .lg-shake { animation: none !important; } }
-
 /* =====================================================
    APP — เลย์เอาต์พิเศษ
    ===================================================== */
@@ -1102,10 +1049,8 @@ select.input {
   cursor: pointer;
   transition: transform 0.3s var(--ease), background-color 0.3s, color 0.3s, box-shadow 0.4s, border-color 0.3s;
 }
-.ld-btn-purple { background: #8452e0; color: #ffffff; box-shadow: 0 10px 22px -14px rgb(60 30 120 / 0.8); }
-.ld-btn-purple:hover { background: #9461ee; }
-.tbl td, .tbl th, table td { font-variant-numeric: tabular-nums; }
-.grid > * { min-width: 0; }
+.ld-btn-purple { background: linear-gradient(135deg, #b999ff, #8452e0); color: #ffffff; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.4), 0 18px 40px -16px rgb(157 115 250 / 0.7); }
+.ld-btn-purple:hover { background: linear-gradient(135deg, #d3bcff, #9d73fa); }
 .ld-btn-line { border: 1px solid rgb(250 247 255 / 0.26); color: #faf7ff; }
 .ld-btn-line:hover { background: rgb(250 247 255 / 0.08); border-color: rgb(239 232 218 / 0.5); }
 .ld-dot { position: relative; }
@@ -1144,7 +1089,7 @@ select.input {
 .reticle::before { left: 50%; top: -10px; bottom: -10px; width: 1px; opacity: 0.35; }
 .reticle::after { top: 50%; left: -10px; right: -10px; height: 1px; opacity: 0.35; }
 .reticle i { position: absolute; inset: 0; border: 1.5px solid #9d73fa; border-radius: 4px; }
-.reticle[data-lock='1'] i { animation: lock 0.6s var(--ease) both; box-shadow: none; }
+.reticle[data-lock='1'] i { animation: lock 0.6s var(--ease) both; box-shadow: 0 0 26px rgb(157 115 250 / 0.55); }
 .reticle[data-lock='0'] i { border-color: rgb(239 232 218 / 0.5); transform: scale(1.35); transition: transform 0.9s var(--ease), border-color 0.5s; }
 .exif-v { display: inline-block; animation: exifIn 0.6s var(--ease) both; }
 
@@ -1184,9 +1129,9 @@ select.input {
 .lamp-cone.l { right: 50%; background: conic-gradient(from 180deg at right top, rgb(157 115 250 / 0.8), transparent 23%); }
 .lamp-cone.r { left: 50%; background: conic-gradient(from 90deg at left top, transparent 2%, rgb(157 115 250 / 0.8) 25%, transparent 25.4%); }
 .lamp.on .lamp-cone { width: min(34rem, 48vw); opacity: 1; }
-.lamp-line { position: absolute; top: 0; left: 50%; height: 2px; width: 14rem; transform: translateX(-50%); background: #d3bcff; box-shadow: none; transition: width 1.2s var(--ease); }
+.lamp-line { position: absolute; top: 0; left: 50%; height: 2px; width: 14rem; transform: translateX(-50%); background: #d3bcff; box-shadow: 0 0 26px 5px rgb(157 115 250 / 0.7); transition: width 1.2s var(--ease); }
 .lamp.on .lamp-line { width: min(34rem, 60vw); }
-.lamp-glow { position: absolute; top: -2rem; left: 50%; width: min(30rem, 80vw); height: 9rem; transform: translateX(-50%); background: radial-gradient(closest-side, rgb(157 115 250 / 0.4), transparent); filter: blur(40px); opacity: .45; }
+.lamp-glow { position: absolute; top: -2rem; left: 50%; width: min(30rem, 80vw); height: 9rem; transform: translateX(-50%); background: radial-gradient(closest-side, rgb(157 115 250 / 0.4), transparent); filter: blur(26px); }
 
 .pre {
   position: fixed;
@@ -1537,28 +1482,25 @@ select.input {
   .calendar-month-card *, .calendar-day-panel * { scroll-behavior: auto !important; }
 }
 
-/* UX14: selected-day panel always matches the calendar card height */
-.calendar-panel-inner { display: flex; flex-direction: column; min-width: 0; max-width: 100%; }
-@media (min-width: 1280px) {
-  .calendar-layout { align-items: stretch !important; }
-  .calendar-day-panel {
-    position: relative !important;
-    top: auto !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow: hidden !important;
+/* UX14 performance: preserve layout and palette, reduce continuous GPU work on touch devices. */
+@media (hover: none), (max-width: 1023px) {
+  .mb, .hero-orb, .hero-beam, .hero-ring, .hero-marquee, .hero-marquee-reverse,
+  .landing-orb, .landing-beam, .landing-ring, .landing-marquee {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
-  /* ไม่ให้เนื้อหาในกรอบดันความสูงของแถว — ความสูงมาจากปฏิทินเท่านั้น */
-  .calendar-panel-inner { position: absolute; inset: 0; min-height: 0; }
-  .calendar-selected-header,
-  .calendar-selected-footer { flex: none; }
-  .calendar-selected-content { flex: 1 1 auto; min-height: 0; overflow: hidden !important; display: flex; flex-direction: column; }
-  .calendar-selected-list { flex: 1 1 auto; min-height: 0; max-height: none !important; overflow-y: auto; }
-  .calendar-empty-day { flex: 1; display: flex; align-items: center; justify-content: center; }
-  .calendar-empty-day > * { width: 100%; min-height: 0 !important; }
+  .calendar-selected-booking:hover, .card:hover, .white-card:hover, .feature-card:hover {
+    transform: none !important;
+  }
+  .calendar-selected-booking, .card, .white-card, .feature-card {
+    transition-duration: 120ms !important;
+  }
 }
-
-
+@media (max-width: 767px) {
+  /* Avoid blur-heavy fixed overlays on lower-powered phones; colors and geometry remain unchanged. */
+  .iris { filter: none !important; }
+  .reveal, .reveal.in { animation-duration: 180ms !important; }
+}
 
 `;
 if (typeof document !== 'undefined' && !document.getElementById('lensdesk-css')) {
@@ -1684,7 +1626,7 @@ function downloadCsv(filename, rows) {
   document.body.appendChild(a);
   a.click();
   a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  URL.revokeObjectURL(url);
   return true;
 }
 
@@ -1748,43 +1690,21 @@ const FINANCE_CATEGORIES = {
   expense: ['ซ่อมบำรุง', 'ซื้ออุปกรณ์', 'อุปกรณ์สิ้นเปลือง', 'ค่าโฆษณา', 'ค่าขนส่ง', 'อื่นๆ'],
 };
 
-/* ───────────────────────────────────────────────────────────
-   ข้อมูลร้าน — แก้ที่นี่ที่เดียว แล้วทุกหน้า/ใบจอง/ชื่อแท็บจะเปลี่ยนตาม
-   name   : ชื่อร้าน
-   logo   : ลิงก์รูปโลโก้ (เช่น '/logo.png' หรือ URL) เว้นว่างไว้ = ใช้ไอคอนเลนส์
-   phone  : เบอร์ติดต่อ แสดงในใบจอง
-   line   : LINE ID (ถ้ามี) แสดงในใบจอง
-   pickup : จุดนัดรับกล้องปกติ แสดงในใบจอง
-   ─────────────────────────────────────────────────────────── */
-const SHOP = {
-  name: 'LensDesk',
-  logo: '',
-  phone: '',
-  line: '',
-  pickup: 'สงขลา / เก้าเส้ง',
-};
-
 const DEFAULT_SETTINGS = {
   navStyle: 'sidebar',
   side: 'left',
   radius: 'soft',
   density: 'comfortable',
   motion: true,
-  shopName: SHOP.name,
+  shopName: 'LensDesk',
 };
 
 
 /* ═════ lib/api.js ═════ */
-// ใส่ URL ของ Backend Vercel ที่เพิ่งได้มาตรงนี้
-const PRODUCTION_BACKEND_URL = 'https://camera-rental-project-g37m.vercel.app'; 
-
-const isVercel = window.location.hostname.includes('vercel.app');
-
+// ใช้ hostname เดียวกับหน้าเว็บ — เปิดจากมือถือ/iPad ผ่าน IP ของเครื่องก็เรียก API ได้
 const API_ORIGIN =
   import.meta.env.VITE_API_URL ||
-  (isVercel
-    ? PRODUCTION_BACKEND_URL
-    : `${window.location.protocol}//${window.location.hostname}:5001`);
+  `${window.location.protocol}//${window.location.hostname}:5001`;
 
 const AUTH_TOKEN_KEY = 'lensdesk.ownerToken';
 const api = axios.create({
@@ -2145,8 +2065,7 @@ const ENTER_KEY = 'lensdesk.entered';
 
 const parseHash = () => {
   const h = window.location.hash.replace(/^#\/?/, '');
-  if (!h) return 'dashboard';
-  return NAV_ITEMS.some((n) => n.id === h) ? h : 'notfound';
+  return NAV_ITEMS.some((n) => n.id === h) ? h : 'dashboard';
 };
 
 const EMPTY_DASH = {
@@ -2191,47 +2110,88 @@ function AppProvider({ children }) {
   const [equipmentModal, setEquipmentModal] = useState({ open: false, item: null });
   const [detailId, setDetailId] = useState(null);
 
-  /* ---------- โหลดข้อมูล ---------- */
-  const busy = useRef(false);
+  /* ---------- โหลดข้อมูล: เลือกเฉพาะส่วนที่เปลี่ยน และรวมคำขอที่ซ้อนกัน ---------- */
+  const refreshPromise = useRef(null);
+  const queuedRefreshKeys = useRef(new Set());
+  const lastRefreshAt = useRef(0);
 
-  const refresh = useCallback(async () => {
-    if (busy.current) return;
-    busy.current = true;
-    setLoading(true);
+  const refresh = useCallback((requestedKeys) => {
+    const validKeys = Array.isArray(requestedKeys)
+      ? requestedKeys.filter((key) => Object.prototype.hasOwnProperty.call(ENDPOINTS, key))
+      : Object.keys(ENDPOINTS);
+    validKeys.forEach((key) => queuedRefreshKeys.current.add(key));
 
-    const keys = Object.keys(ENDPOINTS);
-    const results = await Promise.allSettled(keys.map((k) => api.get(ENDPOINTS[k])));
+    // If another refresh is in progress, its loop will pick up the newly queued keys.
+    if (refreshPromise.current) return refreshPromise.current;
 
-    const next = {};
-    let failed = 0;
-    results.forEach((r, i) => {
-      if (r.status === 'fulfilled') {
-        const key = keys[i];
-        next[key] =
-          key === 'dashboard' ? { ...EMPTY_DASH, ...r.value.data } : r.value.data;
-      } else {
-        failed += 1;
+    const task = (async () => {
+      setLoading(true);
+      let totalSucceeded = 0;
+      let totalFailed = 0;
+      let attemptedAll = false;
+      try {
+        while (queuedRefreshKeys.current.size) {
+          const keys = [...queuedRefreshKeys.current];
+          queuedRefreshKeys.current.clear();
+          attemptedAll = keys.length === Object.keys(ENDPOINTS).length;
+          const results = await Promise.allSettled(keys.map((key) => api.get(ENDPOINTS[key])));
+          const next = {};
+          let batchFailed = 0;
+          results.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+              const key = keys[index];
+              next[key] = key === 'dashboard'
+                ? { ...EMPTY_DASH, ...result.value.data }
+                : result.value.data;
+              totalSucceeded += 1;
+            } else {
+              batchFailed += 1;
+              totalFailed += 1;
+            }
+          });
+          if (Object.keys(next).length) setData((previous) => ({ ...previous, ...next }));
+          if (attemptedAll && batchFailed === keys.length) setOffline(true);
+          else if (totalSucceeded > 0) setOffline(false);
+          setLoaded(true);
+        }
+      } finally {
+        setLoading(false);
+        lastRefreshAt.current = Date.now();
+        refreshPromise.current = null;
+        // A refresh may have been queued as the previous batch completed.
+        if (queuedRefreshKeys.current.size) void refresh([...queuedRefreshKeys.current]);
       }
-    });
-
-    setData((prev) => ({ ...prev, ...next }));
-    setOffline(failed === keys.length);
-    setLoaded(true);
-    setLoading(false);
-    busy.current = false;
+    })();
+    refreshPromise.current = task;
+    return task;
   }, []);
 
   useEffect(() => {
     if (!entered) return undefined;
-    refresh();
+    void refresh();
     const timer = setInterval(() => {
-      if (document.visibilityState === 'visible') refresh();
+      // Avoid polling while backgrounded, and don't refresh immediately after a mutation/focus.
+      if (document.visibilityState === 'visible' && Date.now() - lastRefreshAt.current > 45_000) {
+        void refresh();
+      }
     }, 60000);
-    const onFocus = () => refresh();
+    let focusTimer;
+    const onFocus = () => {
+      clearTimeout(focusTimer);
+      focusTimer = setTimeout(() => {
+        if (document.visibilityState === 'visible' && Date.now() - lastRefreshAt.current > 15_000) void refresh();
+      }, 250);
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible' && Date.now() - lastRefreshAt.current > 30_000) void refresh();
+    };
     window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVisibility);
     return () => {
       clearInterval(timer);
+      clearTimeout(focusTimer);
       window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [entered, refresh]);
 
@@ -2653,7 +2613,7 @@ function Preloader({ onDone }) {
   return (
     <div className={`pre ${out ? 'out' : ''}`} aria-hidden="true">
       <div className="mono flex justify-between text-[#faf7ff]/60">
-        <span>{SHOP.name}</span>
+        <span>LensDesk — Personal Edition</span>
         <span>{n < 100 ? 'กำลังล้างฟิล์ม' : 'พร้อมแล้ว'}</span>
       </div>
       <div className="flex items-end justify-between">
@@ -2987,7 +2947,7 @@ function BarChart({ data, height = 176 }) {
     <div>
       <div className="flex items-end gap-2 sm:gap-4" style={{ height }}>
         {data.map((d, i) => (
-          <div key={d.label} className="group flex h-full min-w-0 flex-1 items-end justify-center gap-1">
+          <div key={d.label} className="group flex h-full flex-1 items-end justify-center gap-1">
             {[
               { v: d.income, cls: 'bg-accent', name: 'รายรับ' },
               { v: d.expense, cls: 'bg-ink/25', name: 'รายจ่าย' },
@@ -3008,7 +2968,7 @@ function BarChart({ data, height = 176 }) {
       </div>
       <div className="mt-2 flex gap-2 sm:gap-4">
         {data.map((d) => (
-          <span key={d.label} className="min-w-0 flex-1 truncate text-center text-[10px] text-mute sm:text-[11px]">
+          <span key={d.label} className="flex-1 text-center text-[11px] text-mute">
             {d.label}
           </span>
         ))}
@@ -3121,7 +3081,7 @@ async function checkoutFlow(booking, refresh) {
     showLoading('กำลังบันทึกการส่งมอบ...');
     await api.post(`/bookings/${booking.id}/checkout`, result.value);
     Swal.close();
-    await refresh();
+    await refresh(['bookings', 'equipments', 'dashboard']);
     await fire({
       icon: 'success',
       title: 'ส่งมอบเรียบร้อย',
@@ -3228,17 +3188,13 @@ async function returnFlow(booking, refresh) {
     showLoading('กำลังบันทึกการรับคืน...');
     const { data } = await api.post(`/bookings/${booking.id}/return`, result.value);
     Swal.close();
-    await refresh();
+    await refresh(['bookings', 'equipments', 'dashboard', 'transactions', 'report']);
     await fire({
       icon: 'success',
       title: 'รับคืนเรียบร้อย',
       html: `ยอดสุทธิ <b>${baht(data.net_total)}</b><br/><span style="font-size:.8rem">บันทึกรายรับเข้าระบบการเงินให้อัตโนมัติแล้ว</span>`,
       confirmButtonText: 'เรียบร้อย',
     });
-    if (deposit > 0) {
-      // ถามต่อทันทีว่าคืนเงินประกันอย่างไร จะได้ไม่ลืม
-      await settleDepositFlow({ ...booking, deposit }, refresh);
-    }
     return true;
   } catch (error) {
     await showError(errMsg(error, 'บันทึกการรับคืนไม่สำเร็จ'));
@@ -3262,108 +3218,13 @@ async function cancelFlow(booking, refresh) {
 
   try {
     await api.patch(`/bookings/${booking.id}/cancel`);
-    await refresh();
+    await refresh(['bookings', 'equipments', 'dashboard', 'report']);
     toast('success', 'ยกเลิกการจองแล้ว');
     return true;
   } catch (error) {
     await showError(errMsg(error, 'ยกเลิกไม่สำเร็จ'));
     return false;
   }
-}
-
-/* ---------------- เงินประกัน ---------------- */
-const DEPOSIT_LABEL = { pending: 'ยังไม่ได้รับ', held: 'ถือไว้อยู่', returned: 'คืนแล้ว', partial: 'หักบางส่วน' };
-const DEPOSIT_TONE = {
-  pending: 'bg-surface2 text-mute',
-  held: 'bg-warn/15 text-warn',
-  returned: 'bg-ok/15 text-ok',
-  partial: 'bg-info/15 text-info',
-};
-
-async function saveDeposit(booking, payload, okText) {
-  try {
-    showLoading('กำลังบันทึก...');
-    await api.patch(`/bookings/${booking.id}/deposit`, payload);
-    Swal.close();
-    toast('success', okText);
-    return true;
-  } catch (error) {
-    await showError(errMsg(error, 'บันทึกเงินประกันไม่สำเร็จ'));
-    return false;
-  }
-}
-
-async function receiveDepositFlow(booking, refresh) {
-  const ok = await confirmAsk({
-    title: 'รับเงินประกันแล้ว?',
-    html: `<b>${esc(booking.customer_name)}</b><br/>เงินประกัน <b>${baht(booking.deposit)}</b> จะถูกบันทึกว่าถือไว้อยู่`,
-    confirmText: 'รับแล้ว',
-    cancelText: 'ยังไม่รับ',
-  });
-  if (!ok) return false;
-  const done = await saveDeposit(booking, { status: 'held' }, 'บันทึกว่ารับเงินประกันแล้ว');
-  if (done) await refresh();
-  return done;
-}
-
-async function settleDepositFlow(booking, refresh) {
-  const deposit = Number(booking.deposit || 0);
-  const choice = await fire({
-    icon: 'question',
-    title: 'คืนเงินประกัน',
-    html: `<b>${esc(booking.customer_name)}</b> · ${esc(booking.booking_no)}<br/>เงินประกัน <b>${baht(deposit)}</b>`,
-    showDenyButton: true,
-    showCancelButton: true,
-    confirmButtonText: `คืนเต็ม ${baht(deposit)}`,
-    denyButtonText: 'หักบางส่วน…',
-    cancelButtonText: 'ยังไม่คืน',
-  });
-
-  if (choice.isConfirmed) {
-    const done = await saveDeposit(booking, { status: 'returned' }, 'บันทึกว่าคืนเงินประกันแล้ว');
-    if (done) await refresh();
-    return done;
-  }
-  if (!choice.isDenied) return false;
-
-  const form = await fire({
-    title: 'หักเงินประกัน',
-    html: `
-      <div class="sw-form">
-        <div class="sw-note">เงินที่หักจะบันทึกเป็นรายรับในหน้ารายรับ–รายจ่าย ส่วนที่เหลือคืนลูกค้า</div>
-        <div><label>จำนวนที่หัก (บาท) — ไม่เกิน ${baht(deposit)}</label><input id="sw-ded" type="number" min="1" max="${deposit}" class="input" value="" /></div>
-        <div><label>เหตุผล</label><textarea id="sw-dnote" class="input" rows="2" placeholder="เช่น เลนส์มีรอย / คืนช้า 1 วัน"></textarea></div>
-        <div class="sw-note"><div class="sw-sum"><span>คืนลูกค้า</span><span id="sw-back">${baht(deposit)}</span></div></div>
-      </div>`,
-    didOpen: () => {
-      const root = Swal.getPopup();
-      const el = root.querySelector('#sw-ded');
-      el.addEventListener('input', () => {
-        root.querySelector('#sw-back').textContent = baht(Math.max(0, deposit - num(el)));
-      });
-    },
-    showCancelButton: true,
-    confirmButtonText: 'บันทึกการหัก',
-    cancelButtonText: 'ยกเลิก',
-    preConfirm: () => {
-      const root = Swal.getPopup();
-      const amount = num(root.querySelector('#sw-ded'));
-      const note = root.querySelector('#sw-dnote').value.trim();
-      if (!Number.isFinite(amount) || amount <= 0 || amount > deposit) {
-        Swal.showValidationMessage(`จำนวนที่หักต้องมากกว่า 0 และไม่เกิน ${baht(deposit)}`);
-        return false;
-      }
-      if (!note) {
-        Swal.showValidationMessage('กรุณาระบุเหตุผลที่หักเงินประกัน');
-        return false;
-      }
-      return { status: 'partial', deducted: amount, note };
-    },
-  });
-  if (!form.isConfirmed) return false;
-  const done = await saveDeposit(booking, form.value, 'บันทึกการหักเงินประกันแล้ว');
-  if (done) await refresh();
-  return done;
 }
 
 /* ---------------- ส่งซ่อม ---------------- */
@@ -3418,7 +3279,7 @@ async function maintenanceFlow(equipments, refresh, presetId = '') {
 
   try {
     await api.post('/maintenance', result.value);
-    await refresh();
+    await refresh(['maintenance', 'equipments', 'dashboard', 'transactions', 'report']);
     toast('success', 'บันทึกงานซ่อมบำรุงแล้ว');
     return true;
   } catch (error) {
@@ -3453,7 +3314,7 @@ async function completeMaintenanceFlow(record, refresh) {
 
   try {
     await api.patch(`/maintenance/${record.id}/complete`, result.value);
-    await refresh();
+    await refresh(['maintenance', 'equipments', 'dashboard', 'transactions', 'report']);
     toast('success', 'ปิดงานซ่อมบำรุงแล้ว');
     return true;
   } catch (error) {
@@ -3475,7 +3336,7 @@ async function deleteEquipmentFlow(item, refresh) {
 
   try {
     await api.delete(`/equipments/${item.id}`);
-    await refresh();
+    await refresh(['equipments', 'dashboard', 'report']);
     toast('success', 'ลบอุปกรณ์เรียบร้อยแล้ว');
     return true;
   } catch (error) {
@@ -3549,7 +3410,7 @@ async function transactionFlow(bookings, refresh, presetType = 'income') {
 
   try {
     await api.post('/transactions', result.value);
-    await refresh();
+    await refresh(['transactions', 'dashboard', 'report']);
     toast('success', `บันทึก${result.value.type === 'income' ? 'รายรับ' : 'รายจ่าย'} ${baht(result.value.amount)} แล้ว`);
     return true;
   } catch (error) {
@@ -3569,7 +3430,7 @@ async function deleteTransactionFlow(tx, refresh) {
   if (!ok) return false;
   try {
     await api.delete(`/transactions/${tx.id}`);
-    await refresh();
+    await refresh(['transactions', 'dashboard', 'report']);
     toast('success', 'ลบรายการแล้ว');
     return true;
   } catch (error) {
@@ -3708,22 +3569,6 @@ const REGION_OPTIONS = [
   { value: 'other', label: 'ต่างจังหวัดภาคอื่น ๆ', detail: 'รายวันขั้นต่ำ 5 วัน' },
 ];
 
-const describeBusy = (row) =>
-  row
-    ? `${row.booking_no}${row.customer_name ? ` · ${row.customer_name}` : ''} (${fmtDateTime(row.start_date)} – ${fmtDateTime(row.end_date)})`
-    : '';
-
-// เตือนทันทีเมื่อกล้องตัวเดียวกันถูกจองซ้อนช่วงเวลา
-const alertDuplicate = (items) =>
-  fire({
-    icon: 'warning',
-    title: 'กล้องตัวเดียวกันถูกจองซ้ำ',
-    html: `<div class="sw-note warn" style="text-align:left">${items
-      .map((it) => `<b>${esc(it.name)}</b><br/>มีการจองแล้ว: ${esc(describeBusy(it.row) || 'ช่วงเวลานี้ไม่ว่าง')}`)
-      .join('<br/><br/>')}</div><p style="margin-top:12px;font-size:13px;opacity:.75">กรุณาเปลี่ยนวัน/เวลา หรือเลือกกล้องตัวอื่น</p>`,
-    confirmButtonText: 'รับทราบ',
-  });
-
 function BookingForm() {
   const { bookingModal, closeBooking, equipments, customers, refresh, navigate } = useApp();
   const initialStart = nextSlot();
@@ -3746,7 +3591,6 @@ function BookingForm() {
   const [query, setQuery] = useState('');
   const [cat, setCat] = useState('all');
   const [busy, setBusy] = useState({});
-  const [busyInfo, setBusyInfo] = useState({});
   const [checking, setChecking] = useState(false);
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
@@ -3778,7 +3622,6 @@ function BookingForm() {
   useEffect(() => {
     if (rentalDays(debouncedStart, debouncedEnd) === 0) {
       setBusy({});
-      setBusyInfo({});
       return undefined;
     }
     let cancelled = false;
@@ -3787,16 +3630,17 @@ function BookingForm() {
       .then(({ data }) => {
         if (cancelled) return;
         const map = {};
-        const info = {};
-        data.forEach((row) => { map[row.equipment_id] = row.booking_no; info[row.equipment_id] = row; });
+        data.forEach((row) => { map[row.equipment_id] = row.booking_no; });
         setBusy(map);
-        setBusyInfo(info);
         const conflicted = equipments.filter((e) => selected.has(Number(e.id)) && map[e.id]);
         if (conflicted.length) {
           const signature = `${debouncedStart}|${debouncedEnd}|${conflicted.map((e) => e.id).join(',')}`;
           if (lastConflictNotice.current !== signature) {
             lastConflictNotice.current = signature;
-            alertDuplicate(conflicted.map((e) => ({ name: e.name, row: info[e.id] })));
+            showError(
+              `กล้องที่เลือกมีรายการจองทับช่วงเวลา: ${conflicted.map((e) => `${e.name} (${map[e.id]})`).join(', ')} กรุณาเปลี่ยนวันหรือเลือกกล้องตัวอื่น`,
+              'พบวันจองซ้ำ'
+            );
           }
         } else {
           lastConflictNotice.current = '';
@@ -3823,8 +3667,7 @@ function BookingForm() {
   const toggle = (e) => {
     const alreadySelected = selected.has(Number(e.id));
     if ((e.status === 'maintenance' || busy[e.id]) && !alreadySelected) {
-      if (busy[e.id]) alertDuplicate([{ name: e.name, row: busyInfo[e.id] }]);
-      else showError(reasonOf(e), 'กล้องไม่ว่างในช่วงเวลานี้');
+      showError(reasonOf(e), 'กล้องไม่ว่างในช่วงเวลานี้');
       return;
     }
     setSelected((prev) => {
@@ -3887,10 +3730,7 @@ function BookingForm() {
     }
     if (!chosen.length) return showError('กรุณาเลือกกล้องอย่างน้อย 1 ตัว', 'ยังไม่ได้เลือกกล้อง');
     const conflict = chosen.find((e) => busy[e.id] || e.status === 'maintenance');
-    if (conflict) {
-      if (busy[conflict.id]) return alertDuplicate([{ name: conflict.name, row: busyInfo[conflict.id] }]);
-      return showError(`${conflict.name} อยู่ระหว่างซ่อมบำรุง`, 'กล้องไม่ว่าง');
-    }
+    if (conflict) return showError(`${conflict.name} ไม่ว่างหรือมีการจองทับช่วงเวลา`, 'พบวันจองซ้ำ');
     const price = Number(form.custom_price);
     const discount = Number(form.discount || 0);
     const deposit = Number(form.deposit || 0);
@@ -3915,7 +3755,7 @@ function BookingForm() {
         discount,
         deposit,
       }, { headers: { 'Idempotency-Key': window.crypto?.randomUUID?.() || `booking-${Date.now()}-${Math.random().toString(36).slice(2)}` } });
-      await refresh();
+      await refresh(['bookings', 'equipments', 'dashboard', 'customers', 'report']);
       closeBooking();
       navigate('bookings');
       await fire({
@@ -3963,7 +3803,7 @@ function BookingForm() {
         </div>
       }
     >
-      <form id="booking-form" onSubmit={submit} className="grid grid-cols-1 gap-7 lg:grid-cols-[minmax(0,1fr)_300px] [&>*]:min-w-0">
+      <form id="booking-form" onSubmit={submit} className="grid gap-7 lg:grid-cols-[1fr_300px]">
         <div className="space-y-6">
           <section>
             <h3 className="eyebrow mb-3">ข้อมูลผู้เช่า</h3>
@@ -4101,7 +3941,7 @@ function BookingForm() {
                   </button>
                 );
               })}
-              {!list.length && <p className="col-span-full py-8 text-center text-sm text-mute">ยังไม่มีกล้องในรายการ — เพิ่มได้ที่หน้าอุปกรณ์</p>}
+              {!list.length && <p className="col-span-full py-8 text-center text-sm text-mute">ไม่พบกล้องในรายการอุปกรณ์</p>}
             </div>
           </section>
 
@@ -4155,75 +3995,6 @@ const parseList = (value) => {
   }
 };
 
-/* เปิดเอกสารสำหรับพิมพ์ / บันทึกเป็น PDF ในแท็บใหม่
-   ทำงานได้ทั้งคอมพิวเตอร์ แท็บเล็ต iPad และมือถือ (กดปุ่มพิมพ์ในหน้านั้น แล้วเลือก "บันทึกเป็น PDF") */
-function openPrintDoc({ title, size = 'A5', body }) {
-  const sheetW = size === 'A4' ? '190mm' : '135mm';
-  const html = '<!doctype html><html lang="th"><head><meta charset="utf-8">'
-    + '<meta name="viewport" content="width=device-width,initial-scale=1">'
-    + '<title>' + esc(title) + '</title>'
-    + '<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">'
-    + '<style>@page{size:' + size + ';margin:12mm}*{box-sizing:border-box}'
-    + 'body{margin:0;background:#eee9f7;color:#1d1530;font-family:Prompt,"Noto Sans Thai",Tahoma,sans-serif;font-size:13px;line-height:1.55;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
-    + '.bar{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 14px;background:#2a1a4d;color:#fff;font-size:12px}'
-    + '.bar button{font:inherit;font-weight:500;border:0;border-radius:10px;padding:9px 14px;background:#8452e0;color:#fff;cursor:pointer}.bar button.g{background:transparent;border:1px solid #ffffff55}'
-    + '.sheet{background:#fff;margin:14px auto;max-width:' + sheetW + ';padding:18px 16px;box-shadow:0 10px 30px -12px #2a1a4d66;overflow-wrap:anywhere}'
-    + 'h1{font-size:20px;margin:0}h2{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6d6385;margin:16px 0 4px}'
-    + '.top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;border-bottom:2px solid #1d1530;padding-bottom:8px;margin-bottom:12px}.no{font-size:11px;text-align:right}.no b{display:block;font-size:15px}'
-    + '.tw{overflow-x:auto}table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11px;color:#6d6385;border-bottom:1px solid #1d1530}td,th{padding:5px 6px 5px 0;vertical-align:top}td{border-bottom:1px dashed #cfc7e0}td small{display:block;color:#6d6385;font-size:10px}.r{text-align:right;white-space:nowrap}'
-    + 'thead{display:table-header-group}tr{break-inside:avoid}.ln{display:flex;justify-content:space-between;gap:12px;padding:2px 0}.tot{border-top:2px solid #1d1530;margin-top:6px;padding-top:6px;font-size:15px}'
-    + '.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.kpi div{border:1px solid #cfc7e0;border-radius:8px;padding:8px 10px}.kpi b{display:block;font-size:16px}'
-    + '.sig{display:flex;gap:24px;margin-top:34px}.sig div{flex:1;border-top:1px solid #1d1530;text-align:center;padding-top:4px;font-size:10px;color:#6d6385}.note{margin-top:12px;font-size:10px;color:#6d6385}'
-    + '@media print{.bar{display:none}body{background:#fff}.sheet{margin:0;max-width:none;padding:0;box-shadow:none}.tw{overflow:visible}}</style></head><body>'
-    + '<div class="bar"><span>มือถือ: กด “พิมพ์ / บันทึกเป็น PDF” แล้วเลือก “บันทึกเป็น PDF” หรือ “แชร์”</span>'
-    + '<span><button onclick="window.print()">พิมพ์ / บันทึกเป็น PDF</button> <button class="g" onclick="window.close()">ปิด</button></span></div>'
-    + '<div class="sheet">' + body + '</div></body></html>';
-
-  const url = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
-  const win = window.open(url, '_blank');
-  setTimeout(() => URL.revokeObjectURL(url), 120000);
-  if (!win) {
-    // เบราว์เซอร์บล็อกหน้าต่างใหม่ — ให้ผู้ใช้กดลิงก์เอง (ลิงก์ที่กดเองจะไม่ถูกบล็อก)
-    fire({
-      icon: 'info',
-      title: 'เปิดเอกสารพร้อมพิมพ์',
-      html: '<a class="btn btn-primary" href="' + url + '" target="_blank" rel="noopener">เปิดเอกสาร</a>',
-      showConfirmButton: false,
-      showCloseButton: true,
-    });
-  }
-}
-
-/* ใบยืนยันการจอง */
-function printSlip(d) {
-  const x = (v) => esc(v ?? '');
-  const delivery = ({ meetup: 'นัดรับ', van: 'รถตู้', grab: 'แกร๊ป', post: 'ไปรษณีย์' })[d.delivery_method] || 'นัดรับ';
-  const region = ({ local: 'สงขลา / เก้าเส้ง', south: 'ต่างจังหวัดภาคใต้', other: 'ต่างจังหวัดภาคอื่น ๆ' })[d.rental_region] || '-';
-  const rows = (d.items || []).map((i) => '<tr><td>' + x(i.name) + '<small>' + x(i.code) + '</small></td><td class="r">' + x(baht(i.daily_rate)) + '/วัน</td></tr>').join('');
-  const line = (k, v, cls) => '<div class="ln ' + (cls || '') + '"><span>' + k + '</span><b>' + v + '</b></div>';
-  const contact = [SHOP.phone && ('โทร ' + x(SHOP.phone)), SHOP.line && ('LINE ' + x(SHOP.line))].filter(Boolean).join(' · ');
-  const ds = ({ pending: 'ยังไม่ได้รับ', held: 'รับแล้ว (ถือไว้)', returned: 'คืนแล้ว', partial: 'หักบางส่วน' })[d.deposit_status || 'pending'];
-  const body = '<div class="top"><div><h1>' + x(SHOP.name) + '</h1><div>ใบยืนยันการเช่ากล้อง' + (contact ? ' · ' + contact : '') + '</div></div>'
-    + '<div class="no">เลขที่<b>' + x(d.booking_no) + '</b>' + x(fmtDateTime(d.created_at)) + '</div></div>'
-    + '<h2>ผู้เช่า</h2><div>' + x(d.customer_name) + ' · ' + x(d.phone) + '</div>'
-    + '<h2>ช่วงเวลาเช่า</h2>' + line('รับกล้อง', x(fmtDateTime(d.start_date))) + line('คืนกล้อง', x(fmtDateTime(d.end_date)))
-    + line('รูปแบบ', d.rental_type === 'hourly' ? x(d.rental_hours) + ' ชั่วโมง' : x(d.total_days) + ' วัน')
-    + line('การรับกล้อง', x(delivery) + ' · ' + x(region))
-    + '<h2>อุปกรณ์</h2><table>' + rows + '</table>'
-    + '<h2>ค่าใช้จ่าย</h2>' + line('ค่าเช่า', x(baht(d.subtotal)))
-    + (Number(d.discount) > 0 ? line('ส่วนลด', '−' + x(baht(d.discount))) : '')
-    + (Number(d.extra_charges) > 0 ? line('ค่าใช้จ่ายเพิ่มเติม', x(baht(d.extra_charges))) : '')
-    + (Number(d.fine_amount) > 0 ? line('ค่าปรับ', x(baht(d.fine_amount))) : '')
-    + line('ยอดสุทธิ', x(baht(d.net_total)), 'tot')
-    + line('เงินประกัน (จ่ายวันรับกล้อง คืนวันคืนกล้อง)', x(baht(d.deposit)))
-    + line('สถานะเงินประกัน', x(ds))
-    + (Number(d.deposit_deducted) > 0 ? line('หักเงินประกัน', x(baht(d.deposit_deducted)) + (d.deposit_note ? ' (' + x(d.deposit_note) + ')' : '')) : '')
-    + (d.notes ? '<h2>หมายเหตุ</h2><div>' + x(d.notes) + '</div>' : '')
-    + '<div class="sig"><div>ผู้เช่า</div><div>ผู้ให้เช่า</div></div>'
-    + '<p class="note">รับกล้องเวลาไหน คืนเวลาเดียวกันของวันครบกำหนด · จุดนัดรับปกติ ' + x(SHOP.pickup) + '</p>';
-  openPrintDoc({ title: d.booking_no, size: 'A5', body });
-}
-
 function BookingDetail() {
   const { detailId, closeDetail, refresh } = useApp();
   const [detail, setDetail] = useState(null);
@@ -4263,11 +4034,8 @@ function BookingDetail() {
       subtitle={detail ? `สร้างเมื่อ ${fmtDateTime(detail.created_at)}` : ''}
       onClose={closeDetail}
       footer={
-        detail ? (
+        detail && (canCheckout || canReturn) ? (
           <div className="flex gap-2">
-            <button onClick={() => printSlip(detail)} className="btn" title="พิมพ์ใบจอง">
-              <Printer size={16} /> พิมพ์ใบจอง
-            </button>
             {canCheckout && (
               <>
                 <button onClick={() => run(cancelFlow)} className="btn btn-danger">
@@ -4359,31 +4127,6 @@ function BookingDetail() {
               {Number(detail.deposit) > 0 && <div className="flex justify-between text-xs"><dt className="text-mute">มัดจำ</dt><dd>{baht(detail.deposit)}</dd></div>}
             </dl>
           </section>
-
-          {Number(detail.deposit) > 0 && (() => {
-            const ds = detail.deposit_status || 'pending';
-            const deducted = Number(detail.deposit_deducted || 0);
-            return (
-              <section style={{ '--i': 4 }} className="card card-pad">
-                <div className="flex items-center justify-between gap-3">
-                  <h3 className="eyebrow">เงินประกัน</h3>
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${DEPOSIT_TONE[ds] || DEPOSIT_TONE.pending}`}>{DEPOSIT_LABEL[ds] || DEPOSIT_LABEL.pending}</span>
-                </div>
-                <p className="font-num mt-2 text-2xl font-semibold">{baht(detail.deposit)}</p>
-                {ds === 'partial' && (
-                  <p className="mt-1 text-sm text-mute">
-                    หัก {baht(deducted)} · คืนลูกค้า {baht(Number(detail.deposit) - deducted)}
-                    {detail.deposit_note ? ` · ${detail.deposit_note}` : ''}
-                  </p>
-                )}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {ds === 'pending' && <button onClick={() => run(receiveDepositFlow)} className="btn btn-sm">รับเงินประกันแล้ว</button>}
-                  {ds === 'held' && <button onClick={() => run(settleDepositFlow)} className="btn btn-sm btn-primary">คืนเงินประกัน</button>}
-                  {(ds === 'returned' || ds === 'partial') && <button onClick={() => run(settleDepositFlow)} className="btn btn-sm btn-ghost">แก้ไขการคืน</button>}
-                </div>
-              </section>
-            );
-          })()}
 
           {detail.notes && (
             <section style={{ '--i': 4 }} className="flex gap-3 rounded-2xl bg-warn/10 p-4 text-sm text-warn">
@@ -4630,7 +4373,7 @@ function EquipmentForm() {
       if (editing) await api.put(`/equipments/${item.id}`, payload);
       else await api.post('/equipments', payload);
 
-      await refresh();
+      await refresh(['equipments', 'dashboard', 'report']);
       closeEquipment();
       await fire({
         icon: 'success',
@@ -4697,7 +4440,7 @@ function EquipmentForm() {
             />
           </Field>
           <Field label="ชื่ออุปกรณ์ *" className="sm:col-span-2">
-            <input required className="input" placeholder="ชื่อกล้องหรืออุปกรณ์" value={form.name} onChange={(e) => set({ name: e.target.value })} />
+            <input required className="input" placeholder="เช่น Sony Alpha A7 IV" value={form.name} onChange={(e) => set({ name: e.target.value })} />
           </Field>
           <Field label="ยี่ห้อ">
             <input className="input" value={form.brand || ''} onChange={(e) => set({ brand: e.target.value })} />
@@ -4744,11 +4487,7 @@ function Brand({ name, compact = false, dark = true }) {
   return (
     <div className="group flex items-center gap-3">
       <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-[11px] bg-accent text-accent-fg shadow-[inset_0_1px_0_rgb(255_255_255/0.3)]">
-        {SHOP.logo ? (
-          <img src={SHOP.logo} alt={name} className="h-full w-full rounded-[11px] object-cover" />
-        ) : (
-          <Aperture size={21} strokeWidth={1.6} className="transition-transform duration-700 group-hover:rotate-[120deg]" />
-        )}
+        <Aperture size={21} strokeWidth={1.6} className="transition-transform duration-700 group-hover:rotate-[120deg]" />
       </span>
       {!compact && (
         <div className="min-w-0 leading-tight">
@@ -4831,7 +4570,7 @@ function Sidebar({ rail, side, overdue }) {
         {!rail && (
           <p className="mono mb-3 flex items-center gap-2 px-1 !text-[9.5px] text-side-mute">
             <i className={`live-dot h-1.5 w-1.5 rounded-full ${offline ? 'bg-bad' : 'bg-ok'}`} />
-            {offline ? 'ออฟไลน์ — เชื่อมต่อเซิร์ฟเวอร์ไม่ได้' : 'ออนไลน์'}
+            {offline ? 'Offline — ไม่พบ API' : 'Online · API 5001'}
           </p>
         )}
         <button onClick={leave} className="nav-item" title="กลับหน้าแนะนำระบบ">
@@ -4980,7 +4719,7 @@ function Shell({ children }) {
                   № {pad2(idx + 1)}
                   <span className="hidden sm:inline"> · {fmtLongDate()}</span>
                 </p>
-                <p className="mt-0.5 truncate font-serif text-[1.02rem] font-medium">{page === 'notfound' ? 'ไม่พบหน้า' : current?.label}</p>
+                <p className="mt-0.5 truncate font-serif text-[1.02rem] font-medium">{current?.label}</p>
               </div>
             </div>
 
@@ -5100,6 +4839,8 @@ const STATEMENT = [
 
 const MARQUEE = ['อุปกรณ์', 'การจอง', 'รับ–คืน', 'ปฏิทิน', 'ลูกค้า', 'การเงิน', 'ซ่อมบำรุง'];
 
+const PHRASES_A = ['ช่างภาพที่ปล่อยเช่าเอง', 'ร้านเล็กที่มีคนดูแลคนเดียว', 'เช่ารายวัน', 'เช่าหลายชิ้นในใบเดียว', 'รับมัดจำ', 'คิดค่าปรับคืนช้า'];
+const PHRASES_B = ['ตรวจเวลาซ้อนให้', 'บันทึกรายรับอัตโนมัติ', 'เช็กลิสต์ตอนส่งมอบ', 'อัปโหลดรูปจากเครื่อง', 'ส่งออกไฟล์ CSV', 'ใช้ได้ทั้งมือถือและแท็บเล็ต'];
 
 const STEPS = [
   { no: '01', title: 'เพิ่มอุปกรณ์', text: 'เลือกรูปจากเครื่อง ใส่ราคาเช่าต่อวัน เท่านี้คลังของคุณก็พร้อมรับจอง' },
@@ -5133,22 +4874,22 @@ function VisFrame({ label, children }) {
 }
 
 function VisInventory() {
-  const rows = [['ชื่ออุปกรณ์', 'ราคา/สถานะ'], ['ชื่ออุปกรณ์', 'ราคา/สถานะ'], ['ชื่ออุปกรณ์', 'ราคา/สถานะ'], ['ชื่ออุปกรณ์', 'ราคา/สถานะ']];
+  const rows = [['Sony A7 IV', '1,800'], ['Canon R6 II', '2,000'], ['Fujifilm X-T5', '1,500']];
   return (
     <VisFrame label="01 — INVENTORY">
       <div className="grid h-full grid-cols-2 gap-3">
         {rows.map(([n, p], i) => (
-          <div key={i} className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
+          <div key={n} className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
             <div className="relative min-h-[64px] flex-1" style={{ background: `linear-gradient(${130 + i * 40}deg, #552c9c, #3a1b6c)` }}>
               <Aperture size={44} strokeWidth={0.8} className="absolute bottom-2 right-2 text-[#9d73fa]/40" />
             </div>
             <div className="p-3">
               <p className="truncate text-xs">{n}</p>
-              <p className="mono mt-1 !text-[9px] text-[#9d73fa]">{p}</p>
+              <p className="mono mt-1 !text-[9px] text-[#9d73fa]">฿{p}/วัน</p>
             </div>
           </div>
         ))}
-        <div className="col-span-2 flex flex-row items-center justify-center gap-2 rounded-xl border border-dashed border-[#9d73fa]/50 py-2 text-[#9d73fa]">
+        <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[#9d73fa]/50 text-[#9d73fa]">
           <ImagePlus size={22} strokeWidth={1.3} />
           <span className="mono !text-[9px]">ลากรูปมาวางที่นี่</span>
         </div>
@@ -5160,9 +4901,9 @@ function VisInventory() {
 function VisGantt() {
   const days = ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'];
   const rows = [
-    { n: 'อุปกรณ์ 1', bars: [[0, 3, 'a'], [4, 2, 'x']] },
-    { n: 'อุปกรณ์ 2', bars: [[1, 2, 'b'], [4, 3, 'a']] },
-    { n: 'อุปกรณ์ 3', bars: [[0, 2, 'b'], [3, 3, 'a']] },
+    { n: 'A7 IV', bars: [[0, 3, 'a'], [4, 2, 'x']] },
+    { n: 'FE 24-70', bars: [[1, 2, 'b'], [4, 3, 'a']] },
+    { n: 'Godox V1', bars: [[0, 2, 'b'], [3, 3, 'a']] },
   ];
   const tone = {
     a: 'bg-[#8452e0] text-white',
@@ -5306,7 +5047,7 @@ function HeroFinder() {
 
       <div className="absolute right-6 top-[17%] w-[62%] rounded-xl border border-white/10 bg-black/45 p-3.5 backdrop-blur-md" style={{ animation: 'floaty 7s ease-in-out infinite' }}>
         <p className="mono !text-[9px] text-[#faf7ff]/50">BK-2610 · ตัวอย่าง</p>
-        <p className="mt-1 text-sm  text-[#ffffff]/50">ตัวอย่างรายการจอง</p>
+        <p className="mt-1 text-sm">Sony A7 IV + FE 24-70</p>
         <div className="mt-2.5 flex items-center justify-between text-[11px] text-[#faf7ff]/60">
           <span>คืน 12:00 น.</span>
           <span className="flex items-center gap-1.5 text-[#7cbe94]"><i className="h-1.5 w-1.5 rounded-full bg-[#7cbe94]" />ว่างพร้อมส่ง</span>
@@ -5314,7 +5055,7 @@ function HeroFinder() {
       </div>
 
       <div className="absolute bottom-[19%] left-6 rounded-xl border border-white/10 bg-black/45 px-4 py-3 backdrop-blur-md" style={{ animation: 'floaty 8s ease-in-out -3s infinite' }}>
-        <p className="mono !text-[9px] text-[#faf7ff]/50">รายรับวันนี้ · ตัวอย่าง</p>
+        <p className="mono !text-[9px] text-[#faf7ff]/50">รายรับวันนี้</p>
         <p className="font-num text-3xl leading-none text-[#9d73fa]">฿4,300</p>
       </div>
 
@@ -5478,15 +5219,6 @@ function DeviceShowcase() {
 /* =====================================================
    หน้า Landing
    ===================================================== */
-const RULES = [
-  ['เวลาเช่า', 'รับกล้องเวลาไหน คืนเวลาเดียวกันของวันครบกำหนด'],
-  ['รายชั่วโมง', 'เช่าได้ตั้งแต่ 2 ชั่วโมงขึ้นไป เฉพาะในพื้นที่สงขลา'],
-  ['ต่างจังหวัด', 'ภาคใต้ขั้นต่ำ 2 วัน · ภาคอื่น ๆ ขั้นต่ำ 5 วัน'],
-  ['การรับกล้อง', 'นัดรับที่สงขลา / เก้าเส้ง ไม่มีค่าใช้จ่าย · รถตู้ แกร๊ป ไปรษณีย์ ลูกค้าจ่ายค่าส่งทั้งไปและกลับ'],
-  ['เงินประกัน', '500 บาทต่อกล้อง จ่ายวันรับกล้อง คืนให้เมื่อนำกล้องมาคืน'],
-  ['จองซ้ำ', 'ระบบเตือนทันทีถ้ากล้องตัวนั้นมีคนจองช่วงเวลาเดียวกันแล้ว'],
-];
-
 function Landing({ onEnter }) {
   const skipPre = (() => {
     try { return sessionStorage.getItem('ld.pre') === '1'; } catch { return false; }
@@ -5591,7 +5323,7 @@ function Landing({ onEnter }) {
       <header ref={navRef} data-hide="false" className="ld-nav safe-t">
         <span className="flex items-center gap-2.5 pr-3">
           <span className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-[#8452e0] text-white"><Aperture size={17} strokeWidth={1.7} /></span>
-          <span className="font-display text-[1.3rem] font-semibold tracking-tight">{SHOP.name}</span>
+          <span className="font-display text-[1.3rem] font-semibold tracking-tight">LensDesk</span>
         </span>
         <span className="hidden items-center md:flex">
           {[['features', 'ฟีเจอร์'], ['flow', 'ขั้นตอน'], ['devices', 'ทุกอุปกรณ์']].map(([id, label]) => (
@@ -5612,7 +5344,7 @@ function Landing({ onEnter }) {
 
         <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 px-5 pb-20 pt-32 sm:px-8 lg:grid-cols-[1.12fr_0.88fr] lg:gap-8">
           <div>
-            <p className="eyebrow ld-fade !text-[#9d73fa]" style={{ '--i': 0 }}>ระบบจัดการร้านเช่ากล้อง</p>
+            <p className="eyebrow ld-fade !text-[#9d73fa]" style={{ '--i': 0 }}>Personal Edition · ระบบจัดการร้านเช่ากล้อง</p>
             <h1 className="ld-title mt-7 text-[clamp(2.7rem,8.2vw,6.8rem)]">
               {heroLines.map((line, li) => (
                 <span key={li} className="block">
@@ -5628,8 +5360,8 @@ function Landing({ onEnter }) {
               ))}
             </h1>
             <p className="ld-fade mt-8 max-w-xl text-base leading-[1.95] text-[#faf7ff]/65 sm:text-lg" style={{ '--i': 6 }}>
-              เก็บเรื่องอุปกรณ์ ใบจอง นัดรับ–คืน และรายรับรายจ่ายไว้ที่เดียว
-              ทำมาให้ร้านที่มีคนดูแลคนเดียว เปิดจากมือถือหน้างานก็ได้
+              อุปกรณ์ การจอง การรับ–คืน และรายรับรายจ่าย อยู่ในที่เดียว
+              สำหรับคนที่ปล่อยเช่ากล้องเองคนเดียว ใช้ได้ทั้งมือถือ แท็บเล็ต และคอมพิวเตอร์
             </p>
             <div className="ld-fade mt-10 flex flex-wrap items-center gap-4" style={{ '--i': 8 }}>
               <Magnetic>
@@ -5637,7 +5369,7 @@ function Landing({ onEnter }) {
                   <button onClick={go} data-cursor="เข้าระบบ" className="ld-btn ld-btn-purple">เข้าใช้งานระบบ <ArrowRight size={18} /></button>
                 </span>
               </Magnetic>
-              <button onClick={() => scrollTo('statement')} className="ld-btn ld-btn-line">ดูว่าทำอะไรได้ <ArrowDown size={17} /></button>
+              <button onClick={() => scrollTo('statement')} className="ld-btn ld-btn-line">ดูว่ามีอะไรบ้าง <ArrowDown size={17} /></button>
             </div>
             <div className="ld-fade mt-12 flex items-center gap-4 text-[#faf7ff]/50" style={{ '--i': 10 }}>
               <span className="h-px w-10 bg-[#faf7ff]/25" />
@@ -5687,7 +5419,7 @@ function Landing({ onEnter }) {
       {/* FEATURES — sticky scroll reveal */}
       <section id="features" className="relative mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:py-32">
         <Reveal><span className="eyebrow !text-[#9d73fa]">ฟีเจอร์</span></Reveal>
-        <h2 className="ld-title mt-5 max-w-2xl text-[clamp(1.9rem,4.6vw,3.4rem)] lg:ml-16">
+        <h2 className="ld-title mt-5 max-w-2xl text-[clamp(1.9rem,4.6vw,3.4rem)]">
           <GenerateText words={['ครบทุกงาน', 'ของร้านเช่า', 'ในหน้าจอเดียว']} />
         </h2>
         <div className="mt-8 grid gap-6 lg:mt-16 lg:grid-cols-2 lg:gap-20">
@@ -5744,30 +5476,27 @@ function Landing({ onEnter }) {
 
       {/* DEVICES */}
       <section id="devices" className="relative overflow-hidden border-t border-[#faf7ff]/10 px-5 py-24 sm:px-8 md:py-36">
-        <div className="mx-auto max-w-5xl">
-          <Reveal><span className="eyebrow !text-[#9d73fa]">ใช้ได้ทุกจอ</span></Reveal>
-          <Reveal a="zoom"><h2 className="ld-title mt-5 max-w-3xl text-[clamp(1.9rem,4.6vw,3.4rem)]">ที่ร้าน ระหว่างทาง หรือบนโซฟา<br /><span className="ld-purple">ก็จัดการได้เหมือนกัน</span></h2></Reveal>
+        <div className="mx-auto max-w-5xl text-center">
+          <Reveal><span className="eyebrow !text-[#9d73fa]">Responsive</span></Reveal>
+          <Reveal a="zoom"><h2 className="ld-title mx-auto mt-5 max-w-3xl text-[clamp(1.9rem,4.6vw,3.4rem)]">ที่ร้าน ระหว่างทาง หรือบนโซฟา<br /><span className="ld-purple">ก็จัดการได้เหมือนกัน</span></h2></Reveal>
           <Reveal a="rotate" delay={200}><DeviceShowcase /></Reveal>
         </div>
       </section>
 
-      {/* กติกาการเช่า — ข้อมูลจริงของร้าน */}
-      <section className="border-y border-[#faf7ff]/10 px-5 py-16 sm:px-8 md:py-24">
-        <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)] md:gap-16">
-          <div>
-            <span className="eyebrow !text-[#9d73fa]">กติกาการเช่า</span>
-            <h2 className="ld-title mt-5 text-[clamp(1.7rem,3.8vw,2.7rem)]">สิ่งที่ระบบเช็กให้<br />ทุกครั้งที่จอง</h2>
-          </div>
-          <dl className="divide-y divide-[#faf7ff]/10 border-y border-[#faf7ff]/10">
-            {RULES.map(([k, v]) => (
-              <div key={k} className="grid gap-1 py-4 sm:grid-cols-[11rem_1fr] sm:gap-6">
-                <dt className="text-sm text-[#faf7ff]/45">{k}</dt>
-                <dd className="text-[#faf7ff]/85">{v}</dd>
+      {/* PHRASES */}
+      <div className="overflow-hidden border-y border-[#faf7ff]/10 py-7">
+        {[[PHRASES_A, ''], [PHRASES_B, 'rev']].map(([list, cls], r) => (
+          <div key={r} className={`ld-marquee ${cls} ${r ? 'mt-4' : ''}`}>
+            {[0, 1].map((k) => (
+              <div key={k} className="flex shrink-0 items-center gap-4 pr-4" aria-hidden={k === 1}>
+                {list.map((p) => (
+                  <span key={p + k} className="rounded-full border border-[#faf7ff]/15 px-6 py-3 text-sm text-[#faf7ff]/70">{p}</span>
+                ))}
               </div>
             ))}
-          </dl>
-        </div>
-      </section>
+          </div>
+        ))}
+      </div>
 
       {/* CTA — Lamp */}
       <section className="relative overflow-hidden px-5 pb-28 pt-12 sm:px-8 md:pb-40">
@@ -5777,12 +5506,12 @@ function Landing({ onEnter }) {
             <h2 className="ld-title text-[clamp(2.4rem,8vw,6rem)]">
               <GenerateText words={['พร้อมเปิด', 'ชัตเตอร์', 'แล้วหรือยัง']} step={140} />
             </h2>
-            <p className="mx-auto mt-6 max-w-md text-[#faf7ff]/55">เข้าระบบแล้วเพิ่มกล้องตัวแรกได้เลย</p>
+            <p className="mx-auto mt-6 max-w-md text-[#faf7ff]/55">เปิดระบบแล้วเริ่มจากเพิ่มอุปกรณ์ชิ้นแรกได้เลย ใช้เวลาไม่ถึงนาที</p>
             <div className="mt-12">
               <Magnetic>
                 <span className="mb">
                   <button onClick={go} data-cursor="เข้าระบบ" className="ld-btn ld-btn-purple !min-h-[66px] !px-11 text-lg">
-                    เข้าสู่ระบบ <ArrowRight size={19} />
+                    เริ่มใช้งานเลย <ArrowRight size={19} />
                   </button>
                 </span>
               </Magnetic>
@@ -5792,7 +5521,7 @@ function Landing({ onEnter }) {
       </section>
 
       <footer className="border-t border-[#faf7ff]/10 px-5 py-10 text-center">
-        <p className="mono !text-[10px] text-[#faf7ff]/40">{SHOP.name} — ระบบจัดการร้านเช่ากล้อง</p>
+        <p className="mono !text-[10px] text-[#faf7ff]/40">LensDesk · Personal Edition — ระบบจัดการร้านเช่ากล้อง</p>
       </footer>
     </div>
   );
@@ -6010,7 +5739,7 @@ function Dashboard() {
           <BarChart data={months} />
         </Panel>
 
-        <Panel index={3} no="№ 02 · อัตราการใช้งาน" title="เปอร์เซ็นการใช้งาน" caption="ยิ่งแสงติดมาก อุปกรณ์ยิ่งถูกใช้เยอะ" className="xl:col-span-5">
+        <Panel index={3} no="№ 02 · อัตราการใช้งาน" title="วงแหวนรูรับแสง" caption="ยิ่งแสงติดมาก อุปกรณ์ยิ่งถูกใช้เยอะ" className="xl:col-span-5">
           <div className="flex flex-col items-center gap-7 sm:flex-row sm:justify-around xl:flex-col 2xl:flex-row">
             <ApertureGauge value={usage} hot={usage > 85}>
               <span className="font-num text-[3.6rem] font-medium leading-none">{usage}<span className="text-2xl text-mute">%</span></span>
@@ -6065,7 +5794,7 @@ function Dashboard() {
 
         <Panel index={5} no="№ 04 · 7 วันข้างหน้า" title="กำลังจะมาถึง" caption="การจองที่ยังไม่ได้ส่งมอบ">
           {(dashboard.upcomingBookings || []).length === 0 ? (
-            <EmptyState icon={CalendarClock} title="ยังไม่มีการจองใหม่" description="ยังไม่มีใบจองที่รอรับกล้อง" />
+            <EmptyState icon={CalendarClock} title="ยังไม่มีการจองใหม่" description="สร้างการจองเพื่อวางแผนการส่งมอบ" />
           ) : (
             <ul className="stagger divide-y divide-line/70">
               {dashboard.upcomingBookings.map((b, i) => (
@@ -6089,7 +5818,7 @@ function Dashboard() {
 
         <Panel index={6} no="№ 05 · ยอดนิยม" title="เช่าบ่อยที่สุด" caption="นับจากรายการที่ส่งมอบแล้ว" className="lg:col-span-2 xl:col-span-1">
           {top.length === 0 ? (
-            <EmptyState title="ยังไม่มีข้อมูล" description="ยังไม่มีการรับ–คืนกล้อง" />
+            <EmptyState title="ยังไม่มีข้อมูล" description="จะแสดงเมื่อมีการส่งมอบอุปกรณ์" />
           ) : (
             <ul className="space-y-4">
               {top.map((t, i) => {
@@ -6428,52 +6157,44 @@ function CalendarPage() {
           </div>
         </section>
 
-        <aside className="calendar-day-panel card">
-          <div className="calendar-panel-inner">
-            <header className="calendar-selected-header">
-              <div className="calendar-selected-icon" aria-hidden="true">▦</div>
-              <div className="min-w-0 flex-1">
-                <p className="eyebrow">วันที่เลือก</p>
-                <h3 className="calendar-selected-title">
-                  {selected.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long' })}
-                </h3>
-                <p className="calendar-selected-subtitle">{selected.getFullYear() + 543} · รายการรับ–คืนอุปกรณ์</p>
-              </div>
-              <span className="calendar-selected-count" aria-label={`${dayList.length} รายการ`}>{dayList.length}</span>
-            </header>
-
-            <div className="calendar-selected-content">
-              {dayList.length === 0 ? (
-                <div className="calendar-empty-day"><EmptyState title="ไม่มีรายการ" description="วันนี้อุปกรณ์ว่างทั้งหมด" /></div>
-              ) : (
-                <ul key={selected.toISOString()} className="calendar-selected-list stagger">
-                  {dayList.map((b, i) => {
-                    const s = parseDate(b.start_date);
-                    const e = parseDate(b.end_date);
-                    const tag = sameDay(s, selected) ? `รับ ${fmtTime(s)}` : sameDay(e, selected) ? `คืน ${fmtTime(e)}` : 'อยู่ระหว่างเช่า';
-                    return (
-                      <li key={b.id} style={{ '--i': i }}>
-                        <button onClick={() => openDetail(b.id)} className="calendar-selected-booking w-full text-left">
-                          <div className="flex min-w-0 items-center justify-between gap-2">
-                            <p className="truncate text-sm font-semibold">{b.customer_name}</p>
-                            <StatusBadge status={effectiveStatus(b)} />
-                          </div>
-                          <p className="calendar-selected-equipment">{equipmentTitle(b)}</p>
-                          <p className="calendar-selected-time">{tag}</p>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
+        <aside className="calendar-day-panel card h-fit xl:sticky xl:top-24">
+          <header className="calendar-selected-header">
+            <div className="calendar-selected-icon" aria-hidden="true">▦</div>
+            <div className="min-w-0 flex-1">
+              <p className="eyebrow">วันที่เลือก</p>
+              <h3 className="calendar-selected-title">
+                {selected.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long' })}
+              </h3>
+              <p className="calendar-selected-subtitle">{selected.getFullYear() + 543} · รายการรับ–คืนอุปกรณ์</p>
             </div>
-
-            {dayList.length > 3 && (
-              <footer className="calendar-selected-footer">
-                เลื่อนเพื่อดูอีก {dayList.length} รายการ · คลิกการจองเพื่อดูรายละเอียด
-              </footer>
+            <span className="calendar-selected-count" aria-label={`${dayList.length} รายการ`}>{dayList.length}</span>
+          </header>
+          <div className="calendar-selected-content">
+            {dayList.length === 0 ? (
+              <div className="calendar-empty-day"><EmptyState title="ไม่มีรายการ" description="วันนี้อุปกรณ์ว่างทั้งหมด" /></div>
+            ) : (
+              <ul key={selected.toISOString()} className="calendar-selected-list stagger">
+                {dayList.map((b, i) => {
+                  const s = parseDate(b.start_date);
+                  const e = parseDate(b.end_date);
+                  const tag = sameDay(s, selected) ? `รับ ${fmtTime(s)}` : sameDay(e, selected) ? `คืน ${fmtTime(e)}` : 'อยู่ระหว่างเช่า';
+                  return (
+                    <li key={b.id} style={{ '--i': i }}>
+                      <button onClick={() => openDetail(b.id)} className="calendar-selected-booking w-full text-left">
+                        <div className="flex min-w-0 items-center justify-between gap-2">
+                          <p className="truncate text-sm font-semibold">{b.customer_name}</p>
+                          <StatusBadge status={effectiveStatus(b)} />
+                        </div>
+                        <p className="calendar-selected-equipment">{equipmentTitle(b)}</p>
+                        <p className="calendar-selected-time">{tag}</p>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </div>
+          {dayList.length > 3 && <footer className="calendar-selected-footer">เลื่อนเพื่อดูอีก {dayList.length} รายการ · คลิกการจองเพื่อดูรายละเอียด</footer>}
         </aside>
       </div>
     </>
@@ -6519,7 +6240,7 @@ function Equipments() {
       } else {
         try {
           await api.put(`/equipments/${item.id}`, { ...item, status: 'available' });
-          await refresh();
+          await refresh(['equipments', 'maintenance', 'dashboard']);
           toast('success', 'อุปกรณ์พร้อมใช้งานแล้ว');
         } catch (e) {
           showError(errMsg(e));
@@ -6549,15 +6270,15 @@ function Equipments() {
 
       <div className="mb-6 space-y-3">
         <div className="flex flex-col gap-3 sm:flex-row">
-          <SearchBox className="min-w-0 flex-1" value={q} onChange={setQ} placeholder="ค้นหาชื่อ ยี่ห้อ รหัส หรือ Serial..." />
-          <div className="flex gap-2 sm:shrink-0">
-            <select className="input min-w-0 flex-1 sm:!w-44 sm:flex-none" value={status} onChange={(e) => setStatus(e.target.value)}>
+          <SearchBox className="flex-1" value={q} onChange={setQ} placeholder="ค้นหาชื่อ ยี่ห้อ รหัส หรือ Serial..." />
+          <div className="flex gap-2">
+            <select className="input min-w-0 flex-1 sm:w-44 sm:flex-none" value={status} onChange={(e) => setStatus(e.target.value)}>
               <option value="all">ทุกสถานะ</option>
               <option value="available">พร้อมใช้งาน</option>
               <option value="rented">กำลังถูกเช่า</option>
               <option value="maintenance">ซ่อมบำรุง</option>
             </select>
-            <div className="flex shrink-0 rounded-xl border border-line bg-surface p-1">
+            <div className="flex rounded-xl border border-line bg-surface p-1">
               {[['card', LayoutGrid], ['table', List]].map(([id, Icon]) => (
                 <button
                   key={id}
@@ -6645,21 +6366,7 @@ function Equipments() {
           })}
         </div>
       ) : (
-        <>
-        <ul className="space-y-2.5 md:hidden">
-          {list.map((item) => (
-            <li key={item.id} className="card flex items-center gap-3 p-2.5">
-              <EquipmentPhoto item={item} className="h-14 w-14 shrink-0 rounded-xl" iconSize={18} />
-              <div className="min-w-0 flex-1" onClick={() => setSelectedEquipment(item)}>
-                <p className="truncate text-sm font-medium">{item.name}</p>
-                <p className="truncate font-mono text-[11px] text-mute">{item.code}</p>
-                <div className="mt-1 flex items-center gap-2"><StatusBadge status={item.status} /><span className="text-xs text-mute">{baht(item.rental_rate_per_day)}/วัน</span></div>
-              </div>
-              <button onClick={() => openBooking([item.id])} disabled={item.status === 'maintenance'} className="icon-btn !h-10 !w-10" aria-label="จอง"><CalendarPlus size={17} /></button>
-            </li>
-          ))}
-        </ul>
-        <div className="card hidden overflow-hidden md:block">
+        <div className="card overflow-hidden">
           <div className="scroll-thin overflow-x-auto">
             <table className="tbl min-w-[780px]">
               <thead>
@@ -6697,7 +6404,6 @@ function Equipments() {
             </table>
           </div>
         </div>
-        </>
       )}
       <p className="mt-4 text-xs text-mute">แสดง {list.length} จาก {equipments.length} รายการ</p>
 
@@ -6850,7 +6556,7 @@ function Customers() {
       <SearchBox className="mb-5" value={q} onChange={setQ} placeholder="ค้นหาชื่อ เบอร์โทร หรืออีเมล..." />
 
       {list.length === 0 ? (
-        <EmptyState icon={Users} title="ยังไม่มีลูกค้า" description="พอมีใบจองแรก ชื่อลูกค้าจะมาอยู่ตรงนี้เอง" />
+        <EmptyState icon={Users} title="ยังไม่มีลูกค้า" description="ลูกค้าจะถูกบันทึกอัตโนมัติเมื่อสร้างการจอง" />
       ) : (
         <ul className="stagger space-y-3">
           {list.map((c, i) => {
@@ -6916,17 +6622,8 @@ function Customers() {
 
 /* ═════ pages/Finance.jsx ═════ */
 function Finance() {
-  const { transactions, bookings, report, refresh, openDetail } = useApp();
+  const { transactions, bookings, report, refresh } = useApp();
   const [type, setType] = useState('all');
-  const [deposits, setDeposits] = useState(null);
-
-  useEffect(() => {
-    let off = false;
-    api.get('/deposits')
-      .then(({ data }) => { if (!off) setDeposits(data); })
-      .catch(() => { if (!off) setDeposits(null); });
-    return () => { off = true; };
-  }, [bookings, transactions]);
 
   const months = useMemo(() => {
     const map = new Map((report?.monthly || []).map((m) => [m.month, m]));
@@ -6936,21 +6633,9 @@ function Finance() {
       d.setMonth(d.getMonth() - (11 - i));
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       const hit = map.get(key);
-      return {
-        label: MONTHS_SHORT[d.getMonth()],
-        full: `${MONTHS_SHORT[d.getMonth()]} ${String(d.getFullYear() + 543).slice(-2)}`,
-        income: Number(hit?.income) || 0,
-        expense: Number(hit?.expense) || 0,
-      };
+      return { label: MONTHS_SHORT[d.getMonth()], income: hit?.income || 0, expense: hit?.expense || 0 };
     });
   }, [report]);
-
-  const [cmpA, setCmpA] = useState(11);
-  const [cmpB, setCmpB] = useState(10);
-  const pct = (cur, prev) => (prev > 0 ? Math.round(((cur - prev) / prev) * 100) : cur > 0 ? null : 0);
-  const maxIncome = Math.max(1, ...months.map((m) => m.income));
-  const A = months[cmpA];
-  const B = months[cmpB];
 
   const totals = report?.totals || { income: 0, expense: 0 };
   const profit = totals.income - totals.expense;
@@ -7002,112 +6687,9 @@ function Finance() {
         <Stat index={3} label="มูลค่าอุปกรณ์" value={assets.total_value} prefix="฿" icon={Landmark} tone="info" caption={`ทุน ${baht(assets.total_cost)} · ${assets.equipment_count} ชิ้น`} />
       </div>
 
-      {deposits?.needs_setup && (
-        <p className="mb-6 rounded-xl bg-warn/10 p-4 text-sm text-warn">ยังไม่ได้เพิ่มคอลัมน์เงินประกันในฐานข้อมูล รัน SQL เงินประกันใน Supabase ก่อน จึงจะเห็นยอดเงินประกันที่ถือไว้ที่นี่</p>
-      )}
-      {deposits?.count > 0 && (
-        <section className="card card-pad mb-6 anim-i" style={{ '--i': 4 }}>
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h2 className="font-serif text-lg font-semibold">เงินประกันที่ถือไว้</h2>
-              <p className="text-xs text-mute">ยังไม่ใช่รายรับของร้าน ต้องคืนลูกค้าเมื่อรับกล้องคืน</p>
-            </div>
-            <p className="font-num text-3xl font-semibold text-warn">{baht(deposits.held_total)}</p>
-          </div>
-          <ul className="mt-4 divide-y divide-line/60">
-            {deposits.rows.map((d) => (
-              <li key={d.id}>
-                <button onClick={() => openDetail(d.id)} className="flex w-full items-center justify-between gap-3 py-2.5 text-left text-sm">
-                  <span className="min-w-0">
-                    <span className="block truncate font-medium">{d.customer_name || '-'}</span>
-                    <span className="block font-mono text-[11px] text-mute">{d.booking_no} · คืนกล้อง {fmtDateTime(d.end_date)}</span>
-                  </span>
-                  <span className="font-num shrink-0 font-medium">{baht(d.deposit)}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
       <section className="card card-pad mb-6 anim-i" style={{ '--i': 4 }}>
         <h2 className="mb-5 font-serif text-lg font-semibold">แนวโน้ม 12 เดือน</h2>
         <BarChart data={months} height={190} />
-      </section>
-
-      <section className="card card-pad mb-6 anim-i" style={{ '--i': 5 }}>
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="font-serif text-lg font-semibold">เปรียบเทียบรายได้รายเดือน</h2>
-          <div className="flex items-center gap-2 text-sm">
-            <select className="input !min-h-9 !w-auto" value={cmpA} onChange={(e) => setCmpA(Number(e.target.value))}>
-              {months.map((m, i) => <option key={i} value={i}>{m.full}</option>)}
-            </select>
-            <span className="text-mute">เทียบกับ</span>
-            <select className="input !min-h-9 !w-auto" value={cmpB} onChange={(e) => setCmpB(Number(e.target.value))}>
-              {months.map((m, i) => <option key={i} value={i}>{m.full}</option>)}
-            </select>
-          </div>
-        </div>
-
-        <div className="mb-6 grid gap-3 sm:grid-cols-3">
-          {[
-            ['รายรับ', A.income, B.income],
-            ['รายจ่าย', A.expense, B.expense],
-            ['กำไรสุทธิ', A.income - A.expense, B.income - B.expense],
-          ].map(([label, a, b]) => {
-            const diff = a - b;
-            const p = pct(a, b);
-            const good = label === 'รายจ่าย' ? diff <= 0 : diff >= 0;
-            return (
-              <div key={label} className="rounded-2xl border border-line bg-surface2/40 p-4">
-                <p className="text-xs text-mute">{label} · {A.full}</p>
-                <p className="font-num mt-1 text-2xl font-semibold">{baht(a)}</p>
-                <p className="mt-1 text-xs text-mute">{B.full}: {baht(b)}</p>
-                <p className={`mt-2 text-sm font-medium ${diff === 0 ? 'text-mute' : good ? 'text-ok' : 'text-bad'}`}>
-                  {diff > 0 ? '▲ +' : diff < 0 ? '▼ −' : ''}{baht(Math.abs(diff))}
-                  {p === null ? ' (ใหม่)' : diff !== 0 ? ` (${p > 0 ? '+' : ''}${p}%)` : ' (เท่ากัน)'}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm sm:min-w-[560px]">
-            <thead>
-              <tr className="text-left text-xs text-mute">
-                <th className="pb-2 font-medium">เดือน</th>
-                <th className="pb-2 text-right font-medium">รายรับ</th>
-                <th className="pb-2 text-right font-medium">รายจ่าย</th>
-                <th className="pb-2 text-right font-medium">กำไร</th>
-                <th className="hidden pb-2 text-right font-medium sm:table-cell">เทียบเดือนก่อน</th>
-                <th className="hidden w-32 pb-2 sm:table-cell" />
-              </tr>
-            </thead>
-            <tbody>
-              {months.map((m, i) => {
-                const prev = i > 0 ? months[i - 1] : null;
-                const p = prev ? pct(m.income, prev.income) : 0;
-                return (
-                  <tr key={m.full} className="border-t border-line/60">
-                    <td className="py-2.5 font-medium">{m.full}</td>
-                    <td className="py-2.5 text-right">{baht(m.income)}</td>
-                    <td className="py-2.5 text-right text-mute">{baht(m.expense)}</td>
-                    <td className={`py-2.5 text-right ${m.income - m.expense < 0 ? 'text-bad' : ''}`}>{baht(m.income - m.expense)}</td>
-                    <td className={`hidden py-2.5 text-right text-xs sm:table-cell ${!prev || p === 0 ? 'text-mute' : p === null || p > 0 ? 'text-ok' : 'text-bad'}`}>
-                      {!prev ? '—' : p === null ? 'ใหม่' : p === 0 ? '—' : `${p > 0 ? '▲ +' : '▼ '}${p}%`}
-                    </td>
-                    <td className="hidden py-2.5 pl-3 sm:table-cell">
-                      <div className="h-2 rounded-full bg-line/50">
-                        <div className="h-2 rounded-full bg-accent" style={{ width: `${(m.income / maxIncome) * 100}%` }} />
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
       </section>
 
       <Segmented
@@ -7267,7 +6849,6 @@ function Thumb({ kind, side = 'left' }) {
 }
 
 function Settings() {
-  const [csvTable, setCsvTable] = useState('bookings');
   const { settings, update, reset } = useSettings();
   const { leave } = useApp();
   const sideRelevant = ['sidebar', 'rail'].includes(settings.navStyle);
@@ -7346,182 +6927,14 @@ function Settings() {
           </div>
         </Group>
 
-        <Group index={2} title="ความปลอดภัย" caption="เปลี่ยนรหัสผ่านเข้าระบบของเจ้าของร้านได้ที่นี่ ไม่ต้องแก้โค้ดหรือตั้งค่าเซิร์ฟเวอร์">
-          <button type="button" className="btn btn-primary" onClick={() => changePasswordFlow()}>
-            เปลี่ยนรหัสผ่าน
-          </button>
-        </Group>
 
-        <Group index={3} title="สำรองข้อมูลและส่งออก" caption="เลือกรูปแบบที่ต้องการ ไฟล์ไม่มีรหัสผ่านร้าน แนะนำให้สำรองไฟล์เต็ม (JSON) สัปดาห์ละครั้ง">
-          <div className="grid gap-3 sm:grid-cols-3">
-            <button type="button" className="btn btn-primary" onClick={backupPdfFlow}>
-              <Printer size={16} /> รายงาน PDF
-            </button>
-            <div className="flex gap-2 sm:col-span-1">
-              <select className="input min-w-0 flex-1" value={csvTable} onChange={(e) => setCsvTable(e.target.value)} aria-label="เลือกข้อมูลที่จะส่งออก">
-                {CSV_TABLES.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
-              </select>
-              <button type="button" className="btn shrink-0" onClick={() => backupCsvFlow(csvTable)}>
-                <Download size={16} /> Excel
-              </button>
-            </div>
-            <button type="button" className="btn" onClick={backupJsonFlow}>
-              <Download size={16} /> ไฟล์สำรองเต็ม (JSON)
-            </button>
-          </div>
-        </Group>
       </div>
     </>
   );
 }
 
 /* ═════ App.jsx ═════ */
-/* ───────── สำรองข้อมูล / ส่งออก ───────── */
-async function fetchBackup() {
-  showLoading('กำลังรวบรวมข้อมูล...');
-  try {
-    const { data } = await api.get('/backup');
-    Swal.close();
-    return data;
-  } catch (error) {
-    await showError(errMsg(error, 'ดึงข้อมูลไม่สำเร็จ'));
-    return null;
-  }
-}
-
-const BOOKING_STATUS_TH = (st) => STATUS_META[st]?.label || st || '';
-
-function backupMaps(data) {
-  const t = data.tables || {};
-  const customers = new Map((t.customers || []).map((c) => [c.id, c]));
-  const equipments = new Map((t.equipments || []).map((e) => [e.id, e]));
-  const itemsByBooking = new Map();
-  (t.booking_items || []).forEach((it) => {
-    const list = itemsByBooking.get(it.booking_id) || [];
-    list.push(equipments.get(it.equipment_id)?.name || `#${it.equipment_id}`);
-    itemsByBooking.set(it.booking_id, list);
-  });
-  return { t, customers, equipments, itemsByBooking };
-}
-
-const CSV_TABLES = [
-  ['bookings', 'รายการจอง'],
-  ['customers', 'ลูกค้า'],
-  ['equipments', 'อุปกรณ์'],
-  ['transactions', 'รายรับ–รายจ่าย'],
-];
-
-function buildCsvRows(table, data) {
-  const { t, customers, itemsByBooking } = backupMaps(data);
-  if (table === 'bookings') {
-    return (t.bookings || []).map((b) => ({
-      'เลขที่จอง': b.booking_no,
-      'ผู้เช่า': customers.get(b.customer_id)?.fullname || '',
-      'เบอร์โทร': customers.get(b.customer_id)?.phone || '',
-      'อุปกรณ์': (itemsByBooking.get(b.id) || []).join(' / '),
-      'รับกล้อง': fmtDateTime(b.start_date),
-      'คืนกล้อง': fmtDateTime(b.end_date),
-      'รูปแบบ': b.rental_type === 'hourly' ? `${b.rental_hours || ''} ชม.` : `${b.total_days || ''} วัน`,
-      'ค่าเช่า': b.subtotal,
-      'ส่วนลด': b.discount,
-      'ค่าใช้จ่ายเพิ่ม': b.extra_charges,
-      'ค่าปรับ': b.fine_amount,
-      'ยอดสุทธิ': b.net_total,
-      'เงินประกัน': b.deposit,
-      'สถานะเงินประกัน': DEPOSIT_LABEL[b.deposit_status || 'pending'] || '',
-      'หักเงินประกัน': b.deposit_deducted || 0,
-      'สถานะ': BOOKING_STATUS_TH(b.status),
-    }));
-  }
-  if (table === 'customers') {
-    const count = new Map();
-    (t.bookings || []).forEach((b) => count.set(b.customer_id, (count.get(b.customer_id) || 0) + 1));
-    return (t.customers || []).map((c) => ({ 'ชื่อ': c.fullname, 'เบอร์โทร': c.phone, 'อีเมล': c.email || '', 'จำนวนครั้งที่เช่า': count.get(c.id) || 0 }));
-  }
-  if (table === 'equipments') {
-    return (t.equipments || []).map((e) => ({
-      'รหัส': e.code, 'ชื่อ': e.name, 'ยี่ห้อ': e.brand || '', 'รุ่น': e.model || '', 'หมวด': categoryOf(e.category).label,
-      'Serial': e.serial_number || '', 'ค่าเช่า/วัน': e.rental_rate_per_day, 'สถานะ': BOOKING_STATUS_TH(e.status),
-    }));
-  }
-  return (t.transactions || []).map((r) => ({
-    'วันที่': fmtDateTime(r.transaction_date), 'ประเภท': r.type === 'income' ? 'รายรับ' : 'รายจ่าย',
-    'หมวด': r.category || '', 'จำนวนเงิน': r.amount, 'รายละเอียด': r.description || '',
-  }));
-}
-
-async function backupCsvFlow(table) {
-  const data = await fetchBackup();
-  if (!data) return;
-  const rows = buildCsvRows(table, data);
-  const ok = downloadCsv(`${SHOP.name.replace(/\s+/g, '-')}-${table}-${toDateOnly(new Date())}.csv`, rows);
-  toast(ok ? 'success' : 'info', ok ? `ส่งออก ${rows.length} รายการแล้ว (เปิดด้วย Excel / Google Sheets)` : 'ยังไม่มีข้อมูลให้ส่งออก');
-}
-
-async function backupJsonFlow() {
-  const data = await fetchBackup();
-  if (!data) return;
-  // แปลงตัวอักษรไทยเป็น \uXXXX — เปิดในโปรแกรมไหนบนมือถือก็ไม่เพี้ยน
-  const text = JSON.stringify(data, null, 2).replace(/[\u0080-￿]/g, (ch) => '\\u' + ch.charCodeAt(0).toString(16).padStart(4, '0'));
-  const blob = new Blob([text], { type: 'application/json;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${SHOP.name.replace(/\s+/g, '-')}-backup-${toDateOnly(new Date())}.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 10000);
-  const c = data.counts || {};
-  toast('success', `สำรองแล้ว: การจอง ${c.bookings ?? 0} · ลูกค้า ${c.customers ?? 0} · อุปกรณ์ ${c.equipments ?? 0}`);
-}
-
-async function backupPdfFlow() {
-  const data = await fetchBackup();
-  if (!data) return;
-  const { t, customers, itemsByBooking } = backupMaps(data);
-  const x = (v) => esc(v ?? '');
-  const income = (t.transactions || []).filter((r) => r.type === 'income').reduce((a, r) => a + Number(r.amount || 0), 0);
-  const expense = (t.transactions || []).filter((r) => r.type === 'expense').reduce((a, r) => a + Number(r.amount || 0), 0);
-  const held = (t.bookings || []).filter((b) => b.deposit_status === 'held').reduce((a, b) => a + Number(b.deposit || 0), 0);
-  const kpi = (k, v) => '<div>' + k + '<b>' + v + '</b></div>';
-
-  const bookingRows = [...(t.bookings || [])].sort((a, b) => String(b.start_date).localeCompare(String(a.start_date))).map((b) =>
-    '<tr><td>' + x(b.booking_no) + '<small>' + x(BOOKING_STATUS_TH(b.status)) + '</small></td>'
-    + '<td>' + x(customers.get(b.customer_id)?.fullname) + '<small>' + x((itemsByBooking.get(b.id) || []).join(' / ')) + '</small></td>'
-    + '<td>' + x(fmtDateTime(b.start_date)) + '<small>ถึง ' + x(fmtDateTime(b.end_date)) + '</small></td>'
-    + '<td class="r">' + x(baht(b.net_total)) + '<small>ประกัน ' + x(baht(b.deposit)) + '</small></td></tr>').join('');
-  const customerRows = (t.customers || []).map((c) => '<tr><td>' + x(c.fullname) + '</td><td>' + x(c.phone) + '</td><td>' + x(c.email) + '</td></tr>').join('');
-  const equipmentRows = (t.equipments || []).map((e) => '<tr><td>' + x(e.name) + '<small>' + x(e.code) + '</small></td><td>' + x(BOOKING_STATUS_TH(e.status)) + '</td><td class="r">' + x(baht(e.rental_rate_per_day)) + '/วัน</td></tr>').join('');
-  const txRows = [...(t.transactions || [])].sort((a, b) => String(b.transaction_date).localeCompare(String(a.transaction_date))).map((r) =>
-    '<tr><td>' + x(fmtDateTime(r.transaction_date)) + '</td><td>' + x(r.category) + '<small>' + x(r.description) + '</small></td><td class="r">' + (r.type === 'income' ? '+' : '−') + x(baht(r.amount)) + '</td></tr>').join('');
-
-  const body = '<div class="top"><div><h1>' + x(SHOP.name) + '</h1><div>รายงานสรุปข้อมูลร้าน</div></div><div class="no">ออกเมื่อ<b>' + x(fmtDateTime(new Date())) + '</b></div></div>'
-    + '<div class="kpi">' + kpi('รายรับสะสม', x(baht(income))) + kpi('รายจ่ายสะสม', x(baht(expense))) + kpi('กำไรสุทธิ', x(baht(income - expense))) + kpi('เงินประกันที่ถือไว้', x(baht(held))) + '</div>'
-    + '<h2>รายการจอง (' + (t.bookings || []).length + ')</h2><div class="tw"><table><thead><tr><th>เลขที่</th><th>ผู้เช่า / อุปกรณ์</th><th>ช่วงเวลา</th><th class="r">ยอด</th></tr></thead><tbody>' + bookingRows + '</tbody></table></div>'
-    + '<h2>รายรับ–รายจ่าย (' + (t.transactions || []).length + ')</h2><div class="tw"><table><thead><tr><th>วันที่</th><th>รายการ</th><th class="r">จำนวน</th></tr></thead><tbody>' + txRows + '</tbody></table></div>'
-    + '<h2>ลูกค้า (' + (t.customers || []).length + ')</h2><div class="tw"><table><thead><tr><th>ชื่อ</th><th>เบอร์โทร</th><th>อีเมล</th></tr></thead><tbody>' + customerRows + '</tbody></table></div>'
-    + '<h2>อุปกรณ์ (' + (t.equipments || []).length + ')</h2><div class="tw"><table><thead><tr><th>ชื่อ</th><th>สถานะ</th><th class="r">ค่าเช่า</th></tr></thead><tbody>' + equipmentRows + '</tbody></table></div>';
-  openPrintDoc({ title: `${SHOP.name} รายงาน ${toDateOnly(new Date())}`, size: 'A4', body });
-}
-
-function NotFound() {
-  const { navigate } = useApp();
-  return (
-    <div className="mx-auto flex min-h-[60vh] max-w-xl flex-col justify-center py-10">
-      <p className="font-num text-[clamp(5rem,18vw,9rem)] font-semibold leading-none text-accent/80">404</p>
-      <h1 className="mt-4 font-display text-2xl font-semibold">หน้านี้ไม่มีอยู่ หรือถูกย้ายไปแล้ว</h1>
-      <p className="mt-2 text-sm leading-relaxed text-mute">ลิงก์ที่เปิดอาจพิมพ์ผิด ลองกลับไปที่หน้าภาพรวม หรือเลือกเมนูด้านข้างได้เลย</p>
-      <div className="mt-6 flex flex-wrap gap-2">
-        <button onClick={() => navigate('dashboard')} className="btn btn-primary">ไปหน้าภาพรวม</button>
-        <button onClick={() => navigate('bookings')} className="btn">ดูรายการจอง</button>
-      </div>
-    </div>
-  );
-}
-
 const PAGES = {
-  notfound: NotFound,
   dashboard: Dashboard,
   bookings: Bookings,
   operations: Operations,
@@ -7534,206 +6947,40 @@ const PAGES = {
   settings: Settings,
 };
 
-/* กันหน้าจอดำทั้งหน้า: ถ้าหน้าใดพัง จะแสดงข้อความ error แทน และกดลองใหม่ได้ */
-class PageBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { error: null };
-  }
-
-  static getDerivedStateFromError(error) {
-    return { error };
-  }
-
-  componentDidCatch(error) {
-    console.error('Page crashed:', error);
-  }
-
-  render() {
-    if (!this.state.error) return this.props.children;
-    return (
-      <div className="card card-pad mx-auto mt-10 max-w-xl text-center">
-        <h2 className="font-serif text-lg font-semibold">หน้านี้แสดงผลไม่สำเร็จ</h2>
-        <p className="mt-2 break-words text-sm text-mute">{String(this.state.error?.message || this.state.error)}</p>
-        <button className="btn btn-primary mt-5" onClick={() => this.setState({ error: null })}>ลองใหม่</button>
-      </div>
-    );
-  }
-}
-
-/* ═════ รหัสผ่าน: หน้าต่างเข้าสู่ระบบ + เปลี่ยนรหัสผ่าน ═════ */
-const LG_MARK = '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m14.31 8 5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16 3.95 6.06M14.31 16H2.83M16.62 12l-5.74 9.94"/></svg>';
-const LG_LOCK = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
-
-const lgField = (id, label, placeholder, autocomplete) => `
-  <label class="lg-label" for="${id}">${label}</label>
-  <div class="lg-field">${LG_LOCK}
-    <input id="${id}" type="password" placeholder="${placeholder}" autocomplete="${autocomplete}" autocapitalize="off" spellcheck="false" />
-    <button type="button" class="lg-eye" data-eye="${id}">แสดง</button>
-  </div>`;
-
-// ปุ่มแสดง/ซ่อนรหัสผ่าน + เตือน Caps Lock
-const bindPasswordFields = (root) => {
-  root.querySelectorAll('[data-eye]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const input = root.querySelector(`#${btn.dataset.eye}`);
-      const show = input.type === 'password';
-      input.type = show ? 'text' : 'password';
-      btn.textContent = show ? 'ซ่อน' : 'แสดง';
-      input.focus();
-    });
-  });
-  const caps = root.querySelector('.lg-caps');
-  root.querySelectorAll('input[type="password"], input[type="text"]').forEach((input) => {
-    input.addEventListener('keyup', (e) => {
-      if (caps && e.getModifierState) caps.hidden = !e.getModifierState('CapsLock');
-    });
-  });
-};
-
-const shakeField = (root, id) => {
-  const box = root.querySelector(`#${id}`)?.closest('.lg-field');
-  if (!box) return;
-  box.classList.remove('lg-shake');
-  void box.offsetWidth;
-  box.classList.add('lg-shake');
-};
-
-const passwordScore = (pw) => {
-  let score = 0;
-  if (pw.length >= 8) score += 1;
-  if (pw.length >= 12) score += 1;
-  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score += 1;
-  if (/\d/.test(pw) && /[^A-Za-z0-9]/.test(pw)) score += 1;
-  return Math.min(4, score);
-};
-
-const lgPopupClasses = {
-  popup: 'sw-popup sw-in auth-login-popup lg-popup',
-  htmlContainer: 'sw-html lg-html',
-  actions: 'sw-actions',
-  confirmButton: 'btn btn-primary',
-  cancelButton: 'btn btn-ghost',
-};
-
-async function changePasswordFlow({ force = false, current = '' } = {}) {
-  const result = await Swal.fire({
-    title: '',
-    html: `
-      <div class="lg-mark">${LG_MARK}</div>
-      <p class="lg-eyebrow">SECURITY</p>
-      <h2 class="lg-title">${force ? 'ตั้งรหัสผ่านของคุณเอง' : 'เปลี่ยนรหัสผ่าน'}</h2>
-      <p class="lg-sub">${force
-        ? 'ตอนนี้ยังใช้รหัสชั่วคราวอยู่ กรุณาตั้งรหัสผ่านใหม่ที่มีแต่เจ้าของร้านรู้'
-        : 'ใช้รหัสที่คาดเดายาก ยาวอย่างน้อย 8 ตัวอักษร'}</p>
-      ${current ? '' : lgField('pw-cur', 'รหัสผ่านปัจจุบัน', 'รหัสผ่านปัจจุบัน', 'current-password')}
-      ${lgField('pw-new', 'รหัสผ่านใหม่', 'อย่างน้อย 8 ตัวอักษร', 'new-password')}
-      <div class="lg-meter" data-s="0"><i></i><i></i><i></i><i></i></div>
-      <p class="lg-meter-t" id="pw-meter-t">ผสมตัวพิมพ์เล็ก-ใหญ่ ตัวเลข และสัญลักษณ์ให้รหัสแข็งแรงขึ้น</p>
-      ${lgField('pw-new2', 'ยืนยันรหัสผ่านใหม่', 'พิมพ์รหัสใหม่อีกครั้ง', 'new-password')}
-      <p class="lg-caps" hidden>⚠ Caps Lock เปิดอยู่</p>`,
-    customClass: lgPopupClasses,
-    showClass: { popup: 'sw-in' },
-    hideClass: { popup: 'sw-out' },
-    showCancelButton: true,
-    confirmButtonText: force ? 'ตั้งรหัสผ่านและเข้าใช้งาน' : 'บันทึกรหัสผ่านใหม่',
-    cancelButtonText: force ? 'ข้ามไปก่อน (จะถามอีกครั้งตอนเข้าครั้งหน้า)' : 'ยกเลิก',
-    focusConfirm: false,
-    showLoaderOnConfirm: true,
-    allowOutsideClick: () => !Swal.isLoading() && !force,
-    didOpen: (popup) => {
-      bindPasswordFields(popup);
-      const next = popup.querySelector('#pw-new');
-      const meter = popup.querySelector('.lg-meter');
-      const text = popup.querySelector('#pw-meter-t');
-      const labels = ['', 'อ่อน', 'พอใช้', 'ดี', 'แข็งแรง'];
-      next.addEventListener('input', () => {
-        const s = next.value ? passwordScore(next.value) : 0;
-        meter.dataset.s = String(s);
-        text.textContent = s ? `ความแข็งแรง: ${labels[s]}` : 'ผสมตัวพิมพ์เล็ก-ใหญ่ ตัวเลข และสัญลักษณ์ให้รหัสแข็งแรงขึ้น';
-      });
-      popup.querySelectorAll('input').forEach((input) => input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); Swal.clickConfirm(); }
-      }));
-      (popup.querySelector('#pw-cur') || next).focus();
-    },
-    preConfirm: async () => {
-      const popup = Swal.getPopup();
-      const cur = current || popup.querySelector('#pw-cur')?.value || '';
-      const next = popup.querySelector('#pw-new').value;
-      const again = popup.querySelector('#pw-new2').value;
-      const fail = (id, msg) => { shakeField(popup, id); Swal.showValidationMessage(msg); return false; };
-      if (!cur) return fail('pw-cur', 'กรุณากรอกรหัสผ่านปัจจุบัน');
-      if (next.length < 8) return fail('pw-new', 'รหัสผ่านใหม่ต้องยาวอย่างน้อย 8 ตัวอักษร');
-      if (next === cur) return fail('pw-new', 'รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสเดิม');
-      if (next !== again) return fail('pw-new2', 'รหัสผ่านใหม่และช่องยืนยันไม่ตรงกัน');
-      try {
-        await api.post('/auth/change-password', { current: cur, next }, { timeout: 15000 });
-        return true;
-      } catch (error) {
-        return fail(current ? 'pw-new' : 'pw-cur', errMsg(error, 'เปลี่ยนรหัสผ่านไม่สำเร็จ'));
-      }
-    },
-  });
-  if (result.isConfirmed) toast('success', 'ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว');
-  return result.isConfirmed;
-}
-
 function Root() {
   const { entered, enter, page, bookingModal, equipmentModal, detailId } = useApp();
   const [iris, setIris] = useState({ state: '', x: '50%', y: '50%' });
 
   // เอฟเฟกต์ชัตเตอร์: วงกลมสีม่วงขยายเต็มจอ → เข้าระบบ → หดเปิดออก
   const handleEnter = useCallback(async (x, y) => {
-    let mustChange = false;
-    let typed = '';
     const result = await Swal.fire({
-      title: '',
-      html: `
-        <div class="lg-mark">${LG_MARK}</div>
-        <p class="lg-eyebrow">OWNER ACCESS</p>
-        <h2 class="lg-title">เข้าสู่ระบบเจ้าของร้าน</h2>
-        <p class="lg-sub">กรอกรหัสผ่านเพื่อเข้าถึงข้อมูลการจอง อุปกรณ์ และรายรับ–รายจ่ายอย่างปลอดภัย</p>
-        ${lgField('lg-pass', 'รหัสผ่าน', 'กรอกรหัสผ่านเจ้าของร้าน', 'current-password')}
-        <p class="lg-caps" hidden>⚠ Caps Lock เปิดอยู่</p>
-        <p class="lg-hint">ลืมรหัสผ่าน? ติดต่อผู้ดูแลระบบที่ส่งมอบเว็บให้คุณ</p>`,
-      customClass: lgPopupClasses,
+      title: 'เข้าสู่ระบบเจ้าของร้าน',
+      html: '<div class="auth-login-brand"><span class="auth-login-brand-mark">L</span> LENSDESK · OWNER ACCESS</div><div>กรอกรหัสผ่านเจ้าของร้านเพื่อเข้าถึงข้อมูลการจองและอุปกรณ์อย่างปลอดภัย</div>',
+      customClass: { popup: 'sw-popup sw-in auth-login-popup', title: 'sw-title', htmlContainer: 'sw-html', actions: 'sw-actions', confirmButton: 'btn btn-primary', cancelButton: 'btn btn-ghost', input: 'sw-input' },
       showClass: { popup: 'sw-in' },
       hideClass: { popup: 'sw-out' },
+      input: 'password',
+      inputPlaceholder: 'รหัสผ่านเจ้าของระบบ',
+      inputAttributes: { autocomplete: 'current-password', autocapitalize: 'off' },
       showCancelButton: true,
       confirmButtonText: 'เข้าสู่ระบบ',
       cancelButtonText: 'ยกเลิก',
-      focusConfirm: false,
+      confirmButtonColor: '#7041c5',
       showLoaderOnConfirm: true,
       allowOutsideClick: () => !Swal.isLoading(),
-      didOpen: (popup) => {
-        bindPasswordFields(popup);
-        const input = popup.querySelector('#lg-pass');
-        input.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') { e.preventDefault(); Swal.clickConfirm(); }
-        });
-        input.focus();
-      },
-      preConfirm: async () => {
-        const popup = Swal.getPopup();
-        const password = popup.querySelector('#lg-pass').value;
-        if (!password) { shakeField(popup, 'lg-pass'); Swal.showValidationMessage('กรุณากรอกรหัสผ่าน'); return false; }
+      preConfirm: async (password) => {
+        if (!password) { Swal.showValidationMessage('กรุณากรอกรหัสผ่าน'); return false; }
         try {
-          const { data } = await axios.post(`${API_ORIGIN}/api/auth/login`, { password }, { timeout: 15000 });
+          const { data } = await axios.post(`${API_ORIGIN}/api/auth/login`, { password }, { timeout: 10000 });
           sessionStorage.setItem(AUTH_TOKEN_KEY, data.token);
-          mustChange = Boolean(data.mustChange);
-          typed = password;
           return true;
         } catch (error) {
-          shakeField(popup, 'lg-pass');
-          Swal.showValidationMessage(error?.response?.data?.error || 'เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อ');
+          Swal.showValidationMessage(error?.response?.data?.error || 'เข้าสู่ระบบไม่สำเร็จ ตรวจสอบ Backend และการตั้งค่า .env');
           return false;
         }
       },
     });
     if (!result.isConfirmed) return;
-    if (mustChange) await changePasswordFlow({ force: true, current: typed });
-    typed = '';
     setIris({ state: 'close', x: `${x}px`, y: `${y}px` });
     setTimeout(() => {
       enter();
@@ -7750,23 +6997,12 @@ function Root() {
 
   const Page = PAGES[page] || Dashboard;
 
-  const { settings: shopSettings } = useSettings();
-  useEffect(() => {
-    const name = shopSettings.shopName || SHOP.name;
-    document.title = page === 'notfound' ? `ไม่พบหน้า — ${name}` : `${name} — ระบบจัดการร้านเช่ากล้อง`;
-    let link = document.querySelector('link[rel="icon"]');
-    if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
-    link.href = SHOP.logo || 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#8452e0"/><circle cx="16" cy="16" r="8" fill="none" stroke="#fff" stroke-width="2"/><circle cx="16" cy="16" r="3" fill="#fff"/></svg>');
-  }, [shopSettings.shopName, page]);
-
   return (
     <>
       {entered ? (
         <>
           <Shell>
-            <PageBoundary key={page}>
-              <Page />
-            </PageBoundary>
+            <Page />
           </Shell>
           {bookingModal.open && <BookingForm />}
           {equipmentModal.open && <EquipmentForm />}
