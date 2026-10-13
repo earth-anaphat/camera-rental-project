@@ -1684,7 +1684,7 @@ function downloadCsv(filename, rows) {
   document.body.appendChild(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
   return true;
 }
 
@@ -2987,7 +2987,7 @@ function BarChart({ data, height = 176 }) {
     <div>
       <div className="flex items-end gap-2 sm:gap-4" style={{ height }}>
         {data.map((d, i) => (
-          <div key={d.label} className="group flex h-full flex-1 items-end justify-center gap-1">
+          <div key={d.label} className="group flex h-full min-w-0 flex-1 items-end justify-center gap-1">
             {[
               { v: d.income, cls: 'bg-accent', name: 'รายรับ' },
               { v: d.expense, cls: 'bg-ink/25', name: 'รายจ่าย' },
@@ -3008,7 +3008,7 @@ function BarChart({ data, height = 176 }) {
       </div>
       <div className="mt-2 flex gap-2 sm:gap-4">
         {data.map((d) => (
-          <span key={d.label} className="flex-1 text-center text-[11px] text-mute">
+          <span key={d.label} className="min-w-0 flex-1 truncate text-center text-[10px] text-mute sm:text-[11px]">
             {d.label}
           </span>
         ))}
@@ -4155,46 +4155,73 @@ const parseList = (value) => {
   }
 };
 
-/* ใบยืนยันการจอง — พิมพ์ผ่าน iframe ซ่อน ไม่โดน popup blocker */
+/* เปิดเอกสารสำหรับพิมพ์ / บันทึกเป็น PDF ในแท็บใหม่
+   ทำงานได้ทั้งคอมพิวเตอร์ แท็บเล็ต iPad และมือถือ (กดปุ่มพิมพ์ในหน้านั้น แล้วเลือก "บันทึกเป็น PDF") */
+function openPrintDoc({ title, size = 'A5', body }) {
+  const sheetW = size === 'A4' ? '190mm' : '135mm';
+  const html = '<!doctype html><html lang="th"><head><meta charset="utf-8">'
+    + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<title>' + esc(title) + '</title>'
+    + '<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">'
+    + '<style>@page{size:' + size + ';margin:12mm}*{box-sizing:border-box}'
+    + 'body{margin:0;background:#eee9f7;color:#1d1530;font-family:Prompt,"Noto Sans Thai",Tahoma,sans-serif;font-size:13px;line-height:1.55;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    + '.bar{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 14px;background:#2a1a4d;color:#fff;font-size:12px}'
+    + '.bar button{font:inherit;font-weight:500;border:0;border-radius:10px;padding:9px 14px;background:#8452e0;color:#fff;cursor:pointer}.bar button.g{background:transparent;border:1px solid #ffffff55}'
+    + '.sheet{background:#fff;margin:14px auto;max-width:' + sheetW + ';padding:18px 16px;box-shadow:0 10px 30px -12px #2a1a4d66;overflow-wrap:anywhere}'
+    + 'h1{font-size:20px;margin:0}h2{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6d6385;margin:16px 0 4px}'
+    + '.top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;border-bottom:2px solid #1d1530;padding-bottom:8px;margin-bottom:12px}.no{font-size:11px;text-align:right}.no b{display:block;font-size:15px}'
+    + '.tw{overflow-x:auto}table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11px;color:#6d6385;border-bottom:1px solid #1d1530}td,th{padding:5px 6px 5px 0;vertical-align:top}td{border-bottom:1px dashed #cfc7e0}td small{display:block;color:#6d6385;font-size:10px}.r{text-align:right;white-space:nowrap}'
+    + 'thead{display:table-header-group}tr{break-inside:avoid}.ln{display:flex;justify-content:space-between;gap:12px;padding:2px 0}.tot{border-top:2px solid #1d1530;margin-top:6px;padding-top:6px;font-size:15px}'
+    + '.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.kpi div{border:1px solid #cfc7e0;border-radius:8px;padding:8px 10px}.kpi b{display:block;font-size:16px}'
+    + '.sig{display:flex;gap:24px;margin-top:34px}.sig div{flex:1;border-top:1px solid #1d1530;text-align:center;padding-top:4px;font-size:10px;color:#6d6385}.note{margin-top:12px;font-size:10px;color:#6d6385}'
+    + '@media print{.bar{display:none}body{background:#fff}.sheet{margin:0;max-width:none;padding:0;box-shadow:none}.tw{overflow:visible}}</style></head><body>'
+    + '<div class="bar"><span>มือถือ: กด “พิมพ์ / บันทึกเป็น PDF” แล้วเลือก “บันทึกเป็น PDF” หรือ “แชร์”</span>'
+    + '<span><button onclick="window.print()">พิมพ์ / บันทึกเป็น PDF</button> <button class="g" onclick="window.close()">ปิด</button></span></div>'
+    + '<div class="sheet">' + body + '</div></body></html>';
+
+  const url = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+  const win = window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 120000);
+  if (!win) {
+    // เบราว์เซอร์บล็อกหน้าต่างใหม่ — ให้ผู้ใช้กดลิงก์เอง (ลิงก์ที่กดเองจะไม่ถูกบล็อก)
+    fire({
+      icon: 'info',
+      title: 'เปิดเอกสารพร้อมพิมพ์',
+      html: '<a class="btn btn-primary" href="' + url + '" target="_blank" rel="noopener">เปิดเอกสาร</a>',
+      showConfirmButton: false,
+      showCloseButton: true,
+    });
+  }
+}
+
+/* ใบยืนยันการจอง */
 function printSlip(d) {
-  const esc = (v) => String(v ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const x = (v) => esc(v ?? '');
   const delivery = ({ meetup: 'นัดรับ', van: 'รถตู้', grab: 'แกร๊ป', post: 'ไปรษณีย์' })[d.delivery_method] || 'นัดรับ';
   const region = ({ local: 'สงขลา / เก้าเส้ง', south: 'ต่างจังหวัดภาคใต้', other: 'ต่างจังหวัดภาคอื่น ๆ' })[d.rental_region] || '-';
-  const rows = (d.items || []).map((i) => '<tr><td>' + esc(i.name) + '<small>' + esc(i.code) + '</small></td><td class="r">' + esc(baht(i.daily_rate)) + '/วัน</td></tr>').join('');
+  const rows = (d.items || []).map((i) => '<tr><td>' + x(i.name) + '<small>' + x(i.code) + '</small></td><td class="r">' + x(baht(i.daily_rate)) + '/วัน</td></tr>').join('');
   const line = (k, v, cls) => '<div class="ln ' + (cls || '') + '"><span>' + k + '</span><b>' + v + '</b></div>';
-  const contact = [SHOP.phone && ('โทร ' + esc(SHOP.phone)), SHOP.line && ('LINE ' + esc(SHOP.line))].filter(Boolean).join(' · ');
-  const html = '<!doctype html><html lang="th"><head><meta charset="utf-8"><title>' + esc(d.booking_no) + '</title>'
-    + '<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">'
-    + '<style>@page{size:A5;margin:12mm}*{box-sizing:border-box}body{font-family:Prompt,sans-serif;color:#1d1530;font-size:12px;line-height:1.55;margin:0}'
-    + 'h1{font-size:20px;margin:0}.top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #1d1530;padding-bottom:8px;margin-bottom:12px}'
-    + '.no{font-size:11px;text-align:right}.no b{display:block;font-size:15px}h2{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6d6385;margin:14px 0 4px}'
-    + 'table{width:100%;border-collapse:collapse}td{padding:5px 0;border-bottom:1px dashed #cfc7e0;vertical-align:top}td small{display:block;color:#6d6385;font-size:10px}.r{text-align:right;white-space:nowrap}'
-    + '.ln{display:flex;justify-content:space-between;padding:2px 0}.tot{border-top:2px solid #1d1530;margin-top:6px;padding-top:6px;font-size:15px}'
-    + '.sig{display:flex;gap:24px;margin-top:34px}.sig div{flex:1;border-top:1px solid #1d1530;text-align:center;padding-top:4px;font-size:10px;color:#6d6385}'
-    + '.note{margin-top:12px;font-size:10px;color:#6d6385}</style></head><body>'
-    + '<div class="top"><div><h1>' + esc(SHOP.name) + '</h1><div>ใบยืนยันการเช่ากล้อง' + (contact ? ' · ' + contact : '') + '</div></div>'
-    + '<div class="no">เลขที่<b>' + esc(d.booking_no) + '</b>' + esc(fmtDateTime(d.created_at)) + '</div></div>'
-    + '<h2>ผู้เช่า</h2><div>' + esc(d.customer_name) + ' · ' + esc(d.phone) + '</div>'
-    + '<h2>ช่วงเวลาเช่า</h2>' + line('รับกล้อง', esc(fmtDateTime(d.start_date))) + line('คืนกล้อง', esc(fmtDateTime(d.end_date)))
-    + line('รูปแบบ', d.rental_type === 'hourly' ? esc(d.rental_hours) + ' ชั่วโมง' : esc(d.total_days) + ' วัน')
-    + line('การรับกล้อง', esc(delivery) + ' · ' + esc(region))
+  const contact = [SHOP.phone && ('โทร ' + x(SHOP.phone)), SHOP.line && ('LINE ' + x(SHOP.line))].filter(Boolean).join(' · ');
+  const ds = ({ pending: 'ยังไม่ได้รับ', held: 'รับแล้ว (ถือไว้)', returned: 'คืนแล้ว', partial: 'หักบางส่วน' })[d.deposit_status || 'pending'];
+  const body = '<div class="top"><div><h1>' + x(SHOP.name) + '</h1><div>ใบยืนยันการเช่ากล้อง' + (contact ? ' · ' + contact : '') + '</div></div>'
+    + '<div class="no">เลขที่<b>' + x(d.booking_no) + '</b>' + x(fmtDateTime(d.created_at)) + '</div></div>'
+    + '<h2>ผู้เช่า</h2><div>' + x(d.customer_name) + ' · ' + x(d.phone) + '</div>'
+    + '<h2>ช่วงเวลาเช่า</h2>' + line('รับกล้อง', x(fmtDateTime(d.start_date))) + line('คืนกล้อง', x(fmtDateTime(d.end_date)))
+    + line('รูปแบบ', d.rental_type === 'hourly' ? x(d.rental_hours) + ' ชั่วโมง' : x(d.total_days) + ' วัน')
+    + line('การรับกล้อง', x(delivery) + ' · ' + x(region))
     + '<h2>อุปกรณ์</h2><table>' + rows + '</table>'
-    + '<h2>ค่าใช้จ่าย</h2>' + line('ค่าเช่า', esc(baht(d.subtotal)))
-    + (Number(d.discount) > 0 ? line('ส่วนลด', '−' + esc(baht(d.discount))) : '')
-    + (Number(d.extra_charges) > 0 ? line('ค่าใช้จ่ายเพิ่มเติม', esc(baht(d.extra_charges))) : '')
-    + line('ยอดสุทธิ', esc(baht(d.net_total)), 'tot')
-    + line('เงินประกัน (ชำระวันรับกล้อง คืนให้วันคืนกล้อง)', esc(baht(d.deposit)))
-    + (d.notes ? '<h2>หมายเหตุ</h2><div>' + esc(d.notes) + '</div>' : '')
+    + '<h2>ค่าใช้จ่าย</h2>' + line('ค่าเช่า', x(baht(d.subtotal)))
+    + (Number(d.discount) > 0 ? line('ส่วนลด', '−' + x(baht(d.discount))) : '')
+    + (Number(d.extra_charges) > 0 ? line('ค่าใช้จ่ายเพิ่มเติม', x(baht(d.extra_charges))) : '')
+    + (Number(d.fine_amount) > 0 ? line('ค่าปรับ', x(baht(d.fine_amount))) : '')
+    + line('ยอดสุทธิ', x(baht(d.net_total)), 'tot')
+    + line('เงินประกัน (จ่ายวันรับกล้อง คืนวันคืนกล้อง)', x(baht(d.deposit)))
+    + line('สถานะเงินประกัน', x(ds))
+    + (Number(d.deposit_deducted) > 0 ? line('หักเงินประกัน', x(baht(d.deposit_deducted)) + (d.deposit_note ? ' (' + x(d.deposit_note) + ')' : '')) : '')
+    + (d.notes ? '<h2>หมายเหตุ</h2><div>' + x(d.notes) + '</div>' : '')
     + '<div class="sig"><div>ผู้เช่า</div><div>ผู้ให้เช่า</div></div>'
-    + '<p class="note">รับกล้องเวลาไหน คืนเวลาเดียวกันของวันครบกำหนด · จุดนัดรับปกติ ' + esc(SHOP.pickup) + '</p>'
-    + '</body></html>';
-  const f = document.createElement('iframe');
-  f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
-  document.body.appendChild(f);
-  const w = f.contentWindow;
-  w.document.open(); w.document.write(html); w.document.close();
-  const go = () => { try { w.focus(); w.print(); } finally { setTimeout(() => f.remove(), 2000); } };
-  setTimeout(go, 600);
+    + '<p class="note">รับกล้องเวลาไหน คืนเวลาเดียวกันของวันครบกำหนด · จุดนัดรับปกติ ' + x(SHOP.pickup) + '</p>';
+  openPrintDoc({ title: d.booking_no, size: 'A5', body });
 }
 
 function BookingDetail() {
@@ -7240,6 +7267,7 @@ function Thumb({ kind, side = 'left' }) {
 }
 
 function Settings() {
+  const [csvTable, setCsvTable] = useState('bookings');
   const { settings, update, reset } = useSettings();
   const { leave } = useApp();
   const sideRelevant = ['sidebar', 'rail'].includes(settings.navStyle);
@@ -7324,10 +7352,23 @@ function Settings() {
           </button>
         </Group>
 
-        <Group index={3} title="สำรองข้อมูล" caption="ดาวน์โหลดข้อมูลทั้งหมด (ลูกค้า อุปกรณ์ การจอง รายรับรายจ่าย) เก็บไว้เป็นไฟล์ แนะนำให้ทำสัปดาห์ละครั้ง ไฟล์นี้ไม่มีรหัสผ่าน">
-          <button type="button" className="btn btn-primary" onClick={backupFlow}>
-            <Download size={16} /> ดาวน์โหลดไฟล์สำรอง
-          </button>
+        <Group index={3} title="สำรองข้อมูลและส่งออก" caption="เลือกรูปแบบที่ต้องการ ไฟล์ไม่มีรหัสผ่านร้าน แนะนำให้สำรองไฟล์เต็ม (JSON) สัปดาห์ละครั้ง">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <button type="button" className="btn btn-primary" onClick={backupPdfFlow}>
+              <Printer size={16} /> รายงาน PDF
+            </button>
+            <div className="flex gap-2 sm:col-span-1">
+              <select className="input min-w-0 flex-1" value={csvTable} onChange={(e) => setCsvTable(e.target.value)} aria-label="เลือกข้อมูลที่จะส่งออก">
+                {CSV_TABLES.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+              </select>
+              <button type="button" className="btn shrink-0" onClick={() => backupCsvFlow(csvTable)}>
+                <Download size={16} /> Excel
+              </button>
+            </div>
+            <button type="button" className="btn" onClick={backupJsonFlow}>
+              <Download size={16} /> ไฟล์สำรองเต็ม (JSON)
+            </button>
+          </div>
         </Group>
       </div>
     </>
@@ -7335,25 +7376,133 @@ function Settings() {
 }
 
 /* ═════ App.jsx ═════ */
-async function backupFlow() {
+/* ───────── สำรองข้อมูล / ส่งออก ───────── */
+async function fetchBackup() {
+  showLoading('กำลังรวบรวมข้อมูล...');
   try {
-    showLoading('กำลังรวบรวมข้อมูล...');
     const { data } = await api.get('/backup');
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${SHOP.name.replace(/\s+/g, '-')}-backup-${toDateOnly(new Date())}.json`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
     Swal.close();
-    const c = data.counts || {};
-    toast('success', `สำรองแล้ว: การจอง ${c.bookings ?? 0} · ลูกค้า ${c.customers ?? 0} · อุปกรณ์ ${c.equipments ?? 0}`);
+    return data;
   } catch (error) {
-    await showError(errMsg(error, 'สำรองข้อมูลไม่สำเร็จ'));
+    await showError(errMsg(error, 'ดึงข้อมูลไม่สำเร็จ'));
+    return null;
   }
+}
+
+const BOOKING_STATUS_TH = (st) => STATUS_META[st]?.label || st || '';
+
+function backupMaps(data) {
+  const t = data.tables || {};
+  const customers = new Map((t.customers || []).map((c) => [c.id, c]));
+  const equipments = new Map((t.equipments || []).map((e) => [e.id, e]));
+  const itemsByBooking = new Map();
+  (t.booking_items || []).forEach((it) => {
+    const list = itemsByBooking.get(it.booking_id) || [];
+    list.push(equipments.get(it.equipment_id)?.name || `#${it.equipment_id}`);
+    itemsByBooking.set(it.booking_id, list);
+  });
+  return { t, customers, equipments, itemsByBooking };
+}
+
+const CSV_TABLES = [
+  ['bookings', 'รายการจอง'],
+  ['customers', 'ลูกค้า'],
+  ['equipments', 'อุปกรณ์'],
+  ['transactions', 'รายรับ–รายจ่าย'],
+];
+
+function buildCsvRows(table, data) {
+  const { t, customers, itemsByBooking } = backupMaps(data);
+  if (table === 'bookings') {
+    return (t.bookings || []).map((b) => ({
+      'เลขที่จอง': b.booking_no,
+      'ผู้เช่า': customers.get(b.customer_id)?.fullname || '',
+      'เบอร์โทร': customers.get(b.customer_id)?.phone || '',
+      'อุปกรณ์': (itemsByBooking.get(b.id) || []).join(' / '),
+      'รับกล้อง': fmtDateTime(b.start_date),
+      'คืนกล้อง': fmtDateTime(b.end_date),
+      'รูปแบบ': b.rental_type === 'hourly' ? `${b.rental_hours || ''} ชม.` : `${b.total_days || ''} วัน`,
+      'ค่าเช่า': b.subtotal,
+      'ส่วนลด': b.discount,
+      'ค่าใช้จ่ายเพิ่ม': b.extra_charges,
+      'ค่าปรับ': b.fine_amount,
+      'ยอดสุทธิ': b.net_total,
+      'เงินประกัน': b.deposit,
+      'สถานะเงินประกัน': DEPOSIT_LABEL[b.deposit_status || 'pending'] || '',
+      'หักเงินประกัน': b.deposit_deducted || 0,
+      'สถานะ': BOOKING_STATUS_TH(b.status),
+    }));
+  }
+  if (table === 'customers') {
+    const count = new Map();
+    (t.bookings || []).forEach((b) => count.set(b.customer_id, (count.get(b.customer_id) || 0) + 1));
+    return (t.customers || []).map((c) => ({ 'ชื่อ': c.fullname, 'เบอร์โทร': c.phone, 'อีเมล': c.email || '', 'จำนวนครั้งที่เช่า': count.get(c.id) || 0 }));
+  }
+  if (table === 'equipments') {
+    return (t.equipments || []).map((e) => ({
+      'รหัส': e.code, 'ชื่อ': e.name, 'ยี่ห้อ': e.brand || '', 'รุ่น': e.model || '', 'หมวด': categoryOf(e.category).label,
+      'Serial': e.serial_number || '', 'ค่าเช่า/วัน': e.rental_rate_per_day, 'สถานะ': BOOKING_STATUS_TH(e.status),
+    }));
+  }
+  return (t.transactions || []).map((r) => ({
+    'วันที่': fmtDateTime(r.transaction_date), 'ประเภท': r.type === 'income' ? 'รายรับ' : 'รายจ่าย',
+    'หมวด': r.category || '', 'จำนวนเงิน': r.amount, 'รายละเอียด': r.description || '',
+  }));
+}
+
+async function backupCsvFlow(table) {
+  const data = await fetchBackup();
+  if (!data) return;
+  const rows = buildCsvRows(table, data);
+  const ok = downloadCsv(`${SHOP.name.replace(/\s+/g, '-')}-${table}-${toDateOnly(new Date())}.csv`, rows);
+  toast(ok ? 'success' : 'info', ok ? `ส่งออก ${rows.length} รายการแล้ว (เปิดด้วย Excel / Google Sheets)` : 'ยังไม่มีข้อมูลให้ส่งออก');
+}
+
+async function backupJsonFlow() {
+  const data = await fetchBackup();
+  if (!data) return;
+  // แปลงตัวอักษรไทยเป็น \uXXXX — เปิดในโปรแกรมไหนบนมือถือก็ไม่เพี้ยน
+  const text = JSON.stringify(data, null, 2).replace(/[\u0080-￿]/g, (ch) => '\\u' + ch.charCodeAt(0).toString(16).padStart(4, '0'));
+  const blob = new Blob([text], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${SHOP.name.replace(/\s+/g, '-')}-backup-${toDateOnly(new Date())}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  const c = data.counts || {};
+  toast('success', `สำรองแล้ว: การจอง ${c.bookings ?? 0} · ลูกค้า ${c.customers ?? 0} · อุปกรณ์ ${c.equipments ?? 0}`);
+}
+
+async function backupPdfFlow() {
+  const data = await fetchBackup();
+  if (!data) return;
+  const { t, customers, itemsByBooking } = backupMaps(data);
+  const x = (v) => esc(v ?? '');
+  const income = (t.transactions || []).filter((r) => r.type === 'income').reduce((a, r) => a + Number(r.amount || 0), 0);
+  const expense = (t.transactions || []).filter((r) => r.type === 'expense').reduce((a, r) => a + Number(r.amount || 0), 0);
+  const held = (t.bookings || []).filter((b) => b.deposit_status === 'held').reduce((a, b) => a + Number(b.deposit || 0), 0);
+  const kpi = (k, v) => '<div>' + k + '<b>' + v + '</b></div>';
+
+  const bookingRows = [...(t.bookings || [])].sort((a, b) => String(b.start_date).localeCompare(String(a.start_date))).map((b) =>
+    '<tr><td>' + x(b.booking_no) + '<small>' + x(BOOKING_STATUS_TH(b.status)) + '</small></td>'
+    + '<td>' + x(customers.get(b.customer_id)?.fullname) + '<small>' + x((itemsByBooking.get(b.id) || []).join(' / ')) + '</small></td>'
+    + '<td>' + x(fmtDateTime(b.start_date)) + '<small>ถึง ' + x(fmtDateTime(b.end_date)) + '</small></td>'
+    + '<td class="r">' + x(baht(b.net_total)) + '<small>ประกัน ' + x(baht(b.deposit)) + '</small></td></tr>').join('');
+  const customerRows = (t.customers || []).map((c) => '<tr><td>' + x(c.fullname) + '</td><td>' + x(c.phone) + '</td><td>' + x(c.email) + '</td></tr>').join('');
+  const equipmentRows = (t.equipments || []).map((e) => '<tr><td>' + x(e.name) + '<small>' + x(e.code) + '</small></td><td>' + x(BOOKING_STATUS_TH(e.status)) + '</td><td class="r">' + x(baht(e.rental_rate_per_day)) + '/วัน</td></tr>').join('');
+  const txRows = [...(t.transactions || [])].sort((a, b) => String(b.transaction_date).localeCompare(String(a.transaction_date))).map((r) =>
+    '<tr><td>' + x(fmtDateTime(r.transaction_date)) + '</td><td>' + x(r.category) + '<small>' + x(r.description) + '</small></td><td class="r">' + (r.type === 'income' ? '+' : '−') + x(baht(r.amount)) + '</td></tr>').join('');
+
+  const body = '<div class="top"><div><h1>' + x(SHOP.name) + '</h1><div>รายงานสรุปข้อมูลร้าน</div></div><div class="no">ออกเมื่อ<b>' + x(fmtDateTime(new Date())) + '</b></div></div>'
+    + '<div class="kpi">' + kpi('รายรับสะสม', x(baht(income))) + kpi('รายจ่ายสะสม', x(baht(expense))) + kpi('กำไรสุทธิ', x(baht(income - expense))) + kpi('เงินประกันที่ถือไว้', x(baht(held))) + '</div>'
+    + '<h2>รายการจอง (' + (t.bookings || []).length + ')</h2><div class="tw"><table><thead><tr><th>เลขที่</th><th>ผู้เช่า / อุปกรณ์</th><th>ช่วงเวลา</th><th class="r">ยอด</th></tr></thead><tbody>' + bookingRows + '</tbody></table></div>'
+    + '<h2>รายรับ–รายจ่าย (' + (t.transactions || []).length + ')</h2><div class="tw"><table><thead><tr><th>วันที่</th><th>รายการ</th><th class="r">จำนวน</th></tr></thead><tbody>' + txRows + '</tbody></table></div>'
+    + '<h2>ลูกค้า (' + (t.customers || []).length + ')</h2><div class="tw"><table><thead><tr><th>ชื่อ</th><th>เบอร์โทร</th><th>อีเมล</th></tr></thead><tbody>' + customerRows + '</tbody></table></div>'
+    + '<h2>อุปกรณ์ (' + (t.equipments || []).length + ')</h2><div class="tw"><table><thead><tr><th>ชื่อ</th><th>สถานะ</th><th class="r">ค่าเช่า</th></tr></thead><tbody>' + equipmentRows + '</tbody></table></div>';
+  openPrintDoc({ title: `${SHOP.name} รายงาน ${toDateOnly(new Date())}`, size: 'A4', body });
 }
 
 function NotFound() {
