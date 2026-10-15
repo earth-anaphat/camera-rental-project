@@ -345,19 +345,36 @@ const saveInspection = async (bookingId, type, body = {}) => {
 // ==========================================
 // 1. DASHBOARD API
 // ==========================================
+// เวลาเริ่มต้นเดือน (ตามเวลาไทย) เป็น ISO — offset 0 = เดือนนี้, 1 = เดือนหน้า
+const monthStartIso = (offset = 0) => {
+  const bkk = new Date(Date.now() + 7 * 3600000);
+  return new Date(Date.UTC(bkk.getUTCFullYear(), bkk.getUTCMonth() + offset, 1) - 7 * 3600000).toISOString();
+};
+
 app.get('/api/dashboard', asyncHandler(async (req, res) => {
-  const { data: equipments, error: eqErr } = await supabase.from('equipments').select('status');
+  // ยิงทุกคำถามพร้อมกัน (เดิมรอทีละอัน ช้าเพราะแต่ละรอบไป–กลับระหว่าง Vercel กับ Supabase)
+  const [
+    { data: equipments, error: eqErr },
+    { data: bookingsData, error: bkErr },
+    { data: txData, error: txErr },
+    { data: depData, error: depErr },
+  ] = await Promise.all([
+    supabase.from('equipments').select('status'),
+    supabase
+      .from('bookings')
+      .select('*, customers!inner(fullname, phone), booking_items(equipments(name))')
+      .order('start_date', { ascending: true }),
+    // ดึงเฉพาะรายการของเดือนนี้ (ตามเวลาไทย) ไม่ต้องดึงทั้งตาราง — ข้อมูลเยอะขึ้นก็ไม่ช้าลง
+    supabase.from('transactions').select('type, amount, transaction_date')
+      .gte('transaction_date', monthStartIso(0)).lt('transaction_date', monthStartIso(1)),
+    supabase.from('bookings').select('deposit').in('status', ['pending', 'confirmed', 'picked_up']),
+  ]);
   if (eqErr) throw eqErr;
 
   const statusCounts = {};
   for (const row of equipments || []) {
     statusCounts[row.status] = (statusCounts[row.status] || 0) + 1;
   }
-
-  const { data: bookingsData, error: bkErr } = await supabase
-    .from('bookings')
-    .select('*, customers!inner(fullname, phone), booking_items(equipments(name))')
-    .order('start_date', { ascending: true });
 
   if (bkErr) throw bkErr;
 
@@ -371,8 +388,11 @@ app.get('/api/dashboard', asyncHandler(async (req, res) => {
   const nowIso = new Date().toISOString();
   const todayStr = nowIso.split('T')[0];
 
-  const todayBookings = formattedBookings.filter(b => 
-    String(b.start_date || '').startsWith(todayStr) || String(b.end_date || '').startsWith(todayStr)
+  // "วันนี้" ต้องนับตามเวลาไทย ไม่ใช่ UTC (ไม่งั้นรายการตี 0–7 โมงไปอยู่วันก่อน)
+  const bkkDay = (v) => (v ? new Date(new Date(v).getTime() + 7 * 3600000).toISOString().slice(0, 10) : '');
+  const todayBkk = bkkDay(nowIso);
+  const todayBookings = formattedBookings.filter(b =>
+    bkkDay(b.start_date) === todayBkk || bkkDay(b.end_date) === todayBkk
   );
 
   const overdueBookings = formattedBookings.filter(b => 
@@ -389,7 +409,6 @@ app.get('/api/dashboard', asyncHandler(async (req, res) => {
     b.start_date < next7DaysIso
   ).slice(0, 10);
 
-  const { data: txData, error: txErr } = await supabase.from('transactions').select('type, amount, transaction_date');
   if (txErr) throw txErr;
 
   const nowBkk = bkkParts(new Date());
@@ -406,11 +425,6 @@ app.get('/api/dashboard', asyncHandler(async (req, res) => {
       if (t.type === 'expense') monthExpense += Number(t.amount || 0);
     }
   }
-
-  const { data: depData, error: depErr } = await supabase
-    .from('bookings')
-    .select('deposit')
-    .in('status', ['pending', 'confirmed', 'picked_up']);
 
   if (depErr) throw depErr;
 
@@ -778,47 +792,52 @@ app.post('/api/bookings', rateLimit({ windowMs: 60_000, max: 20 }), asyncHandler
     return res.status(400).json({ error: 'ราคา ส่วนลด หรือเงินประกันไม่ถูกต้อง' });
   }
 
-  // Customer Management
-  const { data: existingCustomer } = await supabase.from('customers').select('id').eq('phone', phone).limit(1);
-  let customerId;
-  if (existingCustomer && existingCustomer.length) {
-    customerId = existingCustomer[0].id;
-    await supabase.from('customers').update({ fullname: customer_name }).eq('id', customerId);
-  } else {
+  // ลูกค้า + ตรวจกล้อง ทำพร้อมกัน (ไม่ต้องรอกันและกัน)
+  const resolveCustomer = async () => {
+    const { data: existingCustomer } = await supabase.from('customers').select('id').eq('phone', phone).limit(1);
+    if (existingCustomer && existingCustomer.length) {
+      const id = existingCustomer[0].id;
+      await supabase.from('customers').update({ fullname: customer_name }).eq('id', id);
+      return id;
+    }
     const { data: newCust, error: custErr } = await supabase.from('customers').insert([{ fullname: customer_name, phone }]).select();
     if (custErr) throw custErr;
-    customerId = newCust[0].id;
-  }
+    return newCust[0].id;
+  };
 
-  // Check Equipment & Conflict Check
-  let calculatedSubtotal = 0;
-  const itemRates = [];
-  for (const eqId of equipmentIds) {
+  const checkEquipment = async (eqId) => {
     if (!Number.isInteger(eqId) || eqId <= 0) throw new Error('รหัสกล้องไม่ถูกต้อง');
 
-    const { data: eqData } = await supabase.from('equipments').select('*').eq('id', eqId).single();
+    const [{ data: eqData }, { data: conflicts }] = await Promise.all([
+      supabase.from('equipments').select('*').eq('id', eqId).single(),
+      supabase
+        .from('booking_items')
+        .select('bookings!inner(id, booking_no, start_date, end_date, status)')
+        .eq('equipment_id', eqId)
+        .in('bookings.status', ['pending', 'confirmed', 'picked_up'])
+        .lt('bookings.start_date', endIso)
+        .gt('bookings.end_date', startIso)
+        .limit(1),
+    ]);
     if (!eqData) throw new Error(`ไม่พบกล้องรหัส ${eqId}`);
     if (eqData.status === 'maintenance') throw new Error(`กล้อง ${eqData.name} อยู่ระหว่างซ่อมบำรุง`);
-
-    // Conflict Check
-    const { data: conflicts } = await supabase
-      .from('booking_items')
-      .select('bookings!inner(id, booking_no, start_date, end_date, status)')
-      .eq('equipment_id', eqId)
-      .in('bookings.status', ['pending', 'confirmed', 'picked_up'])
-      .lt('bookings.start_date', endIso)
-      .gt('bookings.end_date', startIso)
-      .limit(1);
 
     if (conflicts && conflicts.length) {
       const cBk = conflicts[0].bookings;
       throw new Error(`กล้อง ${eqData.name} ถูกจองซ้ำกับรายการ ${cBk.booking_no} (${cBk.start_date} ถึง ${cBk.end_date})`);
     }
+    return { equipmentId: eqId, rate: Number(eqData.rental_rate_per_day || 0) };
+  };
 
-    const rate = Number(eqData.rental_rate_per_day || 0);
-    itemRates.push({ equipmentId: eqId, rate });
-    calculatedSubtotal += rental_type === 'hourly' ? (rate / 24) * hours : rate * totalDays;
-  }
+  const [customerId, itemRates] = await Promise.all([
+    resolveCustomer(),
+    Promise.all(equipmentIds.map(checkEquipment)),
+  ]);
+
+  const calculatedSubtotal = itemRates.reduce(
+    (sum, it) => sum + (rental_type === 'hourly' ? (it.rate / 24) * hours : it.rate * totalDays),
+    0
+  );
 
   const subtotal = suppliedPrice === null ? calculatedSubtotal : suppliedPrice;
   if (discountAmount > subtotal) throw new Error('ส่วนลดต้องไม่เกินราคาเช่าที่ตกลง');
@@ -895,46 +914,54 @@ app.patch('/api/bookings/:id/cancel', asyncHandler(async (req, res) => {
 // 4. CHECKOUT & RETURN
 // ==========================================
 app.post('/api/bookings/:id/checkout', asyncHandler(async (req, res) => {
-  const { data: booking } = await supabase.from('bookings').select('*').eq('id', req.params.id).single();
+  // ลดจำนวนรอบไป–กลับฐานข้อมูล: อ่านพร้อมกัน → ตรวจ → เขียนพร้อมกัน
+  const [{ data: booking }, equipmentIds] = await Promise.all([
+    supabase.from('bookings').select('*').eq('id', req.params.id).single(),
+    getBookingEquipmentIds(req.params.id),
+  ]);
   if (!booking) return res.status(404).json({ error: 'ไม่พบรายการจองนี้' });
 
   if (!['pending', 'confirmed'].includes(booking.status)) {
     return res.status(400).json({ error: 'รายการนี้ไม่สามารถรับอุปกรณ์ออกได้' });
   }
-
-  const equipmentIds = await getBookingEquipmentIds(booking.id);
   if (!equipmentIds.length) return res.status(400).json({ error: 'รายการจองนี้ไม่มีอุปกรณ์' });
 
-  for (const eqId of equipmentIds) {
-    const { data: eq } = await supabase.from('equipments').select('*').eq('id', eqId).single();
-    if (!eq) throw new Error(`ไม่พบอุปกรณ์รหัส ${eqId}`);
+  const { data: eqs, error: eqErr } = await supabase.from('equipments').select('id, name, status').in('id', equipmentIds);
+  if (eqErr) throw eqErr;
+  const found = new Map((eqs || []).map((e) => [e.id, e]));
+  for (const id of equipmentIds) {
+    const eq = found.get(id);
+    if (!eq) throw new Error(`ไม่พบอุปกรณ์รหัส ${id}`);
     if (eq.status === 'maintenance') throw new Error(`อุปกรณ์ ${eq.name} อยู่ระหว่างซ่อมบำรุง`);
-
-    await supabase.from('equipments').update({ status: 'rented' }).eq('id', eqId);
   }
 
-  await saveInspection(booking.id, 'checkout', req.body);
-  await supabase.from('bookings').update({ status: 'picked_up' }).eq('id', booking.id);
-
-  // รับกล้องออก = ถือว่ารับเงินประกันแล้ว (ถ้ายังไม่ได้กำหนดสถานะ) — ไม่ error ถ้ายังไม่ได้เพิ่มคอลัมน์
-  if (Number(booking.deposit) > 0 && (!booking.deposit_status || booking.deposit_status === 'pending')) {
-    await supabase.from('bookings')
-      .update({ deposit_status: 'held', deposit_updated_at: new Date().toISOString() })
-      .eq('id', booking.id);
-  }
+  const holdDeposit = Number(booking.deposit) > 0 && (!booking.deposit_status || booking.deposit_status === 'pending');
+  const [eqUpdate, , bkUpdate] = await Promise.all([
+    supabase.from('equipments').update({ status: 'rented' }).in('id', equipmentIds),
+    saveInspection(booking.id, 'checkout', req.body),
+    supabase.from('bookings').update({ status: 'picked_up' }).eq('id', booking.id),
+    // รับกล้องออก = ถือว่ารับเงินประกันแล้ว — ไม่ error ถ้ายังไม่ได้เพิ่มคอลัมน์
+    holdDeposit
+      ? supabase.from('bookings').update({ deposit_status: 'held', deposit_updated_at: new Date().toISOString() }).eq('id', booking.id)
+      : Promise.resolve(),
+  ]);
+  if (eqUpdate.error) throw eqUpdate.error;
+  if (bkUpdate.error) throw bkUpdate.error;
 
   res.json({ message: 'บันทึกการรับอุปกรณ์ออกสำเร็จ' });
 }));
 
 app.post('/api/bookings/:id/return', asyncHandler(async (req, res) => {
-  const { data: booking } = await supabase.from('bookings').select('*').eq('id', req.params.id).single();
+  const [{ data: booking }, equipmentIds] = await Promise.all([
+    supabase.from('bookings').select('*').eq('id', req.params.id).single(),
+    getBookingEquipmentIds(req.params.id),
+  ]);
   if (!booking) return res.status(404).json({ error: 'ไม่พบรายการจองนี้' });
 
   if (booking.status !== 'picked_up') {
     return res.status(400).json({ error: 'รับคืนได้เฉพาะรายการที่รับอุปกรณ์ออกแล้ว' });
   }
 
-  const equipmentIds = await getBookingEquipmentIds(booking.id);
   const extraCharges = Number(req.body.extra_charges ?? 0);
   const fineAmount = Number(req.body.fine_amount ?? 0);
 
@@ -942,42 +969,48 @@ app.post('/api/bookings/:id/return', asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'ค่าใช้จ่ายเพิ่มเติมหรือค่าปรับไม่ถูกต้อง' });
   }
 
-  for (const eqId of equipmentIds) {
-    const { data: eq } = await supabase.from('equipments').select('*').eq('id', eqId).single();
-    if (eq && eq.status !== 'maintenance') {
-      await supabase.from('equipments').update({ status: 'available' }).eq('id', eqId);
-    }
-  }
-
-  await saveInspection(booking.id, 'checkin', req.body);
-
   const netTotal = Number(booking.subtotal) - Number(booking.discount) + extraCharges + fineAmount;
-
-  await supabase.from('bookings').update({
-    status: 'returned',
-    extra_charges: extraCharges,
-    fine_amount: fineAmount,
-    net_total: Math.max(0, netTotal)
-  }).eq('id', booking.id);
-
   const rentalIncome = Math.max(0, Number(booking.subtotal) - Number(booking.discount));
+  const now = new Date().toISOString();
   const incomeRows = [
     ['ค่าเช่าอุปกรณ์', rentalIncome, `รับชำระค่าเช่าจอง ${booking.booking_no}`],
     ['ค่าใช้จ่ายเพิ่มเติม', extraCharges, `ค่าใช้จ่ายเพิ่มเติม ${booking.booking_no}`],
     ['ค่าปรับ', fineAmount, `ค่าปรับ ${booking.booking_no}`],
-  ];
+  ].filter(([, amount]) => amount > 0).map(([category, amount, description]) => ({
+    type: 'income',
+    category,
+    booking_id: booking.id,
+    amount,
+    transaction_date: now,
+    description,
+  }));
 
-  for (const [category, amount, description] of incomeRows) {
-    if (amount > 0) {
-      await supabase.from('transactions').insert([{
-        type: 'income',
-        category,
-        booking_id: booking.id,
-        amount,
-        transaction_date: new Date().toISOString(),
-        description
-      }]);
-    }
+  // อุปกรณ์ที่อยู่ระหว่างซ่อมต้องไม่ถูกเปลี่ยนเป็น "ว่าง"
+  const { data: eqs, error: eqErr } = equipmentIds.length
+    ? await supabase.from('equipments').select('id, status').in('id', equipmentIds)
+    : { data: [], error: null };
+  if (eqErr) throw eqErr;
+  const freeIds = (eqs || []).filter((e) => e.status !== 'maintenance').map((e) => e.id);
+
+  const [eqUpdate, , bkUpdate] = await Promise.all([
+    freeIds.length
+      ? supabase.from('equipments').update({ status: 'available' }).in('id', freeIds)
+      : Promise.resolve({ error: null }),
+    saveInspection(booking.id, 'checkin', req.body),
+    supabase.from('bookings').update({
+      status: 'returned',
+      extra_charges: extraCharges,
+      fine_amount: fineAmount,
+      net_total: Math.max(0, netTotal),
+    }).eq('id', booking.id),
+  ]);
+  if (eqUpdate.error) throw eqUpdate.error;
+  if (bkUpdate.error) throw bkUpdate.error;
+
+  // บันทึกรายรับหลังจากบันทึกการคืนสำเร็จแล้วเท่านั้น (กันมีรายรับทั้งที่การคืนไม่สำเร็จ)
+  if (incomeRows.length) {
+    const { error: txError } = await supabase.from('transactions').insert(incomeRows);
+    if (txError) throw txError;
   }
 
   res.json({
@@ -987,10 +1020,6 @@ app.post('/api/bookings/:id/return', asyncHandler(async (req, res) => {
     net_total: Math.max(0, netTotal),
   });
 }));
-
-// ==========================================
-// 5. OTHER API ENDPOINTS
-// ==========================================
 
 // ==========================================
 // เงินประกัน + สำรองข้อมูล
@@ -1345,13 +1374,14 @@ app.get('/api/availability', asyncHandler(async (req, res) => {
 }));
 
 app.get('/api/reports/summary', asyncHandler(async (req, res) => {
-  const { data: transactions } = await supabase.from('transactions').select('type, amount, transaction_date');
-  const { data: bookingItems } = await supabase
-    .from('booking_items')
-    .select('id, daily_rate, equipment_id, equipments(id, name, code, image_url), bookings!inner(status, total_days)')
-    .in('bookings.status', ['picked_up', 'returned']);
-
-  const { data: equipments } = await supabase.from('equipments').select('cost_price, current_value');
+  const [{ data: transactions }, { data: bookingItems }, { data: equipments }] = await Promise.all([
+    supabase.from('transactions').select('type, amount, transaction_date'),
+    supabase
+      .from('booking_items')
+      .select('id, daily_rate, equipment_id, equipments(id, name, code, image_url), bookings!inner(status, total_days)')
+      .in('bookings.status', ['picked_up', 'returned']),
+    supabase.from('equipments').select('cost_price, current_value'),
+  ]);
 
   // 1. Monthly Summary
   const monthlyMap = {};

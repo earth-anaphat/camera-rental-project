@@ -2192,34 +2192,80 @@ function AppProvider({ children }) {
   const [detailId, setDetailId] = useState(null);
 
   /* ---------- โหลดข้อมูล ---------- */
-  const busy = useRef(false);
+  const inflight = useRef(null);
+  const queued = useRef(false);
+  const restBusy = useRef(false);
+  const everLoaded = useRef(false);
 
-  const refresh = useCallback(async () => {
-    if (busy.current) return;
-    busy.current = true;
-    setLoading(true);
-
-    const keys = Object.keys(ENDPOINTS);
+  // ดึงข้อมูลตามชุด key แล้วอัปเดต state — คืนจำนวนที่ล้มเหลว
+  const fetchKeys = useCallback(async (keys) => {
     const results = await Promise.allSettled(keys.map((k) => api.get(ENDPOINTS[k])));
-
     const next = {};
     let failed = 0;
     results.forEach((r, i) => {
       if (r.status === 'fulfilled') {
         const key = keys[i];
-        next[key] =
-          key === 'dashboard' ? { ...EMPTY_DASH, ...r.value.data } : r.value.data;
+        next[key] = key === 'dashboard' ? { ...EMPTY_DASH, ...r.value.data } : r.value.data;
       } else {
         failed += 1;
       }
     });
-
     setData((prev) => ({ ...prev, ...next }));
-    setOffline(failed === keys.length);
-    setLoaded(true);
-    setLoading(false);
-    busy.current = false;
+    return failed;
   }, []);
+
+  /* โหลดครั้งแรกรอทุกชุด แต่หลังทำรายการ (refresh ต่อจากนั้น) จะรอแค่ข้อมูลหลัก (รายการจอง/อุปกรณ์/ภาพรวม)
+     ส่วนลูกค้า รายรับ ซ่อมบำรุง รายงาน โหลดต่อเบื้องหลัง — หน้าจอตอบสนองเร็วขึ้นหลังกดบันทึก */
+  const CORE_KEYS = ['bookings', 'equipments', 'dashboard'];
+  const REST_KEYS = Object.keys(ENDPOINTS).filter((k) => !CORE_KEYS.includes(k));
+
+  const restQueued = useRef(false);
+  const runRest = useCallback(() => {
+    if (restBusy.current) {
+      restQueued.current = true; // กำลังโหลดชุดรองอยู่ — โหลดซ้ำอีกรอบหลังจบ ไม่ให้ข้อมูลหลังทำรายการค้างเก่า
+      return;
+    }
+    restBusy.current = true;
+    fetchKeys(REST_KEYS).finally(() => {
+      restBusy.current = false;
+      if (restQueued.current) {
+        restQueued.current = false;
+        runRest();
+      }
+    });
+  }, [fetchKeys]);
+
+  const refresh = useCallback(() => {
+    // ถ้ากำลังโหลดอยู่ ไม่ทิ้งคำขอ — จดไว้ให้โหลดซ้ำอีกรอบหลังจบ (เดิมคำขอที่ซ้อนกันจะถูกข้ามและข้อมูลค้างเก่า)
+    if (inflight.current) {
+      queued.current = true;
+      return inflight.current;
+    }
+    inflight.current = (async () => {
+      try {
+        do {
+          queued.current = false;
+          setLoading(true);
+          const first = !everLoaded.current;
+          const keys = first ? Object.keys(ENDPOINTS) : CORE_KEYS;
+          const failed = await fetchKeys(keys);
+          if (first) {
+            setOffline(failed === keys.length);
+            everLoaded.current = !(failed === keys.length);
+          } else if (failed < keys.length) {
+            setOffline(false);
+          }
+          setLoaded(true);
+          setLoading(false);
+          if (!first) runRest();
+        } while (queued.current);
+      } finally {
+        setLoading(false);
+        inflight.current = null;
+      }
+    })();
+    return inflight.current;
+  }, [fetchKeys, runRest]);
 
   useEffect(() => {
     if (!entered) return undefined;
@@ -6926,7 +6972,7 @@ function Finance() {
       .then(({ data }) => { if (!off) setDeposits(data); })
       .catch(() => { if (!off) setDeposits(null); });
     return () => { off = true; };
-  }, [bookings, transactions]);
+  }, [bookings]);
 
   const months = useMemo(() => {
     const map = new Map((report?.monthly || []).map((m) => [m.month, m]));
