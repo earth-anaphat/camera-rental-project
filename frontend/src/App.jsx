@@ -1786,6 +1786,10 @@ const SHOP = {
 
 const THEME_COLORS = {"purple": {"label": "ม่วง", "main": "#8452e0"}, "green": {"label": "เขียว", "main": "#008f47"}, "red": {"label": "แดง", "main": "#d5283b"}, "orange": {"label": "ส้ม", "main": "#d85e06"}, "blue": {"label": "น้ำเงิน", "main": "#0073e6"}, "pink": {"label": "ชมพู", "main": "#c43487"}, "teal": {"label": "เขียวมิ้นต์", "main": "#008984"}, "gold": {"label": "ทอง", "main": "#967000"}, "slate": {"label": "เทาเข้ม", "main": "#657992"}};
 /* อ่านสีธีมปัจจุบัน (hex) ไว้ใช้กับ favicon และหน้าพิมพ์ที่อยู่นอกระบบ CSS ตัวแปร */
+/* โลโก้สำหรับใบจอง/รายงาน (เปิดในแท็บใหม่ ต้องใช้ URL เต็ม) — ไอคอนสีขาวจึงวางบนพื้นสีธีม ถ้าไม่มีไฟล์โลโก้จะซ่อนไป */
+const printLogo = () => (SHOP.logo
+  ? `<span class="lg"><img src="${location.origin}${SHOP.logo}" alt="" onerror="this.parentNode.style.display='none'"></span>`
+  : '');
 const themeHex = (step = '60') => {
   try {
     const t = getComputedStyle(document.documentElement).getPropertyValue(`--wa-color-purple-${step}`).trim().split(/\s+/).map(Number);
@@ -4315,6 +4319,7 @@ function openPrintDoc({ title, size = 'A5', body }) {
     + '.bar{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 14px;background:#2a1a4d;color:#fff;font-size:12px}'
     + '.bar button{font:inherit;font-weight:500;border:0;border-radius:10px;padding:9px 14px;background:' + themeHex() + ';color:#fff;cursor:pointer}.bar button.g{background:transparent;border:1px solid #ffffff55}'
     + '.sheet{background:#fff;margin:14px auto;max-width:' + sheetW + ';padding:18px 16px;box-shadow:0 10px 30px -12px #2a1a4d66;overflow-wrap:anywhere}'
+    + '.brand{display:flex;align-items:center;gap:10px}.lg{width:46px;height:46px;flex:none;border-radius:12px;background:' + themeHex() + ';display:flex;align-items:center;justify-content:center}.lg img{width:68%;height:68%;object-fit:contain}'
     + 'h1{font-size:20px;margin:0}h2{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6d6385;margin:16px 0 4px}'
     + '.top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;border-bottom:2px solid #1d1530;padding-bottom:8px;margin-bottom:12px}.no{font-size:11px;text-align:right}.no b{display:block;font-size:15px}'
     + '.tw{overflow-x:auto}table{width:100%;border-collapse:collapse}th{text-align:left;font-size:11px;color:#6d6385;border-bottom:1px solid #1d1530}td,th{padding:5px 6px 5px 0;vertical-align:top}td{border-bottom:1px dashed #cfc7e0}td small{display:block;color:#6d6385;font-size:10px}.r{text-align:right;white-space:nowrap}'
@@ -4350,7 +4355,7 @@ function printSlip(d) {
   const line = (k, v, cls) => '<div class="ln ' + (cls || '') + '"><span>' + k + '</span><b>' + v + '</b></div>';
   const contact = [SHOP.phone && ('โทร ' + x(SHOP.phone)), SHOP.line && ('LINE ' + x(SHOP.line))].filter(Boolean).join(' · ');
   const ds = ({ pending: 'ยังไม่ได้รับ', held: 'รับแล้ว (ถือไว้)', returned: 'คืนแล้ว', partial: 'หักบางส่วน' })[d.deposit_status || 'pending'];
-  const body = '<div class="top"><div><h1>' + x(SHOP.name) + '</h1><div>ใบยืนยันการเช่ากล้อง' + (contact ? ' · ' + contact : '') + '</div></div>'
+  const body = '<div class="top"><div class="brand">' + printLogo() + '<div><h1>' + x(SHOP.name) + '</h1><div>ใบยืนยันการเช่ากล้อง' + (contact ? ' · ' + contact : '') + '</div></div></div>'
     + '<div class="no">เลขที่<b>' + x(d.booking_no) + '</b>' + x(fmtDateTime(d.created_at)) + '</div></div>'
     + '<h2>ผู้เช่า</h2><div>' + x(d.customer_name) + ' · ' + x(d.phone) + '</div>'
     + '<h2>ช่วงเวลาเช่า</h2>' + line('รับกล้อง', x(fmtDateTime(d.start_date))) + line('คืนกล้อง', x(fmtDateTime(d.end_date)))
@@ -7686,7 +7691,7 @@ async function backupPdfFlow() {
   const txRows = [...(t.transactions || [])].sort((a, b) => String(b.transaction_date).localeCompare(String(a.transaction_date))).map((r) =>
     '<tr><td>' + x(fmtDateTime(r.transaction_date)) + '</td><td>' + x(r.category) + '<small>' + x(r.description) + '</small></td><td class="r">' + (r.type === 'income' ? '+' : '−') + x(baht(r.amount)) + '</td></tr>').join('');
 
-  const body = '<div class="top"><div><h1>' + x(SHOP.name) + '</h1><div>รายงานสรุปข้อมูลร้าน</div></div><div class="no">ออกเมื่อ<b>' + x(fmtDateTime(new Date())) + '</b></div></div>'
+  const body = '<div class="top"><div class="brand">' + printLogo() + '<div><h1>' + x(SHOP.name) + '</h1><div>รายงานสรุปข้อมูลร้าน</div></div></div><div class="no">ออกเมื่อ<b>' + x(fmtDateTime(new Date())) + '</b></div></div>'
     + '<div class="kpi">' + kpi('รายรับสะสม', x(baht(income))) + kpi('รายจ่ายสะสม', x(baht(expense))) + kpi('กำไรสุทธิ', x(baht(income - expense))) + kpi('เงินประกันที่ถือไว้', x(baht(held))) + '</div>'
     + '<h2>รายการจอง (' + (t.bookings || []).length + ')</h2><div class="tw"><table><thead><tr><th>เลขที่</th><th>ผู้เช่า / อุปกรณ์</th><th>ช่วงเวลา</th><th class="r">ยอด</th></tr></thead><tbody>' + bookingRows + '</tbody></table></div>'
     + '<h2>รายรับ–รายจ่าย (' + (t.transactions || []).length + ')</h2><div class="tw"><table><thead><tr><th>วันที่</th><th>รายการ</th><th class="r">จำนวน</th></tr></thead><tbody>' + txRows + '</tbody></table></div>'
