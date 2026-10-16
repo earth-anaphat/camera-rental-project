@@ -3803,31 +3803,32 @@ async function deleteTransactionFlow(tx, refresh) {
 }
 
 /* ═════ components/BookingList.jsx ═════ */
-function Actions({ b, refresh }) {
+function Actions({ b, refresh, block = false }) {
   const { openBooking } = useApp();
   const stop = (fn) => (e) => {
     e.stopPropagation();
     fn(b, refresh);
   };
+  const size = block ? '!min-h-11 !text-sm' : '';
   return (
-    <div className="flex flex-wrap justify-end gap-1.5">
+    <div className={block ? 'grid grid-flow-col auto-cols-fr gap-2' : 'flex flex-wrap justify-end gap-1.5'}>
       {['pending', 'confirmed', 'picked_up'].includes(b.status) && (
-        <button onClick={(e) => { e.stopPropagation(); openBooking([], b); }} title="แก้ไขการจอง" className="btn btn-sm btn-ghost">
+        <button onClick={(e) => { e.stopPropagation(); openBooking([], b); }} title="แก้ไขการจอง" className={`btn btn-sm btn-ghost ${size}`}>
           <Pencil size={14} /> <span>แก้ไข</span>
         </button>
       )}
       {['pending', 'confirmed'].includes(b.status) && (
         <>
-          <button onClick={stop(checkoutFlow)} title="ส่งมอบอุปกรณ์" className="btn btn-sm border border-info/30 bg-info/10 text-info hover:bg-info/20">
+          <button onClick={stop(checkoutFlow)} title="ส่งมอบอุปกรณ์" className={`btn btn-sm border border-info/30 bg-info/10 text-info hover:bg-info/20 ${size}`}>
             <LogOut size={14} /> <span>ส่งมอบ</span>
           </button>
-          <button onClick={stop(cancelFlow)} title="ยกเลิกการจอง" className="btn btn-sm border border-bad/25 bg-bad/5 text-bad hover:bg-bad/10">
+          <button onClick={stop(cancelFlow)} title="ยกเลิกการจอง" className={`btn btn-sm border border-bad/25 bg-bad/5 text-bad hover:bg-bad/10 ${size}`}>
             <Ban size={14} /> <span>ยกเลิก</span>
           </button>
         </>
       )}
       {b.status === 'picked_up' && (
-        <button onClick={stop(returnFlow)} title="รับคืนอุปกรณ์" className="btn btn-sm border border-ok/30 bg-ok/10 text-ok hover:bg-ok/20">
+        <button onClick={stop(returnFlow)} title="รับคืนอุปกรณ์" className={`btn btn-sm border border-ok/30 bg-ok/10 text-ok hover:bg-ok/20 ${size}`}>
           <LogIn size={14} /> <span>รับคืน</span>
         </button>
       )}
@@ -3907,9 +3908,10 @@ function BookingList({ rows, showActions = true }) {
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="font-num text-xl font-semibold">{baht(b.net_total)}</span>
-                  {showActions ? <Actions b={b} refresh={refresh} /> : <ChevronRight size={16} className="text-mute" />}
+                  {!showActions && <ChevronRight size={16} className="text-mute" />}
                 </div>
               </div>
+              {showActions && <div className="mt-3"><Actions b={b} refresh={refresh} block /></div>}
             </div>
           </li>
         ))}
@@ -4558,7 +4560,7 @@ function printSlip(d) {
 }
 
 function BookingDetail() {
-  const { detailId, closeDetail, refresh, customers, openBooking } = useApp();
+  const { detailId, closeDetail, refresh, customers } = useApp();
   const [detail, setDetail] = useState(null);
   const [error, setError] = useState('');
 
@@ -4597,30 +4599,27 @@ function BookingDetail() {
       onClose={closeDetail}
       footer={
         detail ? (
-          <div className="flex flex-wrap gap-2">
-            <button onClick={() => printSlip(detail)} className="btn" title="พิมพ์ใบจอง">
-              <Printer size={16} /> พิมพ์ใบจอง
-            </button>
-            {detail && ['pending', 'confirmed', 'picked_up'].includes(detail.status) && (
-              <button onClick={() => { const d = detail; closeDetail(); openBooking([], d); }} className="btn" title="แก้ไขการจอง">
-                <Pencil size={16} /> แก้ไข
-              </button>
-            )}
+          <div className="grid gap-2.5">
             {canCheckout && (
-              <>
-                <button onClick={() => run(cancelFlow)} className="btn btn-danger">
-                  <Ban size={16} /> ยกเลิก
-                </button>
-                <button onClick={() => run(checkoutFlow)} className="btn btn-primary flex-1">
-                  <LogOut size={16} /> ส่งมอบอุปกรณ์
-                </button>
-              </>
+              <button onClick={() => run(checkoutFlow)} className="btn btn-primary !min-h-12 w-full !text-base">
+                <LogOut size={18} /> ส่งมอบอุปกรณ์
+              </button>
             )}
             {canReturn && (
-              <button onClick={() => run(returnFlow)} className="btn btn-primary flex-1">
-                <LogIn size={16} /> รับคืนอุปกรณ์
+              <button onClick={() => run(returnFlow)} className="btn btn-primary !min-h-12 w-full !text-base">
+                <LogIn size={18} /> รับคืนอุปกรณ์
               </button>
             )}
+            <div className={`grid gap-2.5 ${canCheckout ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              <button onClick={() => printSlip(detail)} className="btn !min-h-11 !text-[0.95rem]" title="พิมพ์ใบจอง">
+                <Printer size={17} /> พิมพ์ใบจอง
+              </button>
+              {canCheckout && (
+                <button onClick={() => run(cancelFlow)} className="btn btn-danger !min-h-11 !text-[0.95rem]">
+                  <Ban size={17} /> ยกเลิกการจอง
+                </button>
+              )}
+            </div>
           </div>
         ) : null
       }
@@ -5971,7 +5970,7 @@ function Landing({ onEnter }) {
                 </span>
               ))}
             </h1>
-            <p className="ld-fade mt-8 max-w-xl text-base leading-[1.95] text-[rgb(var(--wa-color-purple-50)/0.65)] sm:text-lg" style={{ '--i': 6 }}>
+            <p className="ld-fade mt-8 max-w-xl text-base leading-[1.95] text-[rgb(var(--wa-color-purple-05)/0.65)] sm:text-lg" style={{ '--i': 6 }}>
               เก็บเรื่องอุปกรณ์ ใบจอง นัดรับ–คืน และรายรับรายจ่ายไว้ที่เดียว
               ทำมาให้ร้านที่มีคนดูแลคนเดียว เปิดจากมือถือหน้างานก็ได้
             </p>
@@ -6738,6 +6737,7 @@ function CalendarPage() {
             {Object.values(CAL_KINDS).map((k) => (
               <span key={k.label} className="inline-flex items-center gap-1.5"><i className={`h-2.5 w-2.5 rounded-full ${k.dot}`} />{k.label}</span>
             ))}
+            <span className="basis-full text-[10.5px] opacity-80">แสดงเฉพาะ “วันรับ” และ “วันคืน” — วันที่อยู่ระหว่างเช่าจะไม่แสดง</span>
           </div>
 
           <div className="calendar-weekdays grid grid-cols-7 border-b border-line bg-surface2/50 text-center text-[11px] font-semibold text-mute">
