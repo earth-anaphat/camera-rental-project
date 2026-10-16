@@ -1251,14 +1251,24 @@ app.patch('/api/maintenance/:id/complete', asyncHandler(async (req, res) => {
   res.json({ message: 'ปิดงานซ่อมบำรุงสำเร็จ' });
 }));
 
+// ดึงข้อมูลทั้งหมดแบบแบ่งหน้า — Supabase จำกัดแถวต่อคำขอ (ปกติ 1,000) ถ้าไม่แบ่งหน้ายอดสะสมจะ "หาย/รีเซ็ต" เมื่อรายการเกินจำนวนนั้น
+async function pagedRows(makeQuery, pageSize = 1000) {
+  const rows = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await makeQuery().range(from, from + pageSize - 1);
+    if (error) throw error;
+    rows.push(...(data || []));
+    if (!data || data.length < pageSize) break;
+  }
+  return rows;
+}
+
 app.get('/api/transactions', asyncHandler(async (req, res) => {
-  const { data, error } = await supabase
+  const data = await pagedRows(() => supabase
     .from('transactions')
     .select('*, bookings(booking_no)')
     .order('transaction_date', { ascending: false })
-    .order('id', { ascending: false });
-
-  if (error) throw error;
+    .order('id', { ascending: false }));
 
   const formatted = (data || []).map(t => ({
     ...t,
@@ -1374,8 +1384,8 @@ app.get('/api/availability', asyncHandler(async (req, res) => {
 }));
 
 app.get('/api/reports/summary', asyncHandler(async (req, res) => {
-  const [{ data: transactions }, { data: bookingItems }, { data: equipments }] = await Promise.all([
-    supabase.from('transactions').select('type, amount, transaction_date'),
+  const [transactions, { data: bookingItems }, { data: equipments }] = await Promise.all([
+    pagedRows(() => supabase.from('transactions').select('type, amount, transaction_date').order('id', { ascending: true })),
     supabase
       .from('booking_items')
       .select('id, daily_rate, equipment_id, equipments(id, name, code, image_url), bookings!inner(status, total_days)')

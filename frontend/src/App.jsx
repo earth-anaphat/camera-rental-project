@@ -1002,6 +1002,16 @@ select.input {
 .lg-popup .sw-actions .btn-ghost { border-color: transparent !important; background: transparent !important; color: rgb(243 237 255 / .7) !important; }
 .lg-popup .sw-actions .btn-ghost:hover { background: rgb(255 255 255 / .08) !important; }
 .lg-popup .swal2-loader { border-color: #fff transparent #fff transparent !important; }
+/* สถานะกำลังโหลดตอนเข้าสู่ระบบ: ให้วงโหลดอยู่กึ่งกลางปุ่ม (grid ทำให้เดิมชิดซ้าย) */
+.lg-popup .sw-actions { justify-items: center; }
+.lg-popup .sw-actions .swal2-loader { justify-self: center; align-self: center; margin: .2rem auto !important; }
+.lg-popup .sw-actions .btn.swal2-loading {
+  justify-self: center !important; width: 3rem !important; min-width: 0 !important; height: 3rem !important; min-height: 0 !important;
+  padding: 0 !important; margin: 0 auto !important; border-radius: 999px !important; font-size: 0 !important;
+  display: grid !important; place-items: center; box-shadow: 0 0 0 6px rgb(167 139 250 / .18) !important;
+}
+.lg-popup .sw-actions .btn.swal2-loading::after { display: none !important; }
+.lg-popup .sw-actions .btn.swal2-loading ~ .btn { display: none !important; }
 @keyframes lgPulse { 0% { transform: scale(.92); opacity: .9; } 100% { transform: scale(1.28); opacity: 0; } }
 @keyframes lgSpin { to { transform: rotate(360deg); } }
 @keyframes lgShake { 10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); } 30%, 50%, 70% { transform: translateX(-7px); } 40%, 60% { transform: translateX(7px); } }
@@ -6998,7 +7008,21 @@ function Finance() {
   const A = months[cmpA];
   const B = months[cmpB];
 
-  const totals = report?.totals || { income: 0, expense: 0 };
+  /* ยอดสะสมต้องไม่หายระหว่างโหลดรอบใหม่: ใช้ยอดจากรายงาน → ไม่มีก็รวมจากรายการรายรับ–รายจ่าย → ไม่มีอีกก็คงค่าล่าสุดที่เคยถูกต้องไว้ */
+  const lastTotals = useRef(null);
+  const totals = useMemo(() => {
+    let t = null;
+    if (report?.totals) t = { income: Number(report.totals.income) || 0, expense: Number(report.totals.expense) || 0 };
+    else if (transactions.length) {
+      t = transactions.reduce((a, x) => {
+        if (x.type === 'income') a.income += Number(x.amount) || 0;
+        if (x.type === 'expense') a.expense += Number(x.amount) || 0;
+        return a;
+      }, { income: 0, expense: 0 });
+    }
+    return t || lastTotals.current || { income: 0, expense: 0 };
+  }, [report, transactions]);
+  useEffect(() => { lastTotals.current = totals; }, [totals]);
   const profit = totals.income - totals.expense;
   const assets = report?.assets || { total_cost: 0, total_value: 0, equipment_count: 0 };
 
@@ -7795,6 +7819,20 @@ function Root() {
   }, []);
 
   const Page = PAGES[page] || Dashboard;
+
+  /* กลับหน้าแรกจากในระบบ: ชัตเตอร์เปิดออกจากกลางจอ + แจ้งเตือนต้อนรับกลับ */
+  const wasEntered = useRef(entered);
+  useEffect(() => {
+    if (wasEntered.current && !entered) {
+      setIris({ state: 'open', x: '50%', y: '50%' });
+      const t1 = setTimeout(() => setIris({ state: '', x: '50%', y: '50%' }), 1000);
+      const t2 = setTimeout(() => toast('success', 'ออกจากระบบแล้ว — ข้อมูลทั้งหมดถูกบันทึกเรียบร้อย'), 650);
+      wasEntered.current = entered;
+      return () => { clearTimeout(t1); clearTimeout(t2); };
+    }
+    wasEntered.current = entered;
+    return undefined;
+  }, [entered]);
 
   const { settings: shopSettings } = useSettings();
   useEffect(() => {
