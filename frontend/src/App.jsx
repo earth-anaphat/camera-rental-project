@@ -1580,6 +1580,86 @@ select.input {
 
 
 
+/* =====================================================
+   MOTION PASS — จังหวะเคลื่อนไหวเพิ่มเติมทั้งระบบ (ปิดตามตัวเลือก "ลดการเคลื่อนไหว" อัตโนมัติ)
+   ===================================================== */
+@keyframes ldBar { 0% { transform: translateX(-100%); } 100% { transform: translateX(260%); } }
+@keyframes ldRipple { to { transform: scale(1); opacity: 0; } }
+@keyframes ldWiggle { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-14deg); } 45% { transform: rotate(11deg); } 70% { transform: rotate(-6deg); } }
+@keyframes ldPopOn { 0% { transform: scale(.94); } 55% { transform: scale(1.06); } 100% { transform: scale(1); } }
+@keyframes ldDot { 0% { box-shadow: 0 0 0 0 currentColor; } 70% { box-shadow: 0 0 0 6px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@keyframes ldTitle { from { opacity: 0; transform: translateY(14px); letter-spacing: .02em; filter: blur(6px); } to { opacity: 1; transform: none; letter-spacing: normal; filter: none; } }
+@keyframes ldBreath { 0%, 100% { box-shadow: 0 12px 26px -14px rgb(var(--accent) / .9), 0 0 0 0 rgb(var(--accent) / .35); } 50% { box-shadow: 0 16px 32px -12px rgb(var(--accent)), 0 0 0 7px rgb(var(--accent) / 0); } }
+@keyframes ldFloatIcon { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes ldRow { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: none; } }
+
+/* แถบโหลดบางๆ ด้านบนจอ ตอนระบบกำลังซิงก์ข้อมูล */
+.ld-topbar { position: fixed; inset: 0 0 auto 0; z-index: 130; height: 3px; overflow: hidden; pointer-events: none; opacity: 0; transition: opacity .3s; }
+.ld-topbar[data-on='true'] { opacity: 1; }
+.ld-topbar::before { content: ''; position: absolute; inset: 0; width: 40%; border-radius: 99px; background: linear-gradient(90deg, transparent, rgb(var(--wa-color-purple-40)), rgb(var(--accent)), transparent); animation: ldBar 1.1s cubic-bezier(.4, 0, .2, 1) infinite; }
+
+/* ปุ่ม: ริบเปิลตรงจุดที่กด + ยกตัวตอน hover */
+.btn .ld-ripple { position: absolute; border-radius: 50%; width: 140px; height: 140px; margin: -70px 0 0 -70px; background: rgb(255 255 255 / .38); transform: scale(0); animation: ldRipple .6s cubic-bezier(.2, .7, .2, 1) forwards; pointer-events: none; }
+.btn-ghost .ld-ripple, .btn:not(.btn-primary) .ld-ripple { background: rgb(var(--accent) / .22); }
+.btn:hover:not(:disabled) { transform: translateY(-1px); }
+.btn:active:not(:disabled) { transform: translateY(0) scale(.97); }
+
+/* เมนู: เลื่อนเข้าเล็กน้อยตอน hover ไอคอนขยับ */
+.nav-item { transition: color .25s, background-color .25s, transform .35s var(--ease), padding .35s var(--ease); }
+.nav-item:hover { transform: translateX(3px); }
+.nav-item svg { transition: transform .4s var(--ease), color .25s; }
+.nav-item:hover svg { transform: scale(1.14) rotate(-6deg); }
+.bb-item:active svg, .dock-item:active svg { transform: scale(.85); }
+
+/* ปุ่มไอคอน: กระดิ่งสั่น, ไอคอนเด้งตอน hover */
+.icon-btn { transition: background-color .2s, color .2s, transform .25s var(--ease); }
+.icon-btn:hover { transform: translateY(-1px); }
+.icon-btn:hover svg { animation: ldWiggle .6s var(--ease); }
+
+/* ชิป/ตัวเลือก: เด้งตอนถูกเลือก */
+.chip[data-on='true'] { animation: ldPopOn .38s var(--ease); }
+.opt[data-on='true'], button[aria-pressed='true'] { animation: ldPopOn .38s var(--ease); }
+
+/* สถานะที่ต้องจับตา มีจุดกะพริบเบาๆ */
+.st-dot[data-live='true'] { animation: ldDot 1.8s ease-out infinite; }
+
+/* หัวข้อหน้า — ค่อยๆ โฟกัสเข้า */
+main h1 { animation: ldTitle .85s var(--ease) both; }
+
+/* รายการในตาราง/ลิสต์ไหลเข้าทีละแถว */
+.tbl tbody tr { animation: ldRow .5s var(--ease) both; }
+.tbl tbody tr:nth-child(1) { animation-delay: 30ms; } .tbl tbody tr:nth-child(2) { animation-delay: 70ms; }
+.tbl tbody tr:nth-child(3) { animation-delay: 110ms; } .tbl tbody tr:nth-child(4) { animation-delay: 150ms; }
+.tbl tbody tr:nth-child(5) { animation-delay: 190ms; } .tbl tbody tr:nth-child(n+6) { animation-delay: 230ms; }
+.tbl tbody tr:hover { transform: translateX(3px); }
+
+/* การ์ดที่กดได้: กดแล้วยุบลง */
+button.card:active, a.card:active { transform: scale(.985); }
+
+/* Empty state: ไอคอนลอยเบาๆ มีวงกระเพื่อม */
+.card.border-dashed > div:first-child { position: relative; animation: ldFloatIcon 4.2s ease-in-out infinite; }
+.card.border-dashed > div:first-child::after { content: ''; position: absolute; inset: -1px; border-radius: 50%; border: 1px solid rgb(var(--accent) / .45); animation: pulseRing 3s ease-out infinite; }
+
+/* ปุ่มหลักหน้าแรกของระบบ หายใจเบาๆ ดึงสายตา */
+.btn-primary.ld-breath { animation: ldBreath 3.2s ease-in-out infinite; }
+
+/* แถบหัวเพจ: เงาจะปรากฏเมื่อเลื่อนลง */
+.glass-header { transition: box-shadow .35s var(--ease), background-color .35s; }
+html[data-scrolled='true'] .glass-header { box-shadow: 0 14px 34px -22px rgb(var(--wa-color-purple-95) / .55); }
+
+/* Modal / Drawer: พื้นหลังเบลอเข้า ปุ่มปิดหมุน */
+.overlay { animation: fadeIn .3s ease both; }
+.overlay .icon-btn:hover svg { animation: none; transform: rotate(90deg); transition: transform .35s var(--ease); }
+
+/* ช่องกรอก: โฟกัสแล้วยกขึ้นนิด */
+.input { transition: border-color .2s, box-shadow .25s, background-color .2s, transform .25s var(--ease); }
+.input:focus { transform: translateY(-1px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ld-topbar::before, .st-dot, .card.border-dashed > div:first-child, .card.border-dashed > div:first-child::after, .btn-primary.ld-breath, main h1, .tbl tbody tr { animation: none !important; }
+  .btn .ld-ripple { display: none; }
+}
+
 `;
 if (typeof document !== 'undefined' && !document.getElementById('lensdesk-css')) {
   const el = document.createElement('style');
@@ -2831,7 +2911,7 @@ function StatusBadge({ status, className = '' }) {
     <span
       className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-medium ring-1 ring-inset ${TONES[meta.tone]} ${className}`}
     >
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      <span className="st-dot h-1.5 w-1.5 rounded-full bg-current" data-live={['warn', 'bad', 'info'].includes(meta.tone) ? 'true' : 'false'} />
       {meta.label}
     </span>
   );
@@ -4941,7 +5021,7 @@ function Sidebar({ rail, side, overdue }) {
         <button
           onClick={() => openBooking([])}
           title="สร้างการจองใหม่"
-          className={`btn btn-primary w-full ${rail ? '!px-0' : ''}`}
+          className={`btn btn-primary ld-breath w-full ${rail ? '!px-0' : ''}`}
         >
           <Plus size={18} />
           {!rail && 'สร้างการจองใหม่'}
@@ -5117,6 +5197,7 @@ function Shell({ children }) {
 
   return (
     <div className="ld-system min-h-dvh">
+      <div className="ld-topbar" data-on={loading ? 'true' : 'false'} aria-hidden="true" />
       {hasSide && <Sidebar rail={nav === 'rail'} side={settings.side} overdue={overdue} />}
 
       <div
@@ -7948,6 +8029,27 @@ function Root() {
   }, []);
 
   const Page = PAGES[page] || Dashboard;
+
+  /* ริบเปิลตรงจุดที่กดปุ่ม + เงาแถบหัวเมื่อเลื่อนหน้า */
+  useEffect(() => {
+    const onDown = (e) => {
+      if (motionOff()) return;
+      const btn = e.target.closest?.('.btn');
+      if (!btn || btn.disabled) return;
+      const r = btn.getBoundingClientRect();
+      const dot = document.createElement('span');
+      dot.className = 'ld-ripple';
+      dot.style.left = `${e.clientX - r.left}px`;
+      dot.style.top = `${e.clientY - r.top}px`;
+      btn.appendChild(dot);
+      setTimeout(() => dot.remove(), 650);
+    };
+    const onScroll = () => { document.documentElement.dataset.scrolled = window.scrollY > 8 ? 'true' : 'false'; };
+    document.addEventListener('pointerdown', onDown, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => { document.removeEventListener('pointerdown', onDown); window.removeEventListener('scroll', onScroll); };
+  }, []);
 
   /* กลับหน้าแรกจากในระบบ: ชัตเตอร์เปิดออกจากกลางจอ + แจ้งเตือนต้อนรับกลับ */
   const wasEntered = useRef(entered);
