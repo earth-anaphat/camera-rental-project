@@ -17,13 +17,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// LAN/local-only CORS allowlist. Override with comma-separated CORS_ORIGINS if needed.
+// LAN/local-only CORS allowlist.
 const privateOrigin = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\]|10(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2})(?::\d+)?$/i;
 const configuredOrigins = (process.env.CORS_ORIGINS || '').split(',').map(v => v.trim()).filter(Boolean);
 app.use(cors({
   origin(origin, callback) {
     if (!origin || privateOrigin.test(origin) || configuredOrigins.includes(origin)) return callback(null, true);
-    // ไม่ throw error: ปล่อยให้เบราว์เซอร์เป็นคนบล็อก (ถ้า throw จะได้ 500 ที่ไม่มี header CORS)
     return callback(null, false);
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -32,7 +31,7 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '2mb', strict: true }));
 
-// Lightweight in-memory rate limiter (single local server process).
+// Rate limiter
 const rateBuckets = new Map();
 function rateLimit({ windowMs = 60_000, max = 120, message = 'ส่งคำขอถี่เกินไป กรุณารอสักครู่' } = {}) {
   return (req, res, next) => {
@@ -77,12 +76,9 @@ function verifyToken(token) {
   } catch { return null; }
 }
 
-// ห่อ async handler (asyncHandler ถูกประกาศไว้ท้ายไฟล์ จึงใช้ตัวของส่วนนี้เอง)
 const authAsync = (handler) => (req, res, next) =>
   Promise.resolve(handler(req, res, next)).catch(next);
 
-// ---------- รหัสผ่านเจ้าของร้าน ----------
-// ลำดับการตรวจ: 1) hash ที่เจ้าของตั้งเองในตาราง app_settings  2) ถ้ายังไม่เคยตั้ง ใช้ OWNER_PASSWORD จาก env
 const PASSWORD_KEY = 'owner_password_hash';
 
 const hashPassword = (plain) => {
@@ -110,14 +106,12 @@ async function getStoredHash() {
     .eq('key', PASSWORD_KEY)
     .maybeSingle();
   if (error) {
-    // ตารางยังไม่ถูกสร้าง => ใช้รหัสผ่านจาก env ต่อไป
     console.warn('app_settings unavailable:', error.message);
     return null;
   }
   return data?.value || null;
 }
 
-// คืนค่า { ok, mustChange } — mustChange = ยังใช้รหัสตั้งต้นจาก env อยู่
 async function checkOwnerPassword(plain) {
   if (typeof plain !== 'string' || !plain) return { ok: false, mustChange: false };
   const stored = await getStoredHash();
@@ -139,12 +133,14 @@ app.post('/api/auth/login', rateLimit({ windowMs: 15 * 60_000, max: 8, message: 
   res.setHeader('Cache-Control', 'no-store');
   res.json({ token, expiresIn: TOKEN_TTL_SECONDS, role: 'owner', mustChange: result.mustChange });
 }));
+
 app.get('/api/auth/verify', (req, res) => {
   const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
   const user = verifyToken(token);
   if (!user) return res.status(401).json({ error: 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่' });
   res.json({ ok: true, role: user.role, expiresAt: user.exp });
 });
+
 app.use('/api', (req, res, next) => {
   if (req.path === '/auth/login' || req.path === '/auth/verify') return next();
   const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
@@ -155,7 +151,6 @@ app.use('/api', (req, res, next) => {
 });
 app.use('/api', rateLimit({ windowMs: 60_000, max: 240 }));
 
-// เปลี่ยนรหัสผ่าน (ต้องล็อกอินอยู่ และยืนยันรหัสเดิมอีกครั้ง)
 app.post('/api/auth/change-password', rateLimit({ windowMs: 15 * 60_000, max: 10, message: 'ลองเปลี่ยนรหัสผ่านถี่เกินไป กรุณารอสักครู่' }), authAsync(async (req, res) => {
   const { current, next } = req.body || {};
   if (typeof next !== 'string' || next.length < 8 || next.length > 128) {
@@ -176,13 +171,12 @@ app.post('/api/auth/change-password', rateLimit({ windowMs: 15 * 60_000, max: 10
 }));
 
 // ==========================================
-// FILE UPLOAD (รูปอุปกรณ์จากเครื่องของผู้ใช้)
+// FILE UPLOAD
 // ==========================================
 const UPLOAD_DIR = path.join(__dirname, '../uploads');
 try {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 } catch (err) {
-  // Vercel เป็นระบบไฟล์แบบอ่านอย่างเดียว — ข้ามได้ เพราะรูปจะเก็บใน Supabase Storage
   console.warn('Skip local uploads dir:', err.message);
 }
 
@@ -198,12 +192,11 @@ const ALLOWED_MIME = {
   'image/gif': '.gif',
 };
 
-// รูปอุปกรณ์เก็บใน Supabase Storage (bucket สาธารณะ) เพราะ Vercel เขียนไฟล์ลงดิสก์ไม่ได้
 const STORAGE_BUCKET = process.env.SUPABASE_BUCKET || 'equipment-images';
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 4 * 1024 * 1024 }, // Vercel จำกัด request ~4.5MB
+  limits: { fileSize: 4 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (!ALLOWED_MIME[file.mimetype]) {
       return cb(new Error('INVALID_FILE_TYPE'));
@@ -235,7 +228,6 @@ const removeUploadedFile = (imageUrl) => {
   }
 };
 
-// asyncHandler ถูกประกาศทีหลังในไฟล์ จึงต้องใช้ตัวห่อของ route นี้เอง ไม่งั้นจะ crash ตอนโหลดไฟล์
 const wrapAsync = (handler) => (req, res, next) =>
   Promise.resolve(handler(req, res, next)).catch(next);
 
@@ -251,7 +243,7 @@ app.post('/api/upload', upload.single('image'), wrapAsync(async (req, res) => {
 
   if (error) {
     return res.status(500).json({
-      error: `อัปโหลดรูปไม่สำเร็จ (ตรวจว่าสร้าง bucket "${STORAGE_BUCKET}" แบบ Public แล้ว): ${error.message}`,
+      error: `อัปโหลดรูปไม่สำเร็จ: ${error.message}`,
     });
   }
 
@@ -273,7 +265,6 @@ if (!supabaseUrl || !supabaseKey) {
   console.error('CRITICAL: Missing SUPABASE_URL or SUPABASE_KEY in .env file');
 }
 
-// ใช้ Custom Fetch เพื่อป้องกันปัญหาสายหลุด/DNS resolution บน macOS local dev
 const supabase = createClient(supabaseUrl || '', supabaseKey || '', {
   auth: { persistSession: false },
   global: {
@@ -288,8 +279,6 @@ const asyncHandler = (handler) => (req, res, next) => {
   Promise.resolve(handler(req, res, next)).catch(next);
 };
 
-// เวลาที่หน้าเว็บส่งมาไม่มี timezone (เช่น 2026-10-12T14:30) ให้ถือเป็นเวลาไทย (+07:00)
-// เพราะ Vercel รันเป็น UTC ถ้าไม่ระบุ เวลาจะเลื่อนไป 7 ชั่วโมงและทำให้เช็กจองซ้ำผิด
 const SHOP_TZ = process.env.SHOP_TZ_OFFSET || '+07:00';
 const toISO = (value) => {
   if (!value) return null;
@@ -304,10 +293,9 @@ const toISO = (value) => {
   return Number.isNaN(d.getTime()) ? null : d.toISOString();
 };
 
-// เดือน/ปีตามเวลาไทย (ไม่ขึ้นกับ timezone ของเซิร์ฟเวอร์)
 const bkkParts = (value) => {
   const d = new Date(new Date(value).getTime() + 7 * 3600000);
-  return { y: d.getUTCFullYear(), m: d.getUTCMonth(), key: d.toISOString().slice(0, 7) };
+  return { y: d.getUTCFullYear(), m: d.getUTCMonth(), key: d.toISOString().slice(0, 7), hour: d.getUTCHours(), minute: d.getUTCMinutes() };
 };
 
 const makeBookingNo = () => {
@@ -345,14 +333,12 @@ const saveInspection = async (bookingId, type, body = {}) => {
 // ==========================================
 // 1. DASHBOARD API
 // ==========================================
-// เวลาเริ่มต้นเดือน (ตามเวลาไทย) เป็น ISO — offset 0 = เดือนนี้, 1 = เดือนหน้า
 const monthStartIso = (offset = 0) => {
   const bkk = new Date(Date.now() + 7 * 3600000);
   return new Date(Date.UTC(bkk.getUTCFullYear(), bkk.getUTCMonth() + offset, 1) - 7 * 3600000).toISOString();
 };
 
 app.get('/api/dashboard', asyncHandler(async (req, res) => {
-  // ยิงทุกคำถามพร้อมกัน (เดิมรอทีละอัน ช้าเพราะแต่ละรอบไป–กลับระหว่าง Vercel กับ Supabase)
   const [
     { data: equipments, error: eqErr },
     { data: bookingsData, error: bkErr },
@@ -362,9 +348,8 @@ app.get('/api/dashboard', asyncHandler(async (req, res) => {
     supabase.from('equipments').select('status'),
     supabase
       .from('bookings')
-      .select('*, customers!inner(fullname, phone), booking_items(equipments(name))')
+      .select('*, customers(fullname, phone), booking_items(equipments(name))')
       .order('start_date', { ascending: true }),
-    // ดึงเฉพาะรายการของเดือนนี้ (ตามเวลาไทย) ไม่ต้องดึงทั้งตาราง — ข้อมูลเยอะขึ้นก็ไม่ช้าลง
     supabase.from('transactions').select('type, amount, transaction_date')
       .gte('transaction_date', monthStartIso(0)).lt('transaction_date', monthStartIso(1)),
     supabase.from('bookings').select('deposit').in('status', ['pending', 'confirmed', 'picked_up']),
@@ -380,15 +365,12 @@ app.get('/api/dashboard', asyncHandler(async (req, res) => {
 
   const formattedBookings = (bookingsData || []).map(b => ({
     ...b,
-    customer_name: b.customers?.fullname,
-    phone: b.customers?.phone,
+    customer_name: b.customers?.fullname || 'ไม่ระบุชื่อ',
+    phone: b.customers?.phone || '',
     equipment_names: (b.booking_items || []).map(bi => bi.equipments?.name).filter(Boolean).join(', ')
   }));
 
   const nowIso = new Date().toISOString();
-  const todayStr = nowIso.split('T')[0];
-
-  // "วันนี้" ต้องนับตามเวลาไทย ไม่ใช่ UTC (ไม่งั้นรายการตี 0–7 โมงไปอยู่วันก่อน)
   const bkkDay = (v) => (v ? new Date(new Date(v).getTime() + 7 * 3600000).toISOString().slice(0, 10) : '');
   const todayBkk = bkkDay(nowIso);
   const todayBookings = formattedBookings.filter(b =>
@@ -571,7 +553,7 @@ app.delete('/api/equipments/:id', asyncHandler(async (req, res) => {
 
     if (used && used.length > 0) {
       return res.status(409).json({
-        error: 'อุปกรณ์นี้มีประวัติการจอง ลบไม่ได้เพื่อไม่ให้ประวัติสูญหาย (ใช้สถานะซ่อมบำรุงเพื่อพักการใช้งานแทนได้)',
+        error: 'อุปกรณ์นี้มีประวัติการจอง ลบไม่ได้เพื่อไม่ให้ประวัติสูญหาย',
       });
     }
 
@@ -597,7 +579,7 @@ app.delete('/api/equipments/:id', asyncHandler(async (req, res) => {
 app.get('/api/bookings', asyncHandler(async (req, res) => {
   const { data, error } = await supabase
     .from('bookings')
-    .select('*, customers!inner(fullname, phone, email), booking_items(equipment_id, equipments(name))')
+    .select('*, customers(fullname, phone, email), booking_items(equipment_id, equipments(name))')
     .order('id', { ascending: false });
 
   if (error) throw error;
@@ -607,9 +589,9 @@ app.get('/api/bookings', asyncHandler(async (req, res) => {
     const firstItem = items[0];
     return {
       ...b,
-      customer_name: b.customers?.fullname,
-      phone: b.customers?.phone,
-      email: b.customers?.email,
+      customer_name: b.customers?.fullname || 'ไม่ระบุชื่อ',
+      phone: b.customers?.phone || '',
+      email: b.customers?.email || '',
       equipment_id: firstItem ? firstItem.equipment_id : null,
       equipment_names: items.map(bi => bi.equipments?.name).filter(Boolean).join(', '),
       equipment_ids: items.map(bi => bi.equipment_id).join(',')
@@ -622,7 +604,7 @@ app.get('/api/bookings', asyncHandler(async (req, res) => {
 app.get('/api/bookings/:id', asyncHandler(async (req, res) => {
   const { data: booking, error: bkErr } = await supabase
     .from('bookings')
-    .select('*, customers!inner(fullname, phone, email)')
+    .select('*, customers(fullname, phone, email)')
     .eq('id', req.params.id)
     .single();
 
@@ -650,15 +632,15 @@ app.get('/api/bookings/:id', asyncHandler(async (req, res) => {
 
   res.json({
     ...booking,
-    customer_name: booking.customers?.fullname,
-    phone: booking.customers?.phone,
-    email: booking.customers?.email,
+    customer_name: booking.customers?.fullname || 'ไม่ระบุชื่อ',
+    phone: booking.customers?.phone || '',
+    email: booking.customers?.email || '',
     items: formattedItems,
     inspections: inspections || [],
   });
 }));
 
-// CREATE booking with Idempotency
+// CREATE booking
 const CONTACT_KEYS = ['line', 'facebook', 'instagram', 'tiktok', 'whatsapp', 'other'];
 const sanitizeContacts = (raw) => {
   const out = {};
@@ -669,16 +651,127 @@ const sanitizeContacts = (raw) => {
   }
   return out;
 };
-// คอลัมน์ contacts ต้องเพิ่มใน Supabase ก่อน (customer-contacts.sql) — ถ้ายังไม่เพิ่มจะไม่ทำให้การจองล้มเหลว
+
 const saveCustomerContacts = async (id, contacts) => {
   const { error } = await supabase.from('customers').update({ contacts }).eq('id', id);
   if (error && !/contacts/i.test(error.message || '')) throw error;
 };
 
+// ===== ตรวจข้อมูลการจอง (ใช้ร่วมกันทั้งสร้างและแก้ไข) =====
+const parseBookingBody = (body) => {
+  const {
+    customer_name, phone = '', contacts, equipment_id, equipment_ids,
+    start_date, end_date, notes, discount = 0, deposit,
+    rental_type = 'daily', rental_hours = null, rental_region = 'local',
+    delivery_method = 'meetup', custom_price = null,
+  } = body || {};
+  const fail = (error, status = 400) => ({ error, status });
+
+  const equipmentIds = [
+    ...new Set(
+      (Array.isArray(equipment_ids) ? equipment_ids : [equipment_id])
+        .filter((id) => id !== undefined && id !== null && id !== '')
+        .map(Number)
+    ),
+  ];
+  if (!String(customer_name || '').trim() || equipmentIds.length === 0 || !start_date || !end_date) {
+    return fail('กรุณากรอกชื่อลูกค้า เลือกกล้อง และช่วงเวลาเช่า');
+  }
+  if (!['daily', 'hourly'].includes(rental_type)) return fail('รูปแบบการเช่าไม่ถูกต้อง');
+  if (!['local', 'south', 'other'].includes(rental_region)) return fail('พื้นที่เช่าไม่ถูกต้อง');
+  if (!['meetup', 'van', 'grab', 'post'].includes(delivery_method)) return fail('วิธีรับกล้องไม่ถูกต้อง');
+
+  const startIso = toISO(start_date);
+  const endIso = toISO(end_date);
+  if (!startIso || !endIso) return fail('รูปแบบวันที่ไม่ถูกต้อง');
+  const durationMs = new Date(endIso).getTime() - new Date(startIso).getTime();
+  if (!Number.isFinite(durationMs) || durationMs <= 0) return fail('วันและเวลาคืนต้องอยู่หลังวันและเวลาเริ่มเช่า');
+
+  let totalDays = 1;
+  let hours = null;
+  if (rental_type === 'hourly') {
+    hours = Number(rental_hours);
+    if (rental_region !== 'local') return fail('รายชั่วโมงให้บริการเฉพาะพื้นที่สงขลา–เก้าเส้ง');
+    if (!Number.isInteger(hours) || hours < 2 || hours > 23) return fail('การเช่ารายชั่วโมงเริ่มต้น 2 ชั่วโมง และเลือกได้สูงสุด 23 ชั่วโมง');
+  } else {
+    totalDays = Math.max(1, Math.round(durationMs / 86400000));
+    // คืนเวลาเดียวกับเวลารับ (เทียบเวลาไทย)
+    const a = bkkParts(startIso); const b = bkkParts(endIso);
+    if (a.hour !== undefined && (a.hour !== b.hour || a.minute !== b.minute)) {
+      return fail('การเช่ารายวันต้องคืนกล้องเวลาเดียวกับเวลารับ');
+    }
+    const minDays = rental_region === 'south' ? 2 : rental_region === 'other' ? 5 : 1;
+    if (totalDays < minDays) {
+      return fail(rental_region === 'south' ? 'ต่างจังหวัดโซนภาคใต้เช่ารายวันขั้นต่ำ 2 วัน' : rental_region === 'other' ? 'ต่างจังหวัดภาคอื่น ๆ เช่ารายวันขั้นต่ำ 5 วัน' : 'การเช่ารายวันขั้นต่ำ 1 วัน');
+    }
+  }
+
+  const discountAmount = Number(discount || 0);
+  const depositAmount = deposit === undefined || deposit === null || deposit === '' ? equipmentIds.length * 500 : Number(deposit);
+  const suppliedPrice = custom_price === undefined || custom_price === null || custom_price === '' ? null : Number(custom_price);
+  if (
+    !Number.isFinite(discountAmount) || discountAmount < 0 ||
+    !Number.isFinite(depositAmount) || depositAmount < 0 ||
+    (suppliedPrice !== null && (!Number.isFinite(suppliedPrice) || suppliedPrice < 0))
+  ) return fail('ราคา ส่วนลด หรือเงินประกันไม่ถูกต้อง');
+  if (suppliedPrice !== null && discountAmount > suppliedPrice) return fail('ส่วนลดต้องไม่เกินราคาเช่าที่ตกลง');
+
+  return {
+    value: {
+      customer_name: String(customer_name).trim(), phone, contacts, equipmentIds, startIso, endIso,
+      rental_type, rental_region, delivery_method, hours, totalDays, discountAmount, depositAmount, suppliedPrice,
+      notes: notes ? String(notes).trim() : null,
+    },
+  };
+};
+
+// หาหรือสร้างลูกค้า — จับคู่ด้วย "เบอร์ + ชื่อ" เท่านั้น และไม่เปลี่ยนชื่อลูกค้าเดิม
+// (เดิมจับคู่ด้วยเบอร์อย่างเดียวแล้วเขียนทับชื่อ ทำให้ทุกการจองที่ใช้เบอร์เดียวกัน/เบอร์ว่างกลายเป็นชื่อคนเดียว)
+const resolveCustomerRecord = async (name, phone, contacts) => {
+  const cleanName = String(name || '').trim().slice(0, 120);
+  const cleanPhone = String(phone || '').trim().slice(0, 20);
+  const cleanContacts = sanitizeContacts(contacts);
+  const { data: rows, error: findErr } = await supabase.from('customers').select('id, fullname').eq('phone', cleanPhone).limit(50);
+  if (findErr) throw findErr;
+  const hit = (rows || []).find((r) => String(r.fullname || '').trim().toLowerCase() === cleanName.toLowerCase());
+  let id = hit?.id;
+  if (!id) {
+    const { data: created, error } = await supabase.from('customers').insert([{ fullname: cleanName, phone: cleanPhone }]).select();
+    if (error) throw error;
+    id = created[0].id;
+  }
+  if (Object.keys(cleanContacts).length) await saveCustomerContacts(id, cleanContacts);
+  return id;
+};
+
+// ตรวจกล้อง: ต้องมีอยู่ ไม่ซ่อม และไม่ชนช่วงเวลาของใบจองอื่น (excludeBookingId = ใบที่กำลังแก้ไข)
+const checkEquipmentFree = async (eqId, startIso, endIso, excludeBookingId = null) => {
+  if (!Number.isInteger(eqId) || eqId <= 0) throw new Error('รหัสกล้องไม่ถูกต้อง');
+  let conflictQ = supabase
+    .from('booking_items')
+    .select('bookings!inner(id, booking_no, start_date, end_date, status)')
+    .eq('equipment_id', eqId)
+    .in('bookings.status', ['pending', 'confirmed', 'picked_up'])
+    .lt('bookings.start_date', endIso)
+    .gt('bookings.end_date', startIso)
+    .limit(5);
+  if (excludeBookingId) conflictQ = conflictQ.neq('booking_id', excludeBookingId);
+  const [{ data: eqData }, { data: conflicts }] = await Promise.all([
+    supabase.from('equipments').select('*').eq('id', eqId).single(),
+    conflictQ,
+  ]);
+  if (!eqData) throw new Error(`ไม่พบกล้องรหัส ${eqId}`);
+  if (eqData.status === 'maintenance') throw new Error(`กล้อง ${eqData.name} อยู่ระหว่างซ่อมบำรุง`);
+  if (conflicts && conflicts.length) {
+    throw new Error(`กล้อง ${eqData.name} ถูกจองซ้ำกับรายการ ${conflicts[0].bookings.booking_no}`);
+  }
+  return { equipmentId: eqId, rate: Number(eqData.rental_rate_per_day || 0) };
+};
+
 app.post('/api/bookings', rateLimit({ windowMs: 60_000, max: 20 }), asyncHandler(async (req, res, next) => {
   const key = String(req.get('Idempotency-Key') || '').trim();
   if (!/^[A-Za-z0-9._:-]{16,128}$/.test(key)) {
-    return res.status(400).json({ error: 'คำขอจองต้องมี Idempotency-Key ที่ถูกต้อง กรุณารีเฟรชหน้าแล้วลองใหม่' });
+    return res.status(400).json({ error: 'คำขอจองต้องมี Idempotency-Key ที่ถูกต้อง' });
   }
   const bodyHash = crypto.createHash('sha256').update(JSON.stringify(req.body || {})).digest('hex');
 
@@ -687,7 +780,7 @@ app.post('/api/bookings', rateLimit({ windowMs: 60_000, max: 20 }), asyncHandler
     .insert([{ idem_key: key, body_hash: bodyHash, state: 'processing', created_at: new Date().toISOString() }]);
 
   if (idemInsertErr) {
-    if (idemInsertErr.code === '23505') { // Duplicate key
+    if (idemInsertErr.code === '23505') {
       const { data: savedRows } = await supabase
         .from('api_idempotency')
         .select('body_hash, state, response_status, response_body')
@@ -696,8 +789,8 @@ app.post('/api/bookings', rateLimit({ windowMs: 60_000, max: 20 }), asyncHandler
 
       const saved = savedRows?.[0];
       if (!saved) return res.status(409).json({ error: 'กำลังตรวจสอบคำขอเดิม กรุณารอสักครู่' });
-      if (saved.body_hash !== bodyHash) return res.status(409).json({ error: 'Idempotency-Key นี้ถูกใช้กับข้อมูลคนละชุด กรุณาเริ่มรายการใหม่' });
-      if (saved.state !== 'complete') return res.status(409).json({ error: 'คำขอเดิมกำลังดำเนินการ กรุณารอสักครู่ก่อนตรวจสอบรายการจอง' });
+      if (saved.body_hash !== bodyHash) return res.status(409).json({ error: 'Idempotency-Key ถูกใช้งานแล้ว' });
+      if (saved.state !== 'complete') return res.status(409).json({ error: 'คำขอเดิมกำลังดำเนินการ' });
 
       res.setHeader('Idempotency-Replayed', 'true');
       return res.status(Number(saved.response_status) || 201).json(JSON.parse(saved.response_body || '{}'));
@@ -725,133 +818,16 @@ app.post('/api/bookings', rateLimit({ windowMs: 60_000, max: 20 }), asyncHandler
   });
   next();
 }), asyncHandler(async (req, res) => {
+  const parsed = parseBookingBody(req.body);
+  if (parsed.error) return res.status(parsed.status).json({ error: parsed.error });
   const {
-    customer_name, phone, contacts, equipment_id, equipment_ids,
-    start_date, end_date, notes, discount = 0, deposit,
-    rental_type = 'daily', rental_hours = null, rental_region = 'local',
-    delivery_method = 'meetup', custom_price = null,
-  } = req.body;
-
-  const equipmentIds = [
-    ...new Set(
-      (Array.isArray(equipment_ids) ? equipment_ids : [equipment_id])
-        .filter((id) => id !== undefined && id !== null && id !== '')
-        .map(Number)
-    ),
-  ];
-
-  if (!customer_name || !phone || equipmentIds.length === 0 || !start_date || !end_date) {
-    return res.status(400).json({ error: 'กรุณากรอกชื่อลูกค้า เบอร์โทร กล้อง และช่วงเวลาเช่า' });
-  }
-
-  if (!['daily', 'hourly'].includes(rental_type)) return res.status(400).json({ error: 'รูปแบบการเช่าไม่ถูกต้อง' });
-  if (!['local', 'south', 'other'].includes(rental_region)) return res.status(400).json({ error: 'พื้นที่เช่าไม่ถูกต้อง' });
-  if (!['meetup', 'van', 'grab', 'post'].includes(delivery_method)) return res.status(400).json({ error: 'วิธีรับกล้องไม่ถูกต้อง' });
-
-  const startIso = toISO(start_date);
-  const endIso = toISO(end_date);
-  if (!startIso || !endIso) return res.status(400).json({ error: 'รูปแบบวันที่ไม่ถูกต้อง' });
-
-  const startDate = new Date(startIso);
-  const endDate = new Date(endIso);
-  const durationMs = endDate.getTime() - startDate.getTime();
-
-  if (!Number.isFinite(durationMs) || durationMs <= 0) {
-    return res.status(400).json({ error: 'วันและเวลาคืนต้องอยู่หลังวันและเวลาเริ่มเช่า' });
-  }
-
-  let totalDays = 1;
-  let hours = null;
-  if (rental_type === 'hourly') {
-    hours = Number(rental_hours);
-    if (rental_region !== 'local') return res.status(400).json({ error: 'รายชั่วโมงให้บริการเฉพาะพื้นที่สงขลา–เก้าเส้ง' });
-    if (!Number.isInteger(hours) || hours < 2 || hours > 23) {
-      return res.status(400).json({ error: 'การเช่ารายชั่วโมงเริ่มต้น 2 ชั่วโมง และเลือกได้สูงสุด 23 ชั่วโมง' });
-    }
-    if (Math.abs(durationMs - hours * 3600000) > 60000) {
-      return res.status(400).json({ error: 'ช่วงเวลาคืนไม่ตรงกับจำนวนชั่วโมงที่เลือก' });
-    }
-  } else {
-    const startHour = startDate.getHours();
-    const endHour = endDate.getHours();
-    const startMinute = startDate.getMinutes();
-    const endMinute = endDate.getMinutes();
-    if (startHour !== endHour || startMinute !== endMinute) {
-      return res.status(400).json({ error: 'การเช่ารายวันต้องคืนกล้องเวลาเดียวกับเวลารับกล้อง' });
-    }
-    totalDays = Math.max(1, Math.round(durationMs / 86400000));
-    const minDays = rental_region === 'south' ? 2 : rental_region === 'other' ? 5 : 1;
-    if (totalDays < minDays) {
-      return res.status(400).json({
-        error: rental_region === 'south'
-          ? 'ต่างจังหวัดโซนภาคใต้เช่ารายวันขั้นต่ำ 2 วัน'
-          : rental_region === 'other'
-            ? 'ต่างจังหวัดภาคอื่น ๆ เช่ารายวันขั้นต่ำ 5 วัน'
-            : 'การเช่ารายวันขั้นต่ำ 1 วัน',
-      });
-    }
-  }
-
-  const discountAmount = Number(discount);
-  const depositAmount = deposit === undefined || deposit === null || deposit === ''
-    ? equipmentIds.length * 500
-    : Number(deposit);
-  const suppliedPrice = custom_price === undefined || custom_price === null || custom_price === ''
-    ? null
-    : Number(custom_price);
-
-  if (
-    !Number.isFinite(discountAmount) || discountAmount < 0 ||
-    !Number.isFinite(depositAmount) || depositAmount < 0 ||
-    (suppliedPrice !== null && (!Number.isFinite(suppliedPrice) || suppliedPrice < 0))
-  ) {
-    return res.status(400).json({ error: 'ราคา ส่วนลด หรือเงินประกันไม่ถูกต้อง' });
-  }
-
-  // ลูกค้า + ตรวจกล้อง ทำพร้อมกัน (ไม่ต้องรอกันและกัน)
-  const resolveCustomer = async () => {
-    const cleanContacts = sanitizeContacts(contacts);
-    const hasContacts = Object.keys(cleanContacts).length > 0;
-    const { data: existingCustomer } = await supabase.from('customers').select('id').eq('phone', phone).limit(1);
-    if (existingCustomer && existingCustomer.length) {
-      const id = existingCustomer[0].id;
-      await supabase.from('customers').update({ fullname: customer_name }).eq('id', id);
-      if (hasContacts) await saveCustomerContacts(id, cleanContacts);
-      return id;
-    }
-    const { data: newCust, error: custErr } = await supabase.from('customers').insert([{ fullname: customer_name, phone }]).select();
-    if (custErr) throw custErr;
-    if (hasContacts) await saveCustomerContacts(newCust[0].id, cleanContacts);
-    return newCust[0].id;
-  };
-
-  const checkEquipment = async (eqId) => {
-    if (!Number.isInteger(eqId) || eqId <= 0) throw new Error('รหัสกล้องไม่ถูกต้อง');
-
-    const [{ data: eqData }, { data: conflicts }] = await Promise.all([
-      supabase.from('equipments').select('*').eq('id', eqId).single(),
-      supabase
-        .from('booking_items')
-        .select('bookings!inner(id, booking_no, start_date, end_date, status)')
-        .eq('equipment_id', eqId)
-        .in('bookings.status', ['pending', 'confirmed', 'picked_up'])
-        .lt('bookings.start_date', endIso)
-        .gt('bookings.end_date', startIso)
-        .limit(1),
-    ]);
-    if (!eqData) throw new Error(`ไม่พบกล้องรหัส ${eqId}`);
-    if (eqData.status === 'maintenance') throw new Error(`กล้อง ${eqData.name} อยู่ระหว่างซ่อมบำรุง`);
-
-    if (conflicts && conflicts.length) {
-      const cBk = conflicts[0].bookings;
-      throw new Error(`กล้อง ${eqData.name} ถูกจองซ้ำกับรายการ ${cBk.booking_no} (${cBk.start_date} ถึง ${cBk.end_date})`);
-    }
-    return { equipmentId: eqId, rate: Number(eqData.rental_rate_per_day || 0) };
-  };
+    customer_name, phone, contacts, equipmentIds, startIso, endIso, rental_type, rental_region,
+    delivery_method, hours, totalDays, discountAmount, depositAmount, suppliedPrice, notes,
+  } = parsed.value;
 
   const [customerId, itemRates] = await Promise.all([
-    resolveCustomer(),
-    Promise.all(equipmentIds.map(checkEquipment)),
+    resolveCustomerRecord(customer_name, phone, contacts),
+    Promise.all(equipmentIds.map((id) => checkEquipmentFree(id, startIso, endIso))),
   ]);
 
   const calculatedSubtotal = itemRates.reduce(
@@ -860,10 +836,8 @@ app.post('/api/bookings', rateLimit({ windowMs: 60_000, max: 20 }), asyncHandler
   );
 
   const subtotal = suppliedPrice === null ? calculatedSubtotal : suppliedPrice;
-  if (discountAmount > subtotal) throw new Error('ส่วนลดต้องไม่เกินราคาเช่าที่ตกลง');
   const netTotal = Math.max(0, subtotal - discountAmount);
 
-  // Create Booking Record
   const { data: bookingData, error: bkInsertErr } = await supabase
     .from('bookings')
     .insert([{
@@ -903,16 +877,78 @@ app.post('/api/bookings', rateLimit({ windowMs: 60_000, max: 20 }), asyncHandler
   res.status(201).json({
     id: bookingId,
     message: 'สร้างรายการจองสำเร็จ',
-    total_days: totalDays,
-    rental_type,
-    rental_hours: hours,
-    rental_region,
-    delivery_method,
     subtotal,
     discount: discountAmount,
     deposit: depositAmount,
     net_total: netTotal,
   });
+}));
+
+// UPDATE booking — แก้ไขได้เฉพาะใบที่ยังไม่รับคืน/ไม่ถูกยกเลิก
+app.put('/api/bookings/:id', asyncHandler(async (req, res) => {
+  const bookingId = Number(req.params.id);
+  if (!Number.isInteger(bookingId) || bookingId <= 0) return res.status(400).json({ error: 'รหัสการจองไม่ถูกต้อง' });
+
+  const { data: existing, error: fetchErr } = await supabase.from('bookings').select('*').eq('id', bookingId).single();
+  if (fetchErr || !existing) return res.status(404).json({ error: 'ไม่พบรายการจองนี้' });
+  if (['returned', 'cancelled'].includes(existing.status)) {
+    return res.status(400).json({ error: 'แก้ไขไม่ได้ เพราะรายการนี้รับคืนแล้วหรือถูกยกเลิก' });
+  }
+
+  const parsed = parseBookingBody(req.body);
+  if (parsed.error) return res.status(parsed.status).json({ error: parsed.error });
+  const {
+    customer_name, phone, contacts, equipmentIds, startIso, endIso, rental_type, rental_region,
+    delivery_method, hours, totalDays, discountAmount, depositAmount, suppliedPrice, notes,
+  } = parsed.value;
+
+  const [customerId, itemRates] = await Promise.all([
+    resolveCustomerRecord(customer_name, phone, contacts),
+    Promise.all(equipmentIds.map((id) => checkEquipmentFree(id, startIso, endIso, bookingId))),
+  ]);
+
+  const calculatedSubtotal = itemRates.reduce(
+    (sum, it) => sum + (rental_type === 'hourly' ? (it.rate / 24) * hours : it.rate * totalDays), 0
+  );
+  const subtotal = suppliedPrice === null ? calculatedSubtotal : suppliedPrice;
+  const netTotal = Math.max(0, subtotal - discountAmount + Number(existing.extra_charges || 0) + Number(existing.fine_amount || 0));
+
+  // กล้องที่ถูกถอดออกจากใบจอง: ถ้ากำลังถูกรับออกไปแล้วให้กลับเป็นว่าง
+  const { data: oldItems } = await supabase.from('booking_items').select('equipment_id').eq('booking_id', bookingId);
+  const removedIds = (oldItems || []).map((r) => r.equipment_id).filter((id) => !equipmentIds.includes(id));
+  const addedIds = equipmentIds.filter((id) => !(oldItems || []).some((r) => r.equipment_id === id));
+
+  const { error: upErr } = await supabase.from('bookings').update({
+    customer_id: customerId,
+    start_date: startIso,
+    end_date: endIso,
+    total_days: totalDays,
+    subtotal,
+    discount: discountAmount,
+    deposit: depositAmount,
+    net_total: netTotal,
+    notes: notes || null,
+    rental_type,
+    rental_hours: hours,
+    rental_region,
+    delivery_method,
+    custom_price: suppliedPrice,
+  }).eq('id', bookingId);
+  if (upErr) throw upErr;
+
+  const { error: delErr } = await supabase.from('booking_items').delete().eq('booking_id', bookingId);
+  if (delErr) throw delErr;
+  const { error: insErr } = await supabase.from('booking_items').insert(
+    itemRates.map((it) => ({ booking_id: bookingId, equipment_id: it.equipmentId, daily_rate: it.rate }))
+  );
+  if (insErr) throw insErr;
+
+  if (existing.status === 'picked_up') {
+    if (removedIds.length) await supabase.from('equipments').update({ status: 'available' }).in('id', removedIds).neq('status', 'maintenance');
+    if (addedIds.length) await supabase.from('equipments').update({ status: 'rented' }).in('id', addedIds).neq('status', 'maintenance');
+  }
+
+  res.json({ message: 'แก้ไขรายการจองสำเร็จ', id: bookingId });
 }));
 
 // CANCEL booking
@@ -934,7 +970,6 @@ app.patch('/api/bookings/:id/cancel', asyncHandler(async (req, res) => {
 // 4. CHECKOUT & RETURN
 // ==========================================
 app.post('/api/bookings/:id/checkout', asyncHandler(async (req, res) => {
-  // ลดจำนวนรอบไป–กลับฐานข้อมูล: อ่านพร้อมกัน → ตรวจ → เขียนพร้อมกัน
   const [{ data: booking }, equipmentIds] = await Promise.all([
     supabase.from('bookings').select('*').eq('id', req.params.id).single(),
     getBookingEquipmentIds(req.params.id),
@@ -960,7 +995,6 @@ app.post('/api/bookings/:id/checkout', asyncHandler(async (req, res) => {
     supabase.from('equipments').update({ status: 'rented' }).in('id', equipmentIds),
     saveInspection(booking.id, 'checkout', req.body),
     supabase.from('bookings').update({ status: 'picked_up' }).eq('id', booking.id),
-    // รับกล้องออก = ถือว่ารับเงินประกันแล้ว — ไม่ error ถ้ายังไม่ได้เพิ่มคอลัมน์
     holdDeposit
       ? supabase.from('bookings').update({ deposit_status: 'held', deposit_updated_at: new Date().toISOString() }).eq('id', booking.id)
       : Promise.resolve(),
@@ -1005,7 +1039,6 @@ app.post('/api/bookings/:id/return', asyncHandler(async (req, res) => {
     description,
   }));
 
-  // อุปกรณ์ที่อยู่ระหว่างซ่อมต้องไม่ถูกเปลี่ยนเป็น "ว่าง"
   const { data: eqs, error: eqErr } = equipmentIds.length
     ? await supabase.from('equipments').select('id, status').in('id', equipmentIds)
     : { data: [], error: null };
@@ -1027,7 +1060,6 @@ app.post('/api/bookings/:id/return', asyncHandler(async (req, res) => {
   if (eqUpdate.error) throw eqUpdate.error;
   if (bkUpdate.error) throw bkUpdate.error;
 
-  // บันทึกรายรับหลังจากบันทึกการคืนสำเร็จแล้วเท่านั้น (กันมีรายรับทั้งที่การคืนไม่สำเร็จ)
   if (incomeRows.length) {
     const { error: txError } = await supabase.from('transactions').insert(incomeRows);
     if (txError) throw txError;
@@ -1042,7 +1074,7 @@ app.post('/api/bookings/:id/return', asyncHandler(async (req, res) => {
 }));
 
 // ==========================================
-// เงินประกัน + สำรองข้อมูล
+// DEPOSIT & BACKUP & OTHER APIs
 // ==========================================
 const DEPOSIT_STATUSES = ['pending', 'held', 'returned', 'partial'];
 const DEPOSIT_DEDUCT_CATEGORY = 'หักเงินประกัน';
@@ -1077,12 +1109,11 @@ app.patch('/api/bookings/:id/deposit', asyncHandler(async (req, res) => {
 
   if (error) {
     if (columnMissing(error)) {
-      return res.status(500).json({ error: 'ยังไม่ได้เพิ่มคอลัมน์เงินประกันในฐานข้อมูล กรุณารัน SQL ที่แนะนำใน Supabase ก่อน' });
+      return res.status(500).json({ error: 'ยังไม่ได้เพิ่มคอลัมน์เงินประกันในฐานข้อมูล' });
     }
     throw error;
   }
 
-  // เงินที่หักไว้ถือเป็นรายรับของร้าน — ลบรายการเก่าของใบนี้ก่อน กันบันทึกซ้ำเมื่อแก้ไข
   await supabase.from('transactions').delete().eq('booking_id', booking.id).eq('category', DEPOSIT_DEDUCT_CATEGORY);
   if (status === 'partial') {
     await supabase.from('transactions').insert([{
@@ -1117,8 +1148,8 @@ app.get('/api/deposits', asyncHandler(async (req, res) => {
     deposit: Number(b.deposit || 0),
     status: b.status,
     end_date: b.end_date,
-    customer_name: b.customers?.fullname,
-    phone: b.customers?.phone,
+    customer_name: b.customers?.fullname || 'ไม่ระบุชื่อ',
+    phone: b.customers?.phone || '',
   }));
   res.json({ held_total: rows.reduce((sum, r) => sum + r.deposit, 0), count: rows.length, rows });
 }));
@@ -1137,7 +1168,6 @@ async function fetchAllRows(table) {
   return out;
 }
 
-// ไม่รวม app_settings (รหัสผ่าน) และ api_idempotency
 app.get('/api/backup', rateLimit({ windowMs: 60_000, max: 5, message: 'ขอสำรองข้อมูลถี่เกินไป ลองใหม่ในอีกสักครู่' }), asyncHandler(async (req, res) => {
   const tables = {};
   for (const t of BACKUP_TABLES) tables[t] = await fetchAllRows(t);
@@ -1153,7 +1183,7 @@ app.get('/api/backup', rateLimit({ windowMs: 60_000, max: 5, message: 'ขอส
 app.get('/api/history', asyncHandler(async (req, res) => {
   const { data, error } = await supabase
     .from('bookings')
-    .select('*, customers!inner(fullname, phone), booking_items(equipments(name))')
+    .select('*, customers(fullname, phone), booking_items(equipments(name))')
     .in('status', ['returned', 'cancelled'])
     .order('id', { ascending: false });
 
@@ -1161,8 +1191,8 @@ app.get('/api/history', asyncHandler(async (req, res) => {
 
   const formatted = (data || []).map(b => ({
     ...b,
-    customer_name: b.customers?.fullname,
-    phone: b.customers?.phone,
+    customer_name: b.customers?.fullname || 'ไม่ระบุชื่อ',
+    phone: b.customers?.phone || '',
     equipment_names: (b.booking_items || []).map(bi => bi.equipments?.name).filter(Boolean).join(', ')
   }));
 
@@ -1183,7 +1213,7 @@ app.get('/api/bookings/:id/inspections', asyncHandler(async (req, res) => {
 app.get('/api/maintenance', asyncHandler(async (req, res) => {
   const { data, error } = await supabase
     .from('maintenance_records')
-    .select('*, equipments!inner(code, name)')
+    .select('*, equipments(code, name)')
     .order('id', { ascending: false });
 
   if (error) throw error;
@@ -1271,7 +1301,6 @@ app.patch('/api/maintenance/:id/complete', asyncHandler(async (req, res) => {
   res.json({ message: 'ปิดงานซ่อมบำรุงสำเร็จ' });
 }));
 
-// ดึงข้อมูลทั้งหมดแบบแบ่งหน้า — Supabase จำกัดแถวต่อคำขอ (ปกติ 1,000) ถ้าไม่แบ่งหน้ายอดสะสมจะ "หาย/รีเซ็ต" เมื่อรายการเกินจำนวนนั้น
 async function pagedRows(makeQuery, pageSize = 1000) {
   const rows = [];
   for (let from = 0; ; from += pageSize) {
@@ -1355,8 +1384,8 @@ app.get('/api/customers', asyncHandler(async (req, res) => {
     return {
       id: c.id,
       fullname: c.fullname,
-      phone: c.phone,
-      email: c.email,
+      phone: c.phone || '',
+      email: c.email || '',
       id_card_no: c.id_card_no,
       contact_channel: c.contact_channel,
       notes: c.notes,
@@ -1386,11 +1415,13 @@ app.patch('/api/customers/:id', asyncHandler(async (req, res) => {
     if (!name) return res.status(400).json({ error: 'กรุณากรอกชื่อลูกค้า' });
     update.fullname = name.slice(0, 120);
   }
+  if (req.body.phone !== undefined) {
+    update.phone = String(req.body.phone).trim();
+  }
   if (req.body.contacts !== undefined) update.contacts = sanitizeContacts(req.body.contacts);
   if (!Object.keys(update).length) return res.status(400).json({ error: 'ไม่มีข้อมูลที่จะแก้ไข' });
   const { error } = await supabase.from('customers').update(update).eq('id', id);
   if (error) {
-    if (/contacts/i.test(error.message || '')) return res.status(400).json({ error: 'ยังไม่ได้เพิ่มคอลัมน์ช่องทางติดต่อในฐานข้อมูล กรุณารัน customer-contacts.sql ใน Supabase ก่อน' });
     throw error;
   }
   res.json({ message: 'บันทึกข้อมูลลูกค้าแล้ว' });
@@ -1406,19 +1437,21 @@ app.get('/api/availability', asyncHandler(async (req, res) => {
 
   const { data, error } = await supabase
     .from('booking_items')
-    .select('equipment_id, bookings!inner(booking_no, start_date, end_date, status, customers(fullname))')
+    .select('equipment_id, booking_id, bookings!inner(booking_no, start_date, end_date, status, customers(fullname))')
     .in('bookings.status', ['pending', 'confirmed', 'picked_up'])
     .lt('bookings.start_date', endIso)
     .gt('bookings.end_date', startIso);
 
   if (error) throw error;
+  // ตอนแก้ไขใบจอง ให้ไม่นับใบที่กำลังแก้เป็นการจองซ้ำกับตัวเอง
+  const excludeId = Number(req.query.exclude) || null;
 
-  const formatted = (data || []).map(row => ({
+  const formatted = (data || []).filter(row => !excludeId || row.booking_id !== excludeId).map(row => ({
     equipment_id: row.equipment_id,
     booking_no: row.bookings?.booking_no,
     start_date: row.bookings?.start_date,
     end_date: row.bookings?.end_date,
-    customer_name: row.bookings?.customers?.fullname,
+    customer_name: row.bookings?.customers?.fullname || 'ไม่ระบุชื่อ',
   }));
 
   res.json(formatted);
@@ -1434,7 +1467,6 @@ app.get('/api/reports/summary', asyncHandler(async (req, res) => {
     supabase.from('equipments').select('cost_price, current_value'),
   ]);
 
-  // 1. Monthly Summary
   const monthlyMap = {};
   for (const t of transactions || []) {
     if (!t.transaction_date) continue;
@@ -1445,8 +1477,6 @@ app.get('/api/reports/summary', asyncHandler(async (req, res) => {
   }
   const monthly = Object.values(monthlyMap).sort((a, b) => a.month.localeCompare(b.month)).slice(-12);
 
-  // 2. Top Equipment — นับเฉพาะรายการที่รับคืนแล้ว และใช้ราคาที่ตกลงจริง (หลังส่วนลด) แบ่งตามสัดส่วนราคากล้องแต่ละตัว
-  // เพื่อให้ยอดรวมตรงกับรายรับในบัญชี
   const rateByBooking = {};
   for (const bi of bookingItems || []) {
     rateByBooking[bi.booking_id] = (rateByBooking[bi.booking_id] || 0) + Number(bi.daily_rate || 0);
@@ -1469,7 +1499,6 @@ app.get('/api/reports/summary', asyncHandler(async (req, res) => {
     .sort((a, b) => b.rental_count - a.rental_count || b.revenue - a.revenue)
     .slice(0, 5);
 
-  // 3. Totals & Assets
   let totalIncome = 0;
   let totalExpense = 0;
   for (const t of transactions || []) {
@@ -1496,28 +1525,20 @@ app.get('/api/reports/summary', asyncHandler(async (req, res) => {
   });
 }));
 
-// ==========================================
 // ERROR HANDLER
-// ==========================================
 app.use((err, req, res, next) => {
   console.error(err);
-
   if (err.message === 'CORS_ORIGIN_DENIED') return res.status(403).json({ error: 'Origin นี้ไม่ได้รับอนุญาต' });
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) return res.status(400).json({ error: 'รูปแบบ JSON ไม่ถูกต้อง' });
   if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
     return res.status(413).json({ error: 'ไฟล์รูปใหญ่เกินไป (สูงสุด 4 MB)' });
   }
-
   if (err.message === 'INVALID_FILE_TYPE') {
     return res.status(415).json({ error: 'รองรับเฉพาะไฟล์ JPG, PNG, WEBP หรือ GIF' });
   }
-
   res.status(500).json({ error: 'เกิดข้อผิดพลาดในเซิร์ฟเวอร์' });
 });
 
-// ==========================================
-// START SERVER
-// ==========================================
 const PORT = process.env.PORT || 5001;
 
 async function startServer() {
@@ -1528,7 +1549,6 @@ async function startServer() {
     const HOST = process.env.HOST || '127.0.0.1';
     app.listen(PORT, HOST, () => {
       console.log(`Server running on http://${HOST}:${PORT}`);
-      console.log('Supabase PostgreSQL connected successfully');
     });
   } catch (err) {
     console.error('Cannot connect to Supabase:', err.message);

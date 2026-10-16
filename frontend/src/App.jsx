@@ -1660,6 +1660,65 @@ html[data-scrolled='true'] .glass-header { box-shadow: 0 14px 34px -22px rgb(var
   .btn .ld-ripple { display: none; }
 }
 
+/* =====================================================
+   LOGIN PORTAL — หน้าเข้าสู่ระบบแบบ Motion (แทน SweetAlert) + แจ้งเตือนออกจากระบบ
+   ===================================================== */
+@keyframes lgpReveal { from { clip-path: circle(0% at var(--ox, 50%) var(--oy, 50%)); } to { clip-path: circle(150% at var(--ox, 50%) var(--oy, 50%)); } }
+@keyframes lgpHide { from { clip-path: circle(150% at 50% 50%); } to { clip-path: circle(0% at var(--ox, 50%) var(--oy, 50%)); } }
+@keyframes lgpCard { from { opacity: 0; transform: translateY(34px) scale(.95); filter: blur(10px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes lgpCardOut { to { opacity: 0; transform: translateY(18px) scale(.97); filter: blur(6px); } }
+@keyframes lgpIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes lgpOrb { 0%, 100% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(5vw, -4vh, 0) scale(1.15); } }
+@keyframes lgpCheck { to { stroke-dashoffset: 0; } }
+@keyframes lgpRing { from { transform: scale(.6); opacity: .9; } to { transform: scale(1.7); opacity: 0; } }
+@keyframes lgpSpin { to { transform: rotate(360deg); } }
+@keyframes lgpSlide { from { opacity: 0; transform: translateX(34px); } to { opacity: 1; transform: none; } }
+@keyframes lnIn { from { opacity: 0; transform: translate(-50%, -26px) scale(.9); filter: blur(8px); } to { opacity: 1; transform: translate(-50%, 0) scale(1); filter: none; } }
+@keyframes lnOut { to { opacity: 0; transform: translate(-50%, -18px) scale(.95); filter: blur(6px); } }
+@keyframes lnBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@keyframes lnWave { 0%, 100% { transform: rotate(0); } 20%, 60% { transform: rotate(16deg); } 40%, 80% { transform: rotate(-10deg); } }
+
+.lgp { position: fixed; inset: 0; z-index: 150; display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); overflow-y: auto; overscroll-behavior: contain; }
+.lgp-bg { position: fixed; inset: 0; z-index: -1; background: radial-gradient(120% 90% at 50% 0%, rgb(var(--wa-color-purple-80)) 0%, rgb(var(--wa-color-purple-95)) 62%); animation: lgpReveal .75s cubic-bezier(.65, 0, .2, 1) both; }
+.lgp[data-out='true'] .lgp-bg { animation: lgpHide .5s cubic-bezier(.65, 0, .2, 1) both; }
+.lgp-orb { position: fixed; z-index: -1; border-radius: 50%; filter: blur(60px); opacity: .55; animation: lgpOrb 11s ease-in-out infinite; pointer-events: none; }
+.lgp-orb.a { width: 46vmax; height: 46vmax; left: -14vmax; top: -12vmax; background: rgb(var(--wa-color-purple-60) / .55); }
+.lgp-orb.b { width: 38vmax; height: 38vmax; right: -12vmax; bottom: -12vmax; background: rgb(var(--wa-color-purple-40) / .38); animation-delay: -5s; }
+.lgp-card { position: relative; width: min(100%, 430px); margin: auto; padding: 2rem 1.6rem 1.5rem; border-radius: 28px; border: 1px solid rgb(255 255 255 / .12); background: linear-gradient(160deg, rgb(255 255 255 / .09), rgb(255 255 255 / .03)); backdrop-filter: blur(22px) saturate(1.3); -webkit-backdrop-filter: blur(22px) saturate(1.3); box-shadow: 0 50px 100px -40px rgb(0 0 0 / .8), inset 0 1px 0 rgb(255 255 255 / .18); color: rgb(var(--wa-color-purple-10)); animation: lgpCard .8s .35s cubic-bezier(.2, .7, .2, 1) both; }
+.lgp[data-out='true'] .lgp-card { animation: lgpCardOut .35s ease-in both; }
+.lgp-card::before { content: ''; position: absolute; inset: 0 22% auto; height: 2px; border-radius: 99px; background: linear-gradient(90deg, transparent, rgb(var(--wa-color-purple-30)), transparent); }
+.lgp-st { animation: lgpIn .7s cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i, 0) * 80ms + 600ms); }
+.lgp-step { animation: lgpSlide .55s cubic-bezier(.2, .7, .2, 1) both; }
+.lgp-card .lg-mark { margin-bottom: 1rem; }
+.lgp-btn { position: relative; display: flex; align-items: center; justify-content: center; gap: .5rem; width: 100%; height: 52px; margin: 1.1rem auto 0; border: 0; border-radius: 16px; background: linear-gradient(135deg, rgb(var(--wa-color-purple-40)), rgb(var(--wa-color-purple-70))); color: #fff; font: inherit; font-size: .95rem; font-weight: 600; cursor: pointer; overflow: hidden; box-shadow: 0 18px 36px -16px rgb(var(--wa-color-purple-50) / .95), inset 0 1px 0 rgb(255 255 255 / .3); transition: width .45s cubic-bezier(.2, .7, .2, 1), border-radius .45s, transform .2s, box-shadow .3s; }
+.lgp-btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 30%, rgb(255 255 255 / .3) 50%, transparent 70%); transform: translateX(-120%); transition: transform .8s cubic-bezier(.2, .7, .2, 1); }
+.lgp-btn:hover:not(:disabled)::after { transform: translateX(120%); }
+.lgp-btn:hover:not(:disabled) { transform: translateY(-2px); }
+.lgp-btn:active:not(:disabled) { transform: scale(.98); }
+.lgp-btn[data-loading='true'] { width: 52px; border-radius: 50%; padding: 0; font-size: 0; }
+.lgp-btn[data-loading='true'] > span { display: none; }
+.lgp-btn[data-loading='true']::before { content: ''; width: 22px; height: 22px; border-radius: 50%; border: 3px solid rgb(255 255 255 / .35); border-top-color: #fff; animation: lgpSpin .7s linear infinite; }
+.lgp-btn:disabled { cursor: default; }
+.lgp-link { display: block; width: 100%; margin: .55rem 0 0; padding: .65rem; border: 0; border-radius: 12px; background: transparent; color: rgb(var(--wa-color-purple-10) / .7); font: inherit; font-size: .85rem; cursor: pointer; transition: background .2s, color .2s; }
+.lgp-link:hover:not(:disabled) { background: rgb(255 255 255 / .08); color: #fff; }
+.lgp-err { margin: .8rem 0 0; padding: .65rem .85rem; border: 1px solid rgb(248 113 113 / .45); border-radius: 12px; background: rgb(248 113 113 / .12); color: #fecaca; font-size: .82rem; text-align: left; animation: lgpIn .35s both; }
+.lgp-done { display: grid; place-items: center; gap: .9rem; padding: 1.2rem 0 .6rem; text-align: center; animation: lgpIn .5s both; }
+.lgp-tick { position: relative; display: grid; place-items: center; width: 84px; height: 84px; border-radius: 50%; background: linear-gradient(145deg, rgb(var(--wa-color-purple-40)), rgb(var(--wa-color-purple-70))); box-shadow: 0 20px 44px -14px rgb(var(--wa-color-purple-50)); }
+.lgp-tick::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgb(var(--wa-color-purple-30)); animation: lgpRing 1.1s ease-out infinite; }
+.lgp-tick path { stroke-dasharray: 30; stroke-dashoffset: 30; animation: lgpCheck .55s .15s ease-out forwards; }
+.lgp-x { position: absolute; top: .8rem; right: .8rem; display: grid; place-items: center; width: 36px; height: 36px; border: 0; border-radius: 12px; background: transparent; color: rgb(var(--wa-color-purple-10) / .7); cursor: pointer; transition: background .2s, transform .35s cubic-bezier(.2, .7, .2, 1); }
+.lgp-x:hover { background: rgb(255 255 255 / .1); transform: rotate(90deg); color: #fff; }
+.lgp input { font-size: 16px; }
+
+.ld-leave { position: fixed; left: 50%; top: max(1rem, env(safe-area-inset-top)); z-index: 160; display: flex; align-items: center; gap: .8rem; max-width: calc(100vw - 2rem); padding: .75rem 1.1rem .75rem .8rem; border-radius: 999px; background: rgb(var(--wa-color-purple-95) / .92); color: rgb(var(--wa-color-purple-05)); border: 1px solid rgb(255 255 255 / .14); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 24px 50px -18px rgb(0 0 0 / .6); overflow: hidden; animation: lnIn .7s cubic-bezier(.2, .7, .2, 1) both; }
+.ld-leave[data-out='true'] { animation: lnOut .45s ease-in both; }
+.ld-leave-ic { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 50%; background: linear-gradient(145deg, rgb(var(--wa-color-purple-40)), rgb(var(--wa-color-purple-70))); font-size: 18px; }
+.ld-leave-ic span { display: inline-block; transform-origin: 70% 70%; animation: lnWave 1.4s .5s ease-in-out 1; }
+.ld-leave b { display: block; font-size: .88rem; font-weight: 600; line-height: 1.3; }
+.ld-leave small { display: block; font-size: .74rem; color: rgb(var(--wa-color-purple-30)); line-height: 1.3; }
+.ld-leave i { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; transform-origin: left; background: rgb(var(--wa-color-purple-40)); animation: lnBar 2.8s linear both; }
+@media (prefers-reduced-motion: reduce) { .lgp-bg, .lgp-card, .lgp-st, .lgp-step, .lgp-orb, .ld-leave, .ld-leave i { animation-duration: .01ms !important; animation-delay: 0ms !important; } }
+
 `;
 if (typeof document !== 'undefined' && !document.getElementById('lensdesk-css')) {
   const el = document.createElement('style');
@@ -2305,7 +2364,7 @@ function AppProvider({ children }) {
   const [offline, setOffline] = useState(false);
 
   // modal / drawer ส่วนกลาง
-  const [bookingModal, setBookingModal] = useState({ open: false, equipmentIds: [] });
+  const [bookingModal, setBookingModal] = useState({ open: false, equipmentIds: [], editing: null });
   const [equipmentModal, setEquipmentModal] = useState({ open: false, item: null });
   const [detailId, setDetailId] = useState(null);
 
@@ -2410,11 +2469,12 @@ function AppProvider({ children }) {
     const hash = `#/${target}`;
     if (window.location.hash !== hash) window.location.hash = hash;
     else setPage(target);
-    window.scrollTo({ top: 0, behavior: 'auto' });
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, []);
 
   const enter = useCallback(() => {
     sessionStorage.setItem(ENTER_KEY, '1');
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     setEntered(true);
     navigate('dashboard');
   }, [navigate]);
@@ -2429,10 +2489,10 @@ function AppProvider({ children }) {
 
   /* ---------- modal helpers ---------- */
   const openBooking = useCallback(
-    (equipmentIds = []) => setBookingModal({ open: true, equipmentIds }),
+    (equipmentIds = [], editing = null) => setBookingModal({ open: true, equipmentIds, editing }),
     []
   );
-  const closeBooking = useCallback(() => setBookingModal({ open: false, equipmentIds: [] }), []);
+  const closeBooking = useCallback(() => setBookingModal({ open: false, equipmentIds: [], editing: null }), []);
   const openEquipment = useCallback((item = null) => setEquipmentModal({ open: true, item }), []);
   const closeEquipment = useCallback(() => setEquipmentModal({ open: false, item: null }), []);
 
@@ -3744,12 +3804,18 @@ async function deleteTransactionFlow(tx, refresh) {
 
 /* ═════ components/BookingList.jsx ═════ */
 function Actions({ b, refresh }) {
+  const { openBooking } = useApp();
   const stop = (fn) => (e) => {
     e.stopPropagation();
     fn(b, refresh);
   };
   return (
     <div className="flex flex-wrap justify-end gap-1.5">
+      {['pending', 'confirmed', 'picked_up'].includes(b.status) && (
+        <button onClick={(e) => { e.stopPropagation(); openBooking([], b); }} title="แก้ไขการจอง" className="btn btn-sm btn-ghost">
+          <Pencil size={14} /> <span>แก้ไข</span>
+        </button>
+      )}
       {['pending', 'confirmed'].includes(b.status) && (
         <>
           <button onClick={stop(checkoutFlow)} title="ส่งมอบอุปกรณ์" className="btn btn-sm border border-info/30 bg-info/10 text-info hover:bg-info/20">
@@ -3955,24 +4021,51 @@ async function editCustomerFlow(customer, refresh) {
 
 function BookingForm() {
   const { bookingModal, closeBooking, equipments, customers, refresh, navigate } = useApp();
+  const editing = bookingModal.editing || null; // ถ้ามี = โหมดแก้ไขใบจองเดิม
   const initialStart = nextSlot();
-  const [form, setForm] = useState(() => ({
-    customer_name: '',
-    phone: '',
-    contacts: { ...EMPTY_CONTACTS },
-    start_date: toInputValue(initialStart),
-    end_date: toInputValue(new Date(initialStart.getTime() + 86400000)),
-    rental_type: 'daily',
-    duration_days: 1,
-    rental_hours: 2,
-    rental_region: 'local',
-    delivery_method: 'meetup',
-    custom_price: '0',
-    notes: '',
-    discount: '0',
-    deposit: String(Math.max(1, bookingModal.equipmentIds.length) * 500),
-  }));
-  const [selected, setSelected] = useState(() => new Set(bookingModal.equipmentIds.map(Number)));
+  const editIds = editing
+    ? (editing.items ? editing.items.map((i) => i.equipment_id) : String(editing.equipment_ids || '').split(',').filter(Boolean)).map(Number)
+    : bookingModal.equipmentIds.map(Number);
+  const [form, setForm] = useState(() => {
+    if (editing) {
+      const st = parseDate(editing.start_date);
+      const en = parseDate(editing.end_date);
+      const spanDays = st && en ? Math.max(1, Math.round((en - st) / 86400000)) : 1;
+      return {
+        customer_name: editing.customer_name || '',
+        phone: editing.phone || '',
+        contacts: { ...EMPTY_CONTACTS, ...(customers.find((c) => c.id === editing.customer_id)?.contacts || {}) },
+        start_date: toInputValue(st || initialStart),
+        end_date: toInputValue(en || initialStart),
+        rental_type: editing.rental_type || 'daily',
+        duration_days: spanDays,
+        rental_hours: Number(editing.rental_hours) || 2,
+        rental_region: editing.rental_region || 'local',
+        delivery_method: editing.delivery_method || 'meetup',
+        custom_price: String(Number(editing.custom_price ?? editing.subtotal ?? 0)),
+        notes: editing.notes || '',
+        discount: String(Number(editing.discount || 0)),
+        deposit: String(Number(editing.deposit || 0)),
+      };
+    }
+    return {
+      customer_name: '',
+      phone: '',
+      contacts: { ...EMPTY_CONTACTS },
+      start_date: toInputValue(initialStart),
+      end_date: toInputValue(new Date(initialStart.getTime() + 86400000)),
+      rental_type: 'daily',
+      duration_days: 1,
+      rental_hours: 2,
+      rental_region: 'local',
+      delivery_method: 'meetup',
+      custom_price: '0',
+      notes: '',
+      discount: '0',
+      deposit: String(Math.max(1, bookingModal.equipmentIds.length) * 500),
+    };
+  });
+  const [selected, setSelected] = useState(() => new Set(editIds));
   const [query, setQuery] = useState('');
   const [cat, setCat] = useState('all');
   const [busy, setBusy] = useState({});
@@ -3980,7 +4073,7 @@ function BookingForm() {
   const [checking, setChecking] = useState(false);
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
-  const [priceTouched, setPriceTouched] = useState(false);
+  const [priceTouched, setPriceTouched] = useState(Boolean(editing)); // แก้ไข: คงราคาเดิมไว้จนกว่าจะเปลี่ยนกล้อง/ระยะเวลา
   const lastConflictNotice = useRef('');
 
   const set = (patch) => setForm((f) => ({ ...f, ...patch }));
@@ -4013,7 +4106,7 @@ function BookingForm() {
     }
     let cancelled = false;
     setChecking(true);
-    api.get('/availability', { params: { start: debouncedStart, end: debouncedEnd } })
+    api.get('/availability', { params: { start: debouncedStart, end: debouncedEnd, ...(editing ? { exclude: editing.id } : {}) } })
       .then(({ data }) => {
         if (cancelled) return;
         const map = {};
@@ -4130,7 +4223,7 @@ function BookingForm() {
     savingRef.current = true;
     setSaving(true);
     try {
-      const { data } = await api.post('/bookings', {
+      const payload = {
         customer_name: form.customer_name.trim(),
         phone: form.phone.trim(),
         contacts: form.contacts,
@@ -4145,7 +4238,15 @@ function BookingForm() {
         notes: form.notes.trim(),
         discount,
         deposit,
-      }, { headers: { 'Idempotency-Key': window.crypto?.randomUUID?.() || `booking-${Date.now()}-${Math.random().toString(36).slice(2)}` } });
+      };
+      if (editing) {
+        await api.put(`/bookings/${editing.id}`, payload);
+        await refresh();
+        closeBooking();
+        toast('success', 'บันทึกการแก้ไขการจองแล้ว');
+        return;
+      }
+      await api.post('/bookings', payload, { headers: { 'Idempotency-Key': window.crypto?.randomUUID?.() || `booking-${Date.now()}-${Math.random().toString(36).slice(2)}` } });
       await refresh();
       closeBooking();
       navigate('bookings');
@@ -4165,7 +4266,7 @@ function BookingForm() {
         confirmButtonText: 'เรียบร้อย',
       });
     } catch (error) {
-      showError(errMsg(error, 'สร้างการจองไม่สำเร็จ'));
+      showError(errMsg(error, editing ? 'แก้ไขการจองไม่สำเร็จ' : 'สร้างการจองไม่สำเร็จ'));
     } finally {
       savingRef.current = false;
       setSaving(false);
@@ -4175,8 +4276,8 @@ function BookingForm() {
   return (
     <Modal
       size="lg"
-      title="สร้างการจองกล้อง"
-      subtitle="ระบบตรวจวันซ้ำให้ทันที • เลือกรายวันหรือรายชั่วโมง • แก้ราคาเองได้"
+      title={editing ? `แก้ไขการจอง ${editing.booking_no || ''}` : 'สร้างการจองกล้อง'}
+      subtitle={editing ? 'แก้ไขข้อมูลผู้เช่า กล้อง วันเวลา และราคา — ระบบตรวจวันซ้ำให้ทันที' : 'ระบบตรวจวันซ้ำให้ทันที • เลือกรายวันหรือรายชั่วโมง • แก้ราคาเองได้'}
       onClose={closeBooking}
       footer={
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -4188,7 +4289,7 @@ function BookingForm() {
             <button type="button" onClick={closeBooking} className="btn btn-ghost flex-1 sm:flex-none">ยกเลิก</button>
             <button type="submit" form="booking-form" disabled={saving || checking} className="btn btn-primary flex-1 sm:min-w-44">
               {saving ? <RefreshCw size={16} className="animate-spin" /> : <Check size={16} />}
-              {saving ? 'กำลังบันทึก...' : 'บันทึกการจอง'}
+              {saving ? 'กำลังบันทึก...' : editing ? 'บันทึกการแก้ไข' : 'บันทึกการจอง'}
             </button>
           </div>
         </div>
@@ -4202,8 +4303,8 @@ function BookingForm() {
               <Field label="ชื่อผู้เช่า *">
                 <input required list="cust-names" className="input" placeholder="ชื่อ–นามสกุล" value={form.customer_name} onChange={(e) => fillFromName(e.target.value)} />
               </Field>
-              <Field label="เบอร์โทรศัพท์ *">
-                <input required type="tel" inputMode="tel" list="cust-phones" className="input" placeholder="08X-XXX-XXXX" value={form.phone} onChange={(e) => fillFromPhone(e.target.value)} />
+              <Field label="เบอร์โทรศัพท์ (ไม่บังคับ)">
+                <input type="tel" inputMode="tel" list="cust-phones" className="input" placeholder="08X-XXX-XXXX" value={form.phone} onChange={(e) => fillFromPhone(e.target.value)} />
               </Field>
             </div>
             <details className="mt-3 rounded-2xl border border-line bg-surface2/40 open:bg-surface2/60" open={Object.values(form.contacts || {}).some(Boolean)}>
@@ -4457,7 +4558,7 @@ function printSlip(d) {
 }
 
 function BookingDetail() {
-  const { detailId, closeDetail, refresh, customers } = useApp();
+  const { detailId, closeDetail, refresh, customers, openBooking } = useApp();
   const [detail, setDetail] = useState(null);
   const [error, setError] = useState('');
 
@@ -4496,10 +4597,15 @@ function BookingDetail() {
       onClose={closeDetail}
       footer={
         detail ? (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button onClick={() => printSlip(detail)} className="btn" title="พิมพ์ใบจอง">
               <Printer size={16} /> พิมพ์ใบจอง
             </button>
+            {detail && ['pending', 'confirmed', 'picked_up'].includes(detail.status) && (
+              <button onClick={() => { const d = detail; closeDetail(); openBooking([], d); }} className="btn" title="แก้ไขการจอง">
+                <Pencil size={16} /> แก้ไข
+              </button>
+            )}
             {canCheckout && (
               <>
                 <button onClick={() => run(cancelFlow)} className="btn btn-danger">
@@ -5865,7 +5971,7 @@ function Landing({ onEnter }) {
                 </span>
               ))}
             </h1>
-            <p className="ld-fade mt-8 max-w-xl text-base leading-[1.95] text-[rgb(var(--wa-color-purple-50)/0.65)] sm:text-lg" style={{ '--i': 6 }}>
+            <p className="ld-fade mt-8 max-w-xl text-base leading-[1.95] text-[rgb(var(--wa-color-purple-05)/0.65)] sm:text-lg" style={{ '--i': 6 }}>
               เก็บเรื่องอุปกรณ์ ใบจอง นัดรับ–คืน และรายรับรายจ่ายไว้ที่เดียว
               ทำมาให้ร้านที่มีคนดูแลคนเดียว เปิดจากมือถือหน้างานก็ได้
             </p>
@@ -6550,15 +6656,25 @@ function Operations() {
 }
 
 /* ═════ pages/CalendarPage.jsx ═════ */
-const PILL = {
-  confirmed: 'bg-warn/15 text-warn',
-  pending: 'bg-warn/15 text-warn',
-  picked_up: 'bg-info/15 text-info',
-  overdue: 'bg-bad/15 text-bad',
-  returned: 'bg-ok/15 text-ok',
+/* ปฏิทิน: แสดงเฉพาะ "วันรับ" และ "วันคืน" (วันที่อยู่ระหว่างเช่าไม่แสดง) — สีบอกสถานะ */
+const CAL_KINDS = {
+  pickup_wait: { label: 'รอรับกล้อง', short: 'รับ', chip: 'bg-accent/15 text-accent', dot: 'bg-accent', bar: 'border-l-accent' },
+  pickup_done: { label: 'รับกล้องแล้ว', short: 'รับ', chip: 'bg-info/15 text-info', dot: 'bg-info', bar: 'border-l-info' },
+  return_wait: { label: 'กำหนดคืนกล้อง', short: 'คืน', chip: 'bg-warn/15 text-warn', dot: 'bg-warn', bar: 'border-l-warn' },
+  return_late: { label: 'เกินกำหนดคืน', short: 'คืน', chip: 'bg-bad/15 text-bad', dot: 'bg-bad', bar: 'border-l-bad' },
+  return_done: { label: 'คืนกล้องแล้ว', short: 'คืน', chip: 'bg-ok/15 text-ok', dot: 'bg-ok', bar: 'border-l-ok' },
 };
-const DOT = {
-  confirmed: 'bg-warn', pending: 'bg-warn', picked_up: 'bg-info', overdue: 'bg-bad', returned: 'bg-ok',
+const calEventsOf = (b) => {
+  const s = parseDate(b.start_date);
+  const e = parseDate(b.end_date);
+  if (!s || !e) return [];
+  const st = effectiveStatus(b);
+  const pickup = ['confirmed', 'pending'].includes(st) ? 'pickup_wait' : 'pickup_done';
+  const ret = st === 'returned' ? 'return_done' : st === 'overdue' ? 'return_late' : 'return_wait';
+  return [
+    { id: `${b.id}-s`, b, date: s, type: 'รับ', kind: pickup },
+    { id: `${b.id}-e`, b, date: e, type: 'คืน', kind: ret },
+  ];
 };
 
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -6575,29 +6691,21 @@ function CalendarPage() {
     return Array.from({ length: 42 }, (_, i) => new Date(cursor.getFullYear(), cursor.getMonth(), 1 - offset + i));
   }, [cursor]);
 
-  // จัดกลุ่มการจองตามวัน (ข้ามรายการที่ยกเลิก)
+  // จัดกลุ่มตามวัน: ใส่เฉพาะวันรับและวันคืนของแต่ละใบจอง (ข้ามรายการที่ยกเลิก)
   const byDay = useMemo(() => {
     const map = new Map();
-    const gridStart = startOfDay(cells[0]);
-    const gridEnd = startOfDay(cells[41]);
     bookings
       .filter((b) => b.status !== 'cancelled')
       .forEach((b) => {
-        const s = parseDate(b.start_date);
-        const e = parseDate(b.end_date);
-        if (!s || !e) return;
-        let d = startOfDay(s < gridStart ? gridStart : s);
-        const last = startOfDay(e > gridEnd ? gridEnd : e);
-        let guard = 0;
-        while (d <= last && guard++ < 70) {
-          const key = d.toDateString();
+        calEventsOf(b).forEach((ev) => {
+          const key = startOfDay(ev.date).toDateString();
           if (!map.has(key)) map.set(key, []);
-          map.get(key).push(b);
-          d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
-        }
+          map.get(key).push(ev);
+        });
       });
+    map.forEach((list) => list.sort((x, y) => x.date - y.date));
     return map;
-  }, [bookings, cells]);
+  }, [bookings]);
 
   const move = (n) => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + n, 1));
   const dayList = byDay.get(selected.toDateString()) || [];
@@ -6607,7 +6715,7 @@ function CalendarPage() {
       <PageHeader
         eyebrow="Schedule"
         title="ปฏิทินการจอง"
-        description="ดูภาพรวมการจองทั้งเดือน เลือกวันเพื่อดูรายการรับ–คืน"
+        description="ดูวันรับและวันคืนกล้องทั้งเดือน เลือกวันเพื่อดูรายละเอียด"
         actions={
           <button onClick={() => openBooking([])} className="btn btn-primary"><Plus size={17} /> สร้างการจอง</button>
         }
@@ -6625,6 +6733,13 @@ function CalendarPage() {
               <button onClick={() => move(1)} className="icon-btn" aria-label="เดือนถัดไป"><ChevronRight size={19} /></button>
             </div>
           </header>
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b border-line px-4 py-3 text-[11px] text-mute sm:px-6" aria-label="คำอธิบายสี">
+            {Object.values(CAL_KINDS).map((k) => (
+              <span key={k.label} className="inline-flex items-center gap-1.5"><i className={`h-2.5 w-2.5 rounded-full ${k.dot}`} />{k.label}</span>
+            ))}
+            <span className="basis-full text-[10.5px] opacity-80">แสดงเฉพาะ “วันรับ” และ “วันคืน” — วันที่อยู่ระหว่างเช่าจะไม่แสดง</span>
+          </div>
 
           <div className="calendar-weekdays grid grid-cols-7 border-b border-line bg-surface2/50 text-center text-[11px] font-semibold text-mute">
             {DAYS_SHORT.map((d) => <div key={d} className="py-2.5">{d}</div>)}
@@ -6648,16 +6763,16 @@ function CalendarPage() {
                     {d.getDate()}
                   </span>
                   <span className="hidden min-h-0 min-w-0 flex-col gap-0.5 overflow-hidden sm:flex">
-                    {list.slice(0, 2).map((b) => (
-                      <span key={b.id} className={`block max-w-full truncate rounded px-1.5 py-0.5 text-[10px] font-medium ${PILL[effectiveStatus(b)] || 'bg-surface2'}`}>
-                        {b.customer_name}
+                    {list.slice(0, 3).map((ev) => (
+                      <span key={ev.id} className={`block max-w-full truncate rounded px-1.5 py-0.5 text-[10px] font-medium ${CAL_KINDS[ev.kind].chip}`}>
+                        <b className="font-semibold">{ev.type}</b> {ev.b.customer_name}
                       </span>
                     ))}
-                    {list.length > 2 && <span className="px-1 text-[10px] text-mute">+{list.length - 2} รายการ</span>}
+                    {list.length > 3 && <span className="px-1 text-[10px] text-mute">+{list.length - 3} รายการ</span>}
                   </span>
                   <span className="flex flex-wrap gap-0.5 sm:hidden">
-                    {list.slice(0, 4).map((b) => (
-                      <i key={b.id} className={`h-1.5 w-1.5 rounded-full ${DOT[effectiveStatus(b)] || 'bg-mute'}`} />
+                    {list.slice(0, 4).map((ev) => (
+                      <i key={ev.id} className={`h-1.5 w-1.5 rounded-full ${CAL_KINDS[ev.kind].dot}`} />
                     ))}
                   </span>
                 </button>
@@ -6682,22 +6797,21 @@ function CalendarPage() {
 
             <div className="calendar-selected-content">
               {dayList.length === 0 ? (
-                <div className="calendar-empty-day"><EmptyState title="ไม่มีรายการ" description="วันนี้อุปกรณ์ว่างทั้งหมด" /></div>
+                <div className="calendar-empty-day"><EmptyState title="ไม่มีรับ–คืนกล้อง" description="วันนี้ไม่มีนัดรับหรือนัดคืนกล้อง" /></div>
               ) : (
                 <ul key={selected.toISOString()} className="calendar-selected-list stagger">
-                  {dayList.map((b, i) => {
-                    const s = parseDate(b.start_date);
-                    const e = parseDate(b.end_date);
-                    const tag = sameDay(s, selected) ? `รับ ${fmtTime(s)}` : sameDay(e, selected) ? `คืน ${fmtTime(e)}` : 'อยู่ระหว่างเช่า';
+                  {dayList.map((ev, i) => {
+                    const b = ev.b;
+                    const k = CAL_KINDS[ev.kind];
                     return (
-                      <li key={b.id} style={{ '--i': i }}>
-                        <button onClick={() => openDetail(b.id)} className="calendar-selected-booking w-full text-left">
+                      <li key={ev.id} style={{ '--i': i }}>
+                        <button onClick={() => openDetail(b.id)} className={`calendar-selected-booking w-full border-l-4 text-left ${k.bar}`}>
                           <div className="flex min-w-0 items-center justify-between gap-2">
                             <p className="truncate text-sm font-semibold">{b.customer_name}</p>
-                            <StatusBadge status={effectiveStatus(b)} />
+                            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${k.chip}`}>{k.label}</span>
                           </div>
                           <p className="calendar-selected-equipment">{equipmentTitle(b)}</p>
-                          <p className="calendar-selected-time">{tag}</p>
+                          <p className="calendar-selected-time">{ev.type} {fmtTime(ev.date)} · {b.booking_no}</p>
                         </button>
                       </li>
                     );
@@ -7841,7 +7955,7 @@ class PageBoundary extends React.Component {
 const LG_MARK = '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m14.31 8 5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16 3.95 6.06M14.31 16H2.83M16.62 12l-5.74 9.94"/></svg>';
 /* โลโก้ร้านในหน้าล็อกอิน: ใช้ไฟล์โลโก้ ถ้ายังไม่มีไฟล์จะแสดงไอคอนเลนส์แทน */
 const lgMark = () => SHOP.logo
-  ? `<img src="${SHOP.logo}" alt="" style="width:62%;height:62%;object-fit:contain;animation:none" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" /><span style="display:none">${LG_MARK}</span>`
+  ? `<img src="${SHOP.logo}" alt="" style="width:62%;height:62%;object-fit:contain;animation:none" onerror="var n=this.nextElementSibling;this.style.display='none';if(n)n.style.display='block'" /><span style="display:none">${LG_MARK}</span>`
   : LG_MARK;
 const LG_LOCK = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 
@@ -7959,64 +8073,225 @@ async function changePasswordFlow({ force = false, current = '' } = {}) {
   return result.isConfirmed;
 }
 
+/* ═════ หน้าเข้าสู่ระบบแบบ Motion ═════ */
+const EyeBtn = ({ shown, onClick }) => (
+  <button type="button" className="lg-eye" onClick={onClick} tabIndex={-1}>{shown ? 'ซ่อน' : 'แสดง'}</button>
+);
+
+function PwField({ label, value, onChange, placeholder, autoComplete, inputRef, shake, onCaps, onEnter }) {
+  const [shown, setShown] = useState(false);
+  return (
+    <>
+      <label className="lg-label">{label}</label>
+      <div className={`lg-field ${shake ? 'lg-shake' : ''}`}>
+        <span dangerouslySetInnerHTML={{ __html: LG_LOCK }} className="flex items-center pl-[14px] text-[rgb(var(--wa-color-purple-30))]" />
+        <input
+          ref={inputRef}
+          type={shown ? 'text' : 'password'}
+          value={value}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+          autoCapitalize="off"
+          spellCheck={false}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyUp={(e) => onCaps?.(e.getModifierState?.('CapsLock'))}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onEnter?.(); } }}
+        />
+        <EyeBtn shown={shown} onClick={() => setShown((v) => !v)} />
+      </div>
+    </>
+  );
+}
+
+function LoginPortal({ origin, onClose, onDone }) {
+  const [step, setStep] = useState('login'); // login | force | done
+  const [out, setOut] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const [shake, setShake] = useState('');
+  const [caps, setCaps] = useState(false);
+  const [pw, setPw] = useState('');
+  const [npw, setNpw] = useState('');
+  const [npw2, setNpw2] = useState('');
+  const passRef = useRef(null);
+  const newRef = useRef(null);
+  const finishedRef = useRef(false);
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const t = setTimeout(() => passRef.current?.focus({ preventScroll: true }), 900);
+    return () => { document.body.style.overflow = prev; clearTimeout(t); };
+  }, []);
+
+  const close = useCallback(() => {
+    if (busy || finishedRef.current) return;
+    setOut(true);
+    setTimeout(onClose, 480);
+  }, [busy, onClose]);
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') close(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [close]);
+
+  const bad = (id, msg) => {
+    setErr(msg);
+    setShake(id);
+    setTimeout(() => setShake(''), 500);
+  };
+
+  const finish = () => {
+    finishedRef.current = true;
+    setStep('done');
+    setTimeout(() => onDone(), 1150);
+  };
+
+  const submitLogin = async () => {
+    if (busy) return;
+    if (!pw) return bad('pw', 'กรุณากรอกรหัสผ่าน');
+    setErr('');
+    setBusy(true);
+    try {
+      const { data } = await axios.post(`${API_ORIGIN}/api/auth/login`, { password: pw }, { timeout: 15000 });
+      sessionStorage.setItem(AUTH_TOKEN_KEY, data.token);
+      setBusy(false);
+      if (data.mustChange) {
+        setStep('force');
+        setTimeout(() => newRef.current?.focus({ preventScroll: true }), 450);
+      } else {
+        finish();
+      }
+    } catch (error) {
+      setBusy(false);
+      bad('pw', error?.response?.data?.error || 'เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อ');
+    }
+  };
+
+  const submitForce = async () => {
+    if (busy) return;
+    if (npw.length < 8) return bad('new', 'รหัสผ่านใหม่ต้องยาวอย่างน้อย 8 ตัวอักษร');
+    if (npw === pw) return bad('new', 'รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสเดิม');
+    if (npw !== npw2) return bad('new2', 'รหัสผ่านใหม่และช่องยืนยันไม่ตรงกัน');
+    setErr('');
+    setBusy(true);
+    try {
+      await api.post('/auth/change-password', { current: pw, next: npw }, { timeout: 15000 });
+      setBusy(false);
+      finish();
+    } catch (error) {
+      setBusy(false);
+      bad('new', errMsg(error, 'เปลี่ยนรหัสผ่านไม่สำเร็จ'));
+    }
+  };
+
+  const score = npw ? passwordScore(npw) : 0;
+  const labels = ['', 'อ่อน', 'พอใช้', 'ดี', 'แข็งแรง'];
+
+  return (
+    <div className="lgp" data-out={out ? 'true' : 'false'} style={{ '--ox': `${origin.x}px`, '--oy': `${origin.y}px` }} role="dialog" aria-modal="true" aria-label="เข้าสู่ระบบเจ้าของร้าน">
+      <div className="lgp-bg" />
+      <span className="lgp-orb a" />
+      <span className="lgp-orb b" />
+      <div className="lgp-card">
+        {step !== 'done' && (
+          <button type="button" className="lgp-x" onClick={close} aria-label="ปิด"><X size={18} /></button>
+        )}
+
+        {step === 'login' && (
+          <div className="lgp-step">
+            <div className="lg-mark lgp-st" style={{ '--i': 0 }} dangerouslySetInnerHTML={{ __html: lgMark() }} />
+            <p className="lg-eyebrow lgp-st" style={{ '--i': 1 }}>OWNER ACCESS</p>
+            <h2 className="lg-title lgp-st" style={{ '--i': 2 }}>เข้าสู่ระบบเจ้าของร้าน</h2>
+            <p className="lg-sub lgp-st" style={{ '--i': 3 }}>กรอกรหัสผ่านเพื่อเข้าถึงข้อมูลการจอง อุปกรณ์ และรายรับ–รายจ่ายอย่างปลอดภัย</p>
+            <form className="lgp-st" style={{ '--i': 4 }} onSubmit={(e) => { e.preventDefault(); submitLogin(); }}>
+              <PwField label="รหัสผ่าน" value={pw} onChange={setPw} placeholder="กรอกรหัสผ่านเจ้าของร้าน" autoComplete="current-password" inputRef={passRef} shake={shake === 'pw'} onCaps={setCaps} onEnter={submitLogin} />
+              {caps && <p className="lg-caps">⚠ Caps Lock เปิดอยู่</p>}
+              {err && <p className="lgp-err" role="alert">{err}</p>}
+              <button type="submit" className="lgp-btn" data-loading={busy ? 'true' : 'false'} disabled={busy} aria-label={busy ? 'กำลังเข้าสู่ระบบ' : undefined}>
+                <span>เข้าสู่ระบบ</span>
+              </button>
+            </form>
+            <button type="button" className="lgp-link lgp-st" style={{ '--i': 5 }} onClick={close} disabled={busy}>ยกเลิก</button>
+            <p className="lg-hint lgp-st" style={{ '--i': 6 }}>ลืมรหัสผ่าน? ติดต่อผู้ดูแลระบบที่ส่งมอบเว็บให้คุณ</p>
+          </div>
+        )}
+
+        {step === 'force' && (
+          <div className="lgp-step">
+            <div className="lg-mark" dangerouslySetInnerHTML={{ __html: lgMark() }} />
+            <p className="lg-eyebrow">SECURITY</p>
+            <h2 className="lg-title">ตั้งรหัสผ่านของคุณเอง</h2>
+            <p className="lg-sub">ตอนนี้ยังใช้รหัสชั่วคราวอยู่ กรุณาตั้งรหัสผ่านใหม่ที่มีแต่เจ้าของร้านเท่านั้นที่รู้</p>
+            <form onSubmit={(e) => { e.preventDefault(); submitForce(); }}>
+              <PwField label="รหัสผ่านใหม่" value={npw} onChange={setNpw} placeholder="อย่างน้อย 8 ตัวอักษร" autoComplete="new-password" inputRef={newRef} shake={shake === 'new'} onCaps={setCaps} onEnter={submitForce} />
+              <div className="lg-meter" data-s={String(score)}><i /><i /><i /><i /></div>
+              <p className="lg-meter-t">{score ? `ความแข็งแรง: ${labels[score]}` : 'ผสมตัวพิมพ์เล็ก-ใหญ่ ตัวเลข และสัญลักษณ์ให้รหัสแข็งแรง'}</p>
+              <PwField label="ยืนยันรหัสผ่านใหม่" value={npw2} onChange={setNpw2} placeholder="พิมพ์รหัสใหม่อีกครั้ง" autoComplete="new-password" shake={shake === 'new2'} onCaps={setCaps} onEnter={submitForce} />
+              {caps && <p className="lg-caps">⚠ Caps Lock เปิดอยู่</p>}
+              {err && <p className="lgp-err" role="alert">{err}</p>}
+              <button type="submit" className="lgp-btn" data-loading={busy ? 'true' : 'false'} disabled={busy}>
+                <span>ตั้งรหัสผ่านและเข้าใช้งาน</span>
+              </button>
+            </form>
+            <button type="button" className="lgp-link" onClick={finish} disabled={busy}>ข้ามไปก่อน (จะถามอีกครั้งตอนเข้าครั้งหน้า)</button>
+          </div>
+        )}
+
+        {step === 'done' && (
+          <div className="lgp-done">
+            <span className="lgp-tick">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+            </span>
+            <div>
+              <h2 className="lg-title" style={{ margin: 0 }}>ยินดีต้อนรับกลับมา</h2>
+              <p className="lg-sub" style={{ margin: '.4rem auto 0' }}>กำลังเปิดระบบ {SHOP.name}…</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LeaveNotice({ onEnd }) {
+  const [out, setOut] = useState(false);
+  useEffect(() => {
+    const a = setTimeout(() => setOut(true), 2800);
+    const b = setTimeout(onEnd, 3250);
+    return () => { clearTimeout(a); clearTimeout(b); };
+  }, [onEnd]);
+  return (
+    <div className="ld-leave" data-out={out ? 'true' : 'false'} role="status" aria-live="polite">
+      <span className="ld-leave-ic"><span>👋</span></span>
+      <div>
+        <b>ออกจากระบบแล้ว</b>
+        <small>ข้อมูลทั้งหมดถูกบันทึกเรียบร้อย · แล้วพบกันใหม่</small>
+      </div>
+      <i />
+    </div>
+  );
+}
+
 function Root() {
   const { entered, enter, page, bookingModal, equipmentModal, detailId } = useApp();
   const [iris, setIris] = useState({ state: '', x: '50%', y: '50%' });
 
-  // เอฟเฟกต์ชัตเตอร์: วงกลมสีม่วงขยายเต็มจอ → เข้าระบบ → หดเปิดออก
-  const handleEnter = useCallback(async (x, y) => {
-    let mustChange = false;
-    let typed = '';
-    const result = await Swal.fire({
-      title: '',
-      html: `
-        <div class="lg-mark">${lgMark()}</div>
-        <p class="lg-eyebrow">OWNER ACCESS</p>
-        <h2 class="lg-title">เข้าสู่ระบบเจ้าของร้าน</h2>
-        <p class="lg-sub">กรอกรหัสผ่านเพื่อเข้าถึงข้อมูลการจอง อุปกรณ์ และรายรับ–รายจ่ายอย่างปลอดภัย</p>
-        ${lgField('lg-pass', 'รหัสผ่าน', 'กรอกรหัสผ่านเจ้าของร้าน', 'current-password')}
-        <p class="lg-caps" hidden>⚠ Caps Lock เปิดอยู่</p>
-        <p class="lg-hint">ลืมรหัสผ่าน? ติดต่อผู้ดูแลระบบที่ส่งมอบเว็บให้คุณ</p>`,
-      customClass: lgPopupClasses,
-      showClass: { popup: 'sw-in' },
-      hideClass: { popup: 'sw-out' },
-      showCancelButton: true,
-      confirmButtonText: 'เข้าสู่ระบบ',
-      cancelButtonText: 'ยกเลิก',
-      focusConfirm: false,
-      showLoaderOnConfirm: true,
-      allowOutsideClick: () => !Swal.isLoading(),
-      didOpen: (popup) => {
-        bindPasswordFields(popup);
-        const input = popup.querySelector('#lg-pass');
-        input.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') { e.preventDefault(); Swal.clickConfirm(); }
-        });
-        input.focus();
-      },
-      preConfirm: async () => {
-        const popup = Swal.getPopup();
-        const password = popup.querySelector('#lg-pass').value;
-        if (!password) { shakeField(popup, 'lg-pass'); Swal.showValidationMessage('กรุณากรอกรหัสผ่าน'); return false; }
-        try {
-          const { data } = await axios.post(`${API_ORIGIN}/api/auth/login`, { password }, { timeout: 15000 });
-          sessionStorage.setItem(AUTH_TOKEN_KEY, data.token);
-          mustChange = Boolean(data.mustChange);
-          typed = password;
-          return true;
-        } catch (error) {
-          shakeField(popup, 'lg-pass');
-          Swal.showValidationMessage(error?.response?.data?.error || 'เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อ');
-          return false;
-        }
-      },
-    });
-    if (!result.isConfirmed) return;
-    if (mustChange) await changePasswordFlow({ force: true, current: typed });
-    typed = '';
-    setIris({ state: 'close', x: `${x}px`, y: `${y}px` });
+  // เปิดหน้าล็อกอินแบบ Motion จากจุดที่กดปุ่ม (ไม่ใช้ SweetAlert)
+  const [login, setLogin] = useState(null);
+  const [leftNotice, setLeftNotice] = useState(false);
+  const handleEnter = useCallback((x, y) => {
+    setLogin({ x: Math.round(x ?? window.innerWidth / 2), y: Math.round(y ?? window.innerHeight / 2) });
+  }, []);
+
+  // ล็อกอินสำเร็จ: ชัตเตอร์สีม่วงขยายเต็มจอ → เข้าระบบ (เลื่อนกลับบนสุด) → หดเปิดออก
+  const handleLoggedIn = useCallback(() => {
+    setLogin(null);
+    setIris({ state: 'close', x: '50%', y: '50%' });
     setTimeout(() => {
       enter();
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
       setIris({ state: 'open', x: '50%', y: '50%' });
       setTimeout(() => setIris({ state: '', x: '50%', y: '50%' }), 1000);
     }, 880);
@@ -8029,6 +8304,11 @@ function Root() {
   }, []);
 
   const Page = PAGES[page] || Dashboard;
+
+  /* เข้าระบบหรือเปลี่ยนหน้าแล้วต้องเริ่มที่บนสุดเสมอ (มือถือที่เลื่อนหน้าแรกมาล่างสุดก่อนกดเข้าสู่ระบบ จะไม่ค้างตำแหน่งเดิม) */
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [page, entered]);
 
   /* ริบเปิลตรงจุดที่กดปุ่ม + เงาแถบหัวเมื่อเลื่อนหน้า */
   useEffect(() => {
@@ -8057,7 +8337,7 @@ function Root() {
     if (wasEntered.current && !entered) {
       setIris({ state: 'open', x: '50%', y: '50%' });
       const t1 = setTimeout(() => setIris({ state: '', x: '50%', y: '50%' }), 1000);
-      const t2 = setTimeout(() => toast('success', 'ออกจากระบบแล้ว — ข้อมูลทั้งหมดถูกบันทึกเรียบร้อย'), 650);
+      const t2 = setTimeout(() => setLeftNotice(true), 650);
       wasEntered.current = entered;
       return () => { clearTimeout(t1); clearTimeout(t2); };
     }
@@ -8108,6 +8388,8 @@ function Root() {
       ) : (
         <Landing onEnter={handleEnter} />
       )}
+      {login && !entered && <LoginPortal origin={login} onClose={() => setLogin(null)} onDone={handleLoggedIn} />}
+      {leftNotice && !entered && <LeaveNotice onEnd={() => setLeftNotice(false)} />}
       <div
         className="iris"
         data-state={iris.state}
