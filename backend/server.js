@@ -659,6 +659,22 @@ app.get('/api/bookings/:id', asyncHandler(async (req, res) => {
 }));
 
 // CREATE booking with Idempotency
+const CONTACT_KEYS = ['line', 'facebook', 'instagram', 'tiktok', 'whatsapp', 'other'];
+const sanitizeContacts = (raw) => {
+  const out = {};
+  if (!raw || typeof raw !== 'object') return out;
+  for (const k of CONTACT_KEYS) {
+    const v = String(raw[k] ?? '').trim().slice(0, 120);
+    if (v) out[k] = v;
+  }
+  return out;
+};
+// คอลัมน์ contacts ต้องเพิ่มใน Supabase ก่อน (customer-contacts.sql) — ถ้ายังไม่เพิ่มจะไม่ทำให้การจองล้มเหลว
+const saveCustomerContacts = async (id, contacts) => {
+  const { error } = await supabase.from('customers').update({ contacts }).eq('id', id);
+  if (error && !/contacts/i.test(error.message || '')) throw error;
+};
+
 app.post('/api/bookings', rateLimit({ windowMs: 60_000, max: 20 }), asyncHandler(async (req, res, next) => {
   const key = String(req.get('Idempotency-Key') || '').trim();
   if (!/^[A-Za-z0-9._:-]{16,128}$/.test(key)) {
@@ -710,7 +726,7 @@ app.post('/api/bookings', rateLimit({ windowMs: 60_000, max: 20 }), asyncHandler
   next();
 }), asyncHandler(async (req, res) => {
   const {
-    customer_name, phone, equipment_id, equipment_ids,
+    customer_name, phone, contacts, equipment_id, equipment_ids,
     start_date, end_date, notes, discount = 0, deposit,
     rental_type = 'daily', rental_hours = null, rental_region = 'local',
     delivery_method = 'meetup', custom_price = null,
@@ -794,14 +810,18 @@ app.post('/api/bookings', rateLimit({ windowMs: 60_000, max: 20 }), asyncHandler
 
   // ลูกค้า + ตรวจกล้อง ทำพร้อมกัน (ไม่ต้องรอกันและกัน)
   const resolveCustomer = async () => {
+    const cleanContacts = sanitizeContacts(contacts);
+    const hasContacts = Object.keys(cleanContacts).length > 0;
     const { data: existingCustomer } = await supabase.from('customers').select('id').eq('phone', phone).limit(1);
     if (existingCustomer && existingCustomer.length) {
       const id = existingCustomer[0].id;
       await supabase.from('customers').update({ fullname: customer_name }).eq('id', id);
+      if (hasContacts) await saveCustomerContacts(id, cleanContacts);
       return id;
     }
     const { data: newCust, error: custErr } = await supabase.from('customers').insert([{ fullname: customer_name, phone }]).select();
     if (custErr) throw custErr;
+    if (hasContacts) await saveCustomerContacts(newCust[0].id, cleanContacts);
     return newCust[0].id;
   };
 
@@ -1341,7 +1361,9 @@ app.get('/api/customers', asyncHandler(async (req, res) => {
       contact_channel: c.contact_channel,
       notes: c.notes,
       created_at: c.created_at,
-      booking_count: validBookings.length,
+      booking_count: validBookings.filter(b => b.status !== 'cancelled').length,
+      returned_count: returnedBookings.length,
+      contacts: c.contacts || {},
       total_spent: totalSpent,
       last_booking: lastBooking,
     };
@@ -1353,6 +1375,25 @@ app.get('/api/customers', asyncHandler(async (req, res) => {
   });
 
   res.json(formatted);
+}));
+
+app.patch('/api/customers/:id', asyncHandler(async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ error: 'รหัสลูกค้าไม่ถูกต้อง' });
+  const update = {};
+  if (req.body.fullname !== undefined) {
+    const name = String(req.body.fullname).trim();
+    if (!name) return res.status(400).json({ error: 'กรุณากรอกชื่อลูกค้า' });
+    update.fullname = name.slice(0, 120);
+  }
+  if (req.body.contacts !== undefined) update.contacts = sanitizeContacts(req.body.contacts);
+  if (!Object.keys(update).length) return res.status(400).json({ error: 'ไม่มีข้อมูลที่จะแก้ไข' });
+  const { error } = await supabase.from('customers').update(update).eq('id', id);
+  if (error) {
+    if (/contacts/i.test(error.message || '')) return res.status(400).json({ error: 'ยังไม่ได้เพิ่มคอลัมน์ช่องทางติดต่อในฐานข้อมูล กรุณารัน customer-contacts.sql ใน Supabase ก่อน' });
+    throw error;
+  }
+  res.json({ message: 'บันทึกข้อมูลลูกค้าแล้ว' });
 }));
 
 app.get('/api/availability', asyncHandler(async (req, res) => {
@@ -1388,8 +1429,8 @@ app.get('/api/reports/summary', asyncHandler(async (req, res) => {
     pagedRows(() => supabase.from('transactions').select('type, amount, transaction_date').order('id', { ascending: true })),
     supabase
       .from('booking_items')
-      .select('id, daily_rate, equipment_id, equipments(id, name, code, image_url), bookings!inner(status, total_days)')
-      .in('bookings.status', ['picked_up', 'returned']),
+      .select('id, booking_id, daily_rate, equipment_id, equipments(id, name, code, image_url), bookings!inner(status, subtotal, discount, net_total)')
+      .eq('bookings.status', 'returned'),
     supabase.from('equipments').select('cost_price, current_value'),
   ]);
 
@@ -1404,7 +1445,12 @@ app.get('/api/reports/summary', asyncHandler(async (req, res) => {
   }
   const monthly = Object.values(monthlyMap).sort((a, b) => a.month.localeCompare(b.month)).slice(-12);
 
-  // 2. Top Equipment
+  // 2. Top Equipment — นับเฉพาะรายการที่รับคืนแล้ว และใช้ราคาที่ตกลงจริง (หลังส่วนลด) แบ่งตามสัดส่วนราคากล้องแต่ละตัว
+  // เพื่อให้ยอดรวมตรงกับรายรับในบัญชี
+  const rateByBooking = {};
+  for (const bi of bookingItems || []) {
+    rateByBooking[bi.booking_id] = (rateByBooking[bi.booking_id] || 0) + Number(bi.daily_rate || 0);
+  }
   const topMap = {};
   for (const bi of bookingItems || []) {
     const eq = bi.equipments;
@@ -1412,8 +1458,12 @@ app.get('/api/reports/summary', asyncHandler(async (req, res) => {
     if (!topMap[eq.id]) {
       topMap[eq.id] = { id: eq.id, name: eq.name, code: eq.code, image_url: eq.image_url, rental_count: 0, revenue: 0 };
     }
+    const bk = bi.bookings || {};
+    const rentalTotal = Math.max(0, Number(bk.subtotal || 0) - Number(bk.discount || 0));
+    const totalRate = rateByBooking[bi.booking_id] || 0;
+    const share = totalRate > 0 ? Number(bi.daily_rate || 0) / totalRate : 1 / Math.max(1, (bookingItems || []).filter((x) => x.booking_id === bi.booking_id).length);
     topMap[eq.id].rental_count += 1;
-    topMap[eq.id].revenue += Number(bi.daily_rate || 0) * Number(bi.bookings?.total_days || 1);
+    topMap[eq.id].revenue += rentalTotal * share;
   }
   const topEquipment = Object.values(topMap)
     .sort((a, b) => b.rental_count - a.rental_count || b.revenue - a.revenue)

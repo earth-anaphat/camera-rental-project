@@ -59,6 +59,16 @@ const __CSS = `@import url('https://fonts.googleapis.com/css2?family=Prompt:wght
 
 
 
+/* ธีมสี — สลับชุดสเกลสีหลักทั้งระบบด้วย data-color บน <html> (ค่าเริ่มต้นคือม่วงตามด้านบน) */
+[data-color='green'] { --wa-color-purple-05: 244 251 245; --wa-color-purple-10: 230 245 233; --wa-color-purple-20: 203 235 210; --wa-color-purple-30: 159 219 174; --wa-color-purple-40: 101 199 131; --wa-color-purple-50: 0 175 89; --wa-color-purple-60: 0 143 71; --wa-color-purple-70: 0 117 57; --wa-color-purple-80: 0 91 43; --wa-color-purple-90: 0 62 27; --wa-color-purple-95: 0 40 15; }
+[data-color='red'] { --wa-color-purple-05: 255 246 246; --wa-color-purple-10: 255 235 234; --wa-color-purple-20: 255 214 212; --wa-color-purple-30: 255 179 175; --wa-color-purple-40: 253 134 132; --wa-color-purple-50: 241 83 90; --wa-color-purple-60: 213 40 59; --wa-color-purple-70: 182 9 41; --wa-color-purple-80: 145 0 29; --wa-color-purple-90: 100 0 16; --wa-color-purple-95: 67 0 8; }
+[data-color='orange'] { --wa-color-purple-05: 255 247 242; --wa-color-purple-10: 254 237 226; --wa-color-purple-20: 253 217 196; --wa-color-purple-30: 250 186 147; --wa-color-purple-40: 243 147 85; --wa-color-purple-50: 244 126 24; --wa-color-purple-60: 216 94 6; --wa-color-purple-70: 151 71 0; --wa-color-purple-80: 119 55 0; --wa-color-purple-90: 82 35 0; --wa-color-purple-95: 55 20 0; }
+[data-color='blue'] { --wa-color-purple-05: 245 249 255; --wa-color-purple-10: 231 241 255; --wa-color-purple-20: 207 227 255; --wa-color-purple-30: 167 204 255; --wa-color-purple-40: 118 177 255; --wa-color-purple-50: 57 145 255; --wa-color-purple-60: 0 115 230; --wa-color-purple-70: 0 94 190; --wa-color-purple-80: 0 72 150; --wa-color-purple-90: 0 48 105; --wa-color-purple-95: 0 30 71; }
+[data-color='pink'] { --wa-color-purple-05: 255 246 250; --wa-color-purple-10: 254 234 243; --wa-color-purple-20: 252 213 230; --wa-color-purple-30: 248 178 210; --wa-color-purple-40: 239 136 187; --wa-color-purple-50: 224 89 162; --wa-color-purple-60: 196 52 135; --wa-color-purple-70: 167 30 112; --wa-color-purple-80: 133 15 87; --wa-color-purple-90: 92 6 59; --wa-color-purple-95: 60 4 37; }
+[data-color='teal'] { --wa-color-purple-05: 242 251 250; --wa-color-purple-10: 226 245 243; --wa-color-purple-20: 195 235 231; --wa-color-purple-30: 142 218 213; --wa-color-purple-40: 56 198 191; --wa-color-purple-50: 0 168 162; --wa-color-purple-60: 0 137 132; --wa-color-purple-70: 0 112 108; --wa-color-purple-80: 0 88 84; --wa-color-purple-90: 0 59 56; --wa-color-purple-95: 0 38 36; }
+[data-color='gold'] { --wa-color-purple-05: 252 248 242; --wa-color-purple-10: 247 240 225; --wa-color-purple-20: 239 224 193; --wa-color-purple-30: 226 198 141; --wa-color-purple-40: 210 168 71; --wa-color-purple-50: 184 138 0; --wa-color-purple-60: 150 112 0; --wa-color-purple-70: 123 91 0; --wa-color-purple-80: 97 71 0; --wa-color-purple-90: 66 47 0; --wa-color-purple-95: 43 29 0; }
+[data-color='slate'] { --wa-color-purple-05: 247 249 250; --wa-color-purple-10: 238 241 244; --wa-color-purple-20: 220 226 233; --wa-color-purple-30: 193 203 216; --wa-color-purple-40: 161 176 195; --wa-color-purple-50: 129 148 172; --wa-color-purple-60: 101 121 146; --wa-color-purple-70: 81 99 122; --wa-color-purple-80: 62 77 96; --wa-color-purple-90: 40 51 65; --wa-color-purple-95: 25 32 42; }
+
 [data-radius='sharp'] { --radius: 4px; --radius-sm: 3px; }
 [data-radius='soft'] { --radius: 14px; --radius-sm: 9px; }
 [data-radius='round'] { --radius: 26px; --radius-sm: 15px; }
@@ -377,7 +387,7 @@ select.input {
 .chip:hover { color: rgb(var(--ink)); border-color: rgb(var(--ink) / 0.3); }
 .chip[data-on='true'] {
   background: linear-gradient(135deg, rgb(var(--wa-color-purple-60)), rgb(var(--wa-color-purple-80)));
-  color: #ffffff !important;
+  color: rgb(var(--wa-color-purple-05)) !important;
   border-color: transparent;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.24), 0 5px 14px -8px rgb(var(--wa-color-purple-80) / 0.9);
 }
@@ -774,7 +784,7 @@ select.input {
 }
 .swal2-container.swal2-backdrop-show,
 .swal2-container.swal2-noanimation {
-  background: rgb(37 16 71 / 0.58) !important;
+  background: rgb(var(--wa-color-purple-95) / 0.58) !important;
 }
 .sw-popup {
   position: relative !important;
@@ -786,7 +796,7 @@ select.input {
   background: linear-gradient(145deg, rgb(var(--surface)) 0%, rgb(var(--wa-color-purple-05)) 72%, rgb(var(--wa-color-purple-10)) 100%) !important;
   color: rgb(var(--ink)) !important;
   border: 1px solid rgb(var(--wa-color-purple-30) / .9) !important;
-  box-shadow: 0 35px 100px -38px rgb(20 7 43 / .68), 0 0 0 1px rgb(255 255 255 / .65) inset !important;
+  box-shadow: 0 35px 100px -38px rgb(var(--wa-color-purple-95) / .68), 0 0 0 1px rgb(255 255 255 / .65) inset !important;
   font-family: 'Prompt', sans-serif !important;
 }
 .sw-popup::before {
@@ -860,7 +870,7 @@ select.input {
   transition: transform .55s ease;
   pointer-events: none;
 }
-.sw-actions .btn:hover { transform: translateY(-2px); filter: saturate(1.08); box-shadow: 0 8px 18px rgb(58 27 108 / .16); }
+.sw-actions .btn:hover { transform: translateY(-2px); filter: saturate(1.08); box-shadow: 0 8px 18px rgb(var(--wa-color-purple-90) / .16); }
 .sw-actions .btn:hover::after { transform: translateX(130%); }
 .sw-actions .btn:active { transform: translateY(0) scale(.985); }
 .sw-in { animation: swPopupEnter .48s cubic-bezier(.16, 1, .3, 1) both !important; }
@@ -879,7 +889,7 @@ select.input {
   color: rgb(var(--ink)) !important;
   border: 1px solid rgb(var(--wa-color-purple-30)) !important;
   border-radius: var(--radius) !important;
-  box-shadow: 0 24px 55px -25px rgb(37 16 71 / .55), 0 0 0 1px rgb(255 255 255 / .7) inset !important;
+  box-shadow: 0 24px 55px -25px rgb(var(--wa-color-purple-95) / .55), 0 0 0 1px rgb(255 255 255 / .7) inset !important;
   font-family: 'Prompt', sans-serif !important;
   animation: swPopupEnter .42s cubic-bezier(.16, 1, .3, 1) both;
 }
@@ -941,15 +951,15 @@ select.input {
 @media (max-width: 480px) { .sw-checks, .sw-grid2 { grid-template-columns: 1fr; } }
 
 /* UX10 — polished owner login dialog */
-.auth-login-popup { position: relative !important; overflow: hidden !important; width: min(440px, calc(100vw - 28px)) !important; padding: 2rem 1.7rem 1.55rem !important; border: 1px solid rgb(var(--wa-color-purple-30)) !important; border-radius: 26px !important; background: radial-gradient(circle at 100% 0%, rgb(173 135 255 / .22), transparent 38%), linear-gradient(145deg, #fff 0%, #faf7ff 100%) !important; box-shadow: 0 28px 90px -30px rgb(37 16 71 / .62), 0 0 0 1px rgb(157 115 250 / .12) !important; }
-.auth-login-popup::before { content: ""; position: absolute; inset: 0 18% auto; height: 3px; border-radius: 0 0 999px 999px; background: linear-gradient(90deg, transparent, #8b5cf6, #c4b5fd, transparent); pointer-events: none; }
+.auth-login-popup { position: relative !important; overflow: hidden !important; width: min(440px, calc(100vw - 28px)) !important; padding: 2rem 1.7rem 1.55rem !important; border: 1px solid rgb(var(--wa-color-purple-30)) !important; border-radius: 26px !important; background: radial-gradient(circle at 100% 0%, rgb(var(--wa-color-purple-40) / .22), transparent 38%), linear-gradient(145deg, rgb(var(--wa-color-purple-05)) 0%, rgb(var(--wa-color-purple-05)) 100%) !important; box-shadow: 0 28px 90px -30px rgb(var(--wa-color-purple-95) / .62), 0 0 0 1px rgb(var(--wa-color-purple-50) / .12) !important; }
+.auth-login-popup::before { content: ""; position: absolute; inset: 0 18% auto; height: 3px; border-radius: 0 0 999px 999px; background: linear-gradient(90deg, transparent, rgb(var(--wa-color-purple-60)), rgb(var(--wa-color-purple-30)), transparent); pointer-events: none; }
 .auth-login-popup .swal2-icon { display: none !important; }
 .auth-login-popup .sw-title { margin: .25rem 0 .55rem !important; font-size: 1.45rem !important; letter-spacing: -.025em; }
 .auth-login-popup .sw-html { margin: 0 !important; color: #6d5b88 !important; font-size: .9rem !important; line-height: 1.7 !important; }
-.auth-login-brand { display: inline-flex; align-items: center; gap: .5rem; margin: 0 auto .9rem; padding: .45rem .8rem; border: 1px solid #e4d5ff; border-radius: 999px; background: linear-gradient(120deg, #f5edff, #fff); color: #7041c5; font-size: .68rem; font-weight: 650; letter-spacing: .12em; }
-.auth-login-brand-mark { display: inline-grid; width: 22px; height: 22px; place-items: center; border-radius: 7px; background: linear-gradient(135deg, #a78bfa, #6333b5); color: white; font-size: 12px; }
-.auth-login-popup .sw-input { height: 50px !important; margin: 1rem 0 .3rem !important; border: 1px solid #d9c7ff !important; border-radius: 13px !important; background: #fff !important; color: #281747 !important; box-shadow: none !important; outline: none !important; transition: border-color .2s, box-shadow .2s !important; }
-.auth-login-popup .sw-input:focus { border-color: #8b5cf6 !important; box-shadow: 0 0 0 4px rgb(139 92 246 / .14) !important; }
+.auth-login-brand { display: inline-flex; align-items: center; gap: .5rem; margin: 0 auto .9rem; padding: .45rem .8rem; border: 1px solid rgb(var(--wa-color-purple-20)); border-radius: 999px; background: linear-gradient(120deg, rgb(var(--wa-color-purple-10)), rgb(var(--wa-color-purple-05))); color: rgb(var(--wa-color-purple-70)); font-size: .68rem; font-weight: 650; letter-spacing: .12em; }
+.auth-login-brand-mark { display: inline-grid; width: 22px; height: 22px; place-items: center; border-radius: 7px; background: linear-gradient(135deg, rgb(var(--wa-color-purple-40)), rgb(var(--wa-color-purple-70))); color: white; font-size: 12px; }
+.auth-login-popup .sw-input { height: 50px !important; margin: 1rem 0 .3rem !important; border: 1px solid rgb(var(--wa-color-purple-30)) !important; border-radius: 13px !important; background: rgb(var(--wa-color-purple-05)) !important; color: rgb(var(--wa-color-purple-95)) !important; box-shadow: none !important; outline: none !important; transition: border-color .2s, box-shadow .2s !important; }
+.auth-login-popup .sw-input:focus { border-color: rgb(var(--wa-color-purple-60)) !important; box-shadow: 0 0 0 4px rgb(var(--wa-color-purple-60) / .14) !important; }
 .auth-login-popup .sw-actions { display: grid !important; grid-template-columns: 1fr 1fr; gap: .7rem !important; width: 100%; margin-top: 1.2rem !important; }
 .auth-login-popup .sw-actions .btn { min-height: 46px; border-radius: 12px !important; }
 @media (max-width: 480px) { .auth-login-popup { padding: 1.7rem 1.1rem 1.2rem !important; border-radius: 21px !important; } .auth-login-popup .sw-title { font-size: 1.2rem !important; } .auth-login-popup .sw-actions { gap: .5rem !important; } }
@@ -959,34 +969,34 @@ select.input {
 .swal2-popup.lg-popup {
   width: min(430px, calc(100vw - 28px)) !important;
   padding: 2.1rem 1.8rem 1.6rem !important;
-  border: 1px solid rgb(157 115 250 / .35) !important;
+  border: 1px solid rgb(var(--wa-color-purple-50) / .35) !important;
   border-radius: 26px !important;
   background:
-    radial-gradient(420px 260px at 85% -10%, rgb(132 82 224 / .55), transparent 62%),
-    radial-gradient(320px 220px at -10% 110%, rgb(85 44 156 / .5), transparent 60%),
-    linear-gradient(165deg, #2b1556, #1a0a37) !important;
-  box-shadow: 0 50px 100px -30px rgb(37 16 71 / .9), inset 0 1px 0 rgb(255 255 255 / .12) !important;
-  color: #f3edff !important;
+    radial-gradient(420px 260px at 85% -10%, rgb(var(--wa-color-purple-60) / .55), transparent 62%),
+    radial-gradient(320px 220px at -10% 110%, rgb(var(--wa-color-purple-80) / .5), transparent 60%),
+    linear-gradient(165deg, rgb(var(--wa-color-purple-95)), rgb(var(--wa-color-purple-95))) !important;
+  box-shadow: 0 50px 100px -30px rgb(var(--wa-color-purple-95) / .9), inset 0 1px 0 rgb(255 255 255 / .12) !important;
+  color: rgb(var(--wa-color-purple-10)) !important;
 }
 .swal2-popup.lg-popup::before { display: none !important; }
 .lg-popup .swal2-title { display: none !important; }
-.lg-popup .lg-html { margin: 0 !important; padding: 0 !important; color: #f3edff !important; overflow: visible !important; }
-.lg-mark { position: relative; display: grid; width: 64px; height: 64px; margin: 0 auto 1.1rem; place-items: center; border-radius: 20px; background: linear-gradient(145deg, #a78bfa, #6333b5); color: #fff; box-shadow: 0 14px 34px -10px rgb(157 115 250 / .9), inset 0 1px 0 rgb(255 255 255 / .35); }
-.lg-mark::after { content: ''; position: absolute; inset: -9px; border-radius: 26px; border: 1px solid rgb(196 181 253 / .35); animation: lgPulse 2.8s ease-out infinite; }
+.lg-popup .lg-html { margin: 0 !important; padding: 0 !important; color: rgb(var(--wa-color-purple-10)) !important; overflow: visible !important; }
+.lg-mark { position: relative; display: grid; width: 64px; height: 64px; margin: 0 auto 1.1rem; place-items: center; border-radius: 20px; background: linear-gradient(145deg, rgb(var(--wa-color-purple-40)), rgb(var(--wa-color-purple-70))); color: rgb(var(--wa-color-purple-05)); box-shadow: 0 14px 34px -10px rgb(var(--wa-color-purple-50) / .9), inset 0 1px 0 rgb(255 255 255 / .35); }
+.lg-mark::after { content: ''; position: absolute; inset: -9px; border-radius: 26px; border: 1px solid rgb(var(--wa-color-purple-30) / .35); animation: lgPulse 2.8s ease-out infinite; }
 .lg-mark svg { animation: lgSpin 14s linear infinite; }
-.lg-eyebrow { margin: 0; text-align: center; font-size: .68rem; letter-spacing: .28em; color: #c4b5fd; }
-.lg-title { margin: .35rem 0 .4rem; text-align: center; font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; color: #fff; }
-.lg-sub { margin: 0 auto 1.3rem; max-width: 320px; text-align: center; font-size: .86rem; line-height: 1.7; color: rgb(243 237 255 / .66); }
-.lg-label { display: block; margin: 0 0 .4rem; text-align: left; font-size: .74rem; font-weight: 500; color: rgb(243 237 255 / .75); }
-.lg-field { position: relative; display: flex; align-items: center; margin-bottom: .85rem; border: 1px solid rgb(196 181 253 / .28); border-radius: 14px; background: rgb(255 255 255 / .06); transition: border-color .2s, box-shadow .2s, background .2s; }
-.lg-field:focus-within { border-color: #a78bfa; background: rgb(255 255 255 / .09); box-shadow: 0 0 0 4px rgb(167 139 250 / .2); }
-.lg-field > svg { flex: none; margin-left: 14px; color: #c4b5fd; }
-.lg-field input { flex: 1; min-width: 0; height: 50px; padding: 0 .75rem; border: 0 !important; outline: 0 !important; background: transparent !important; color: #fff !important; font-size: 16px !important; letter-spacing: .02em; box-shadow: none !important; }
-.lg-field input::placeholder { color: rgb(243 237 255 / .38); letter-spacing: 0; }
-.lg-eye { flex: none; height: 38px; margin-right: 6px; padding: 0 .7rem; border: 0; border-radius: 10px; background: transparent; color: #c4b5fd; font-size: .74rem; cursor: pointer; transition: background .2s; }
+.lg-eyebrow { margin: 0; text-align: center; font-size: .68rem; letter-spacing: .28em; color: rgb(var(--wa-color-purple-30)); }
+.lg-title { margin: .35rem 0 .4rem; text-align: center; font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; color: rgb(var(--wa-color-purple-05)); }
+.lg-sub { margin: 0 auto 1.3rem; max-width: 320px; text-align: center; font-size: .86rem; line-height: 1.7; color: rgb(var(--wa-color-purple-10) / .66); }
+.lg-label { display: block; margin: 0 0 .4rem; text-align: left; font-size: .74rem; font-weight: 500; color: rgb(var(--wa-color-purple-10) / .75); }
+.lg-field { position: relative; display: flex; align-items: center; margin-bottom: .85rem; border: 1px solid rgb(var(--wa-color-purple-30) / .28); border-radius: 14px; background: rgb(255 255 255 / .06); transition: border-color .2s, box-shadow .2s, background .2s; }
+.lg-field:focus-within { border-color: rgb(var(--wa-color-purple-40)); background: rgb(255 255 255 / .09); box-shadow: 0 0 0 4px rgb(var(--wa-color-purple-40) / .2); }
+.lg-field > svg { flex: none; margin-left: 14px; color: rgb(var(--wa-color-purple-30)); }
+.lg-field input { flex: 1; min-width: 0; height: 50px; padding: 0 .75rem; border: 0 !important; outline: 0 !important; background: transparent !important; color: rgb(var(--wa-color-purple-05)) !important; font-size: 16px !important; letter-spacing: .02em; box-shadow: none !important; }
+.lg-field input::placeholder { color: rgb(var(--wa-color-purple-10) / .38); letter-spacing: 0; }
+.lg-eye { flex: none; height: 38px; margin-right: 6px; padding: 0 .7rem; border: 0; border-radius: 10px; background: transparent; color: rgb(var(--wa-color-purple-30)); font-size: .74rem; cursor: pointer; transition: background .2s; }
 .lg-eye:hover { background: rgb(255 255 255 / .1); }
 .lg-caps { margin: -.25rem 0 .8rem; text-align: left; font-size: .76rem; color: #fcd34d; }
-.lg-hint { margin: .2rem 0 0; text-align: center; font-size: .74rem; color: rgb(243 237 255 / .5); }
+.lg-hint { margin: .2rem 0 0; text-align: center; font-size: .74rem; color: rgb(var(--wa-color-purple-10) / .5); }
 .lg-shake { animation: lgShake .42s cubic-bezier(.36, .07, .19, .97); border-color: #f87171 !important; }
 .lg-meter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin: -.2rem 0 .35rem; }
 .lg-meter i { height: 4px; border-radius: 99px; background: rgb(255 255 255 / .14); transition: background .25s; }
@@ -994,21 +1004,21 @@ select.input {
 .lg-meter[data-s='2'] i:nth-child(-n+2) { background: #fbbf24; }
 .lg-meter[data-s='3'] i:nth-child(-n+3) { background: #a3e635; }
 .lg-meter[data-s='4'] i { background: #4ade80; }
-.lg-meter-t { margin: 0 0 .85rem; text-align: left; font-size: .72rem; color: rgb(243 237 255 / .55); }
+.lg-meter-t { margin: 0 0 .85rem; text-align: left; font-size: .72rem; color: rgb(var(--wa-color-purple-10) / .55); }
 .lg-popup .swal2-validation-message { margin: .9rem 0 0 !important; border: 1px solid rgb(248 113 113 / .45) !important; background: rgb(248 113 113 / .12) !important; color: #fecaca !important; font-size: .82rem !important; }
 .lg-popup .sw-actions { display: grid !important; grid-template-columns: 1fr; gap: .55rem !important; width: 100%; margin: 1.15rem 0 0 !important; }
 .lg-popup .sw-actions .btn { width: 100%; min-height: 48px; border-radius: 14px !important; }
-.lg-popup .sw-actions .btn-primary { background: linear-gradient(135deg, #a78bfa, #7c4ddb) !important; color: #fff !important; box-shadow: 0 16px 34px -14px rgb(167 139 250 / .95) !important; }
-.lg-popup .sw-actions .btn-ghost { border-color: transparent !important; background: transparent !important; color: rgb(243 237 255 / .7) !important; }
+.lg-popup .sw-actions .btn-primary { background: linear-gradient(135deg, rgb(var(--wa-color-purple-40)), rgb(var(--wa-color-purple-60))) !important; color: rgb(var(--wa-color-purple-05)) !important; box-shadow: 0 16px 34px -14px rgb(var(--wa-color-purple-40) / .95) !important; }
+.lg-popup .sw-actions .btn-ghost { border-color: transparent !important; background: transparent !important; color: rgb(var(--wa-color-purple-10) / .7) !important; }
 .lg-popup .sw-actions .btn-ghost:hover { background: rgb(255 255 255 / .08) !important; }
-.lg-popup .swal2-loader { border-color: #fff transparent #fff transparent !important; }
+.lg-popup .swal2-loader { border-color: rgb(var(--wa-color-purple-05)) transparent rgb(var(--wa-color-purple-05)) transparent !important; }
 /* สถานะกำลังโหลดตอนเข้าสู่ระบบ: ให้วงโหลดอยู่กึ่งกลางปุ่ม (grid ทำให้เดิมชิดซ้าย) */
 .lg-popup .sw-actions { justify-items: center; }
 .lg-popup .sw-actions .swal2-loader { justify-self: center; align-self: center; margin: .2rem auto !important; }
 .lg-popup .sw-actions .btn.swal2-loading {
   justify-self: center !important; width: 3rem !important; min-width: 0 !important; height: 3rem !important; min-height: 0 !important;
   padding: 0 !important; margin: 0 auto !important; border-radius: 999px !important; font-size: 0 !important;
-  display: grid !important; place-items: center; box-shadow: 0 0 0 6px rgb(167 139 250 / .18) !important;
+  display: grid !important; place-items: center; box-shadow: 0 0 0 6px rgb(var(--wa-color-purple-40) / .18) !important;
 }
 .lg-popup .sw-actions .btn.swal2-loading::after { display: none !important; }
 .lg-popup .sw-actions .btn.swal2-loading ~ .btn { display: none !important; }
@@ -1064,8 +1074,8 @@ select.input {
 /* =====================================================
    LANDING
    ===================================================== */
-.ld { background: linear-gradient(180deg, rgb(var(--wa-color-purple-05)) 0%, #ffffff 48%, rgb(var(--wa-color-purple-10)) 100%); color: rgb(var(--wa-color-purple-95)); }
-.ld-purple { color: #9d73fa; }
+.ld { background: linear-gradient(180deg, rgb(var(--wa-color-purple-05)) 0%, rgb(var(--wa-color-purple-05)) 48%, rgb(var(--wa-color-purple-10)) 100%); color: rgb(var(--wa-color-purple-95)); }
+.ld-purple { color: rgb(var(--wa-color-purple-50)); }
 .ld-title { font-family: 'Noto Serif Thai', serif; font-weight: 500; letter-spacing: -0.012em; line-height: 1.16; }
 .ld-mask { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.14em; }
 .ld-mask > span { display: inline-block; transform: translateY(112%); }
@@ -1099,7 +1109,7 @@ select.input {
 }
 .ld-nav[data-hide='true'] { transform: translate(-50%, -140%); }
 .ld-nav button.l { padding: 0.5rem 0.9rem; border-radius: 999px; font-size: 0.82rem; color: rgb(239 232 218 / 0.65); transition: color 0.2s, background-color 0.2s; }
-.ld-nav button.l:hover { color: #faf7ff; background: rgb(250 247 255 / 0.08); }
+.ld-nav button.l:hover { color: rgb(var(--wa-color-purple-05)); background: rgb(var(--wa-color-purple-05) / 0.08); }
 .ld-btn {
   display: inline-flex;
   align-items: center;
@@ -1112,14 +1122,14 @@ select.input {
   cursor: pointer;
   transition: transform 0.3s var(--ease), background-color 0.3s, color 0.3s, box-shadow 0.4s, border-color 0.3s;
 }
-.ld-btn-purple { background: #8452e0; color: #ffffff; box-shadow: 0 10px 22px -14px rgb(60 30 120 / 0.8); }
-.ld-btn-purple:hover { background: #9461ee; }
+.ld-btn-purple { background: rgb(var(--wa-color-purple-60)); color: rgb(var(--wa-color-purple-05)); box-shadow: 0 10px 22px -14px rgb(var(--wa-color-purple-90) / 0.8); }
+.ld-btn-purple:hover { background: rgb(var(--wa-color-purple-50)); }
 .tbl td, .tbl th, table td { font-variant-numeric: tabular-nums; }
 .grid > * { min-width: 0; }
-.ld-btn-line { border: 1px solid rgb(250 247 255 / 0.26); color: #faf7ff; }
-.ld-btn-line:hover { background: rgb(250 247 255 / 0.08); border-color: rgb(239 232 218 / 0.5); }
+.ld-btn-line { border: 1px solid rgb(var(--wa-color-purple-05) / 0.26); color: rgb(var(--wa-color-purple-05)); }
+.ld-btn-line:hover { background: rgb(var(--wa-color-purple-05) / 0.08); border-color: rgb(239 232 218 / 0.5); }
 .ld-dot { position: relative; }
-.ld-dot::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 1px solid #9d73fa; animation: pulseRing 2.4s ease-out infinite; }
+.ld-dot::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgb(var(--wa-color-purple-50)); animation: pulseRing 2.4s ease-out infinite; }
 
 .dotgrid {
   position: absolute;
@@ -1131,7 +1141,7 @@ select.input {
   mask-image: radial-gradient(ellipse 72% 62% at 50% 42%, #000 20%, transparent 100%);
 }
 .beam-b { stroke: rgb(239 232 218 / 0.07); fill: none; stroke-width: 1; }
-.beam-r { fill: none; stroke: #9d73fa; stroke-width: 1.2; stroke-dasharray: 55 945; animation: beamRun var(--d, 9s) linear infinite; animation-delay: var(--dl, 0s); opacity: 0.8; }
+.beam-r { fill: none; stroke: rgb(var(--wa-color-purple-50)); stroke-width: 1.2; stroke-dasharray: 55 945; animation: beamRun var(--d, 9s) linear infinite; animation-delay: var(--dl, 0s); opacity: 0.8; }
 .spotbeam { position: absolute; top: -18%; left: -14%; width: 120%; height: 120%; pointer-events: none; animation: spotIn 2.2s var(--ease) both; }
 
 /* viewfinder ในหน้า hero */
@@ -1141,19 +1151,19 @@ select.input {
   aspect-ratio: 4 / 5;
   border-radius: 26px;
   border: 1px solid rgb(239 232 218 / 0.14);
-  background: radial-gradient(120% 90% at 30% 10%, #552c9c, #251047 70%);
+  background: radial-gradient(120% 90% at 30% 10%, rgb(var(--wa-color-purple-80)), rgb(var(--wa-color-purple-95)) 70%);
   box-shadow: 0 60px 120px -50px rgb(0 0 0 / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.06);
 }
-.vfinder .br { position: absolute; width: 26px; height: 26px; border: 2px solid #9d73fa; opacity: 0.9; }
+.vfinder .br { position: absolute; width: 26px; height: 26px; border: 2px solid rgb(var(--wa-color-purple-50)); opacity: 0.9; }
 .vfinder .br.tl { top: 18px; left: 18px; border-right: 0; border-bottom: 0; }
 .vfinder .br.tr { top: 18px; right: 18px; border-left: 0; border-bottom: 0; }
 .vfinder .br.bl { bottom: 18px; left: 18px; border-right: 0; border-top: 0; }
 .vfinder .br.brr { bottom: 18px; right: 18px; border-left: 0; border-top: 0; }
 .reticle { position: absolute; left: 50%; top: 46%; width: 112px; height: 112px; margin: -56px 0 0 -56px; }
-.reticle::before, .reticle::after { content: ''; position: absolute; background: #9d73fa; }
+.reticle::before, .reticle::after { content: ''; position: absolute; background: rgb(var(--wa-color-purple-50)); }
 .reticle::before { left: 50%; top: -10px; bottom: -10px; width: 1px; opacity: 0.35; }
 .reticle::after { top: 50%; left: -10px; right: -10px; height: 1px; opacity: 0.35; }
-.reticle i { position: absolute; inset: 0; border: 1.5px solid #9d73fa; border-radius: 4px; }
+.reticle i { position: absolute; inset: 0; border: 1.5px solid rgb(var(--wa-color-purple-50)); border-radius: 4px; }
 .reticle[data-lock='1'] i { animation: lock 0.6s var(--ease) both; box-shadow: none; }
 .reticle[data-lock='0'] i { border-color: rgb(239 232 218 / 0.5); transform: scale(1.35); transition: transform 0.9s var(--ease), border-color 0.5s; }
 .exif-v { display: inline-block; animation: exifIn 0.6s var(--ease) both; }
@@ -1177,12 +1187,12 @@ select.input {
   font-size: clamp(6rem, 18vw, 11rem);
   line-height: 0.8;
   color: transparent;
-  -webkit-text-stroke: 1px rgb(157 115 250 / 0.5);
+  -webkit-text-stroke: 1px rgb(var(--wa-color-purple-50) / 0.5);
 }
 
 .bn { position: relative; overflow: hidden; border-radius: 26px; border: 1px solid rgb(239 232 218 / 0.1); background: linear-gradient(160deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.01)); }
-.bn.spot::before { background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgb(157 115 250 / 0.16), transparent 65%); }
-.bn.spot::after { background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgb(157 115 250 / 0.9), transparent 70%); }
+.bn.spot::before { background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgb(var(--wa-color-purple-50) / 0.16), transparent 65%); }
+.bn.spot::after { background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgb(var(--wa-color-purple-50) / 0.9), transparent 70%); }
 
 .sf-item { min-height: 62vh; display: flex; flex-direction: column; justify-content: center; transition: opacity 0.6s var(--ease), transform 0.6s var(--ease); }
 .sf-item[data-on='false'] { opacity: 0.22; transform: translateX(-6px); }
@@ -1191,12 +1201,12 @@ select.input {
 
 .lamp { position: relative; isolation: isolate; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
 .lamp-cone { position: absolute; top: 0; width: 16rem; height: 15rem; opacity: 0.55; transition: width 1.2s var(--ease), opacity 1.2s; -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 92%); mask-image: linear-gradient(to bottom, #000 0%, transparent 92%); }
-.lamp-cone.l { right: 50%; background: conic-gradient(from 180deg at right top, rgb(157 115 250 / 0.8), transparent 23%); }
-.lamp-cone.r { left: 50%; background: conic-gradient(from 90deg at left top, transparent 2%, rgb(157 115 250 / 0.8) 25%, transparent 25.4%); }
+.lamp-cone.l { right: 50%; background: conic-gradient(from 180deg at right top, rgb(var(--wa-color-purple-50) / 0.8), transparent 23%); }
+.lamp-cone.r { left: 50%; background: conic-gradient(from 90deg at left top, transparent 2%, rgb(var(--wa-color-purple-50) / 0.8) 25%, transparent 25.4%); }
 .lamp.on .lamp-cone { width: min(34rem, 48vw); opacity: 1; }
-.lamp-line { position: absolute; top: 0; left: 50%; height: 2px; width: 14rem; transform: translateX(-50%); background: #d3bcff; box-shadow: none; transition: width 1.2s var(--ease); }
+.lamp-line { position: absolute; top: 0; left: 50%; height: 2px; width: 14rem; transform: translateX(-50%); background: rgb(var(--wa-color-purple-30)); box-shadow: none; transition: width 1.2s var(--ease); }
 .lamp.on .lamp-line { width: min(34rem, 60vw); }
-.lamp-glow { position: absolute; top: -2rem; left: 50%; width: min(30rem, 80vw); height: 9rem; transform: translateX(-50%); background: radial-gradient(closest-side, rgb(157 115 250 / 0.4), transparent); filter: blur(40px); opacity: .45; }
+.lamp-glow { position: absolute; top: -2rem; left: 50%; width: min(30rem, 80vw); height: 9rem; transform: translateX(-50%); background: radial-gradient(closest-side, rgb(var(--wa-color-purple-50) / 0.4), transparent); filter: blur(40px); opacity: .45; }
 
 .pre {
   position: fixed;
@@ -1206,8 +1216,8 @@ select.input {
   flex-direction: column;
   justify-content: space-between;
   padding: clamp(1.2rem, 3vw, 2.4rem);
-  background: #251047;
-  color: #faf7ff;
+  background: rgb(var(--wa-color-purple-95));
+  color: rgb(var(--wa-color-purple-05));
   border-radius: 0 0 50% 50% / 0 0 0 0;
   transition: transform 1s cubic-bezier(0.76, 0, 0.24, 1), border-radius 1s cubic-bezier(0.76, 0, 0.24, 1);
 }
@@ -1223,7 +1233,7 @@ select.input {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgb(157 115 250 / 0.75);
+  border: 1px solid rgb(var(--wa-color-purple-50) / 0.75);
   border-radius: 50%;
   pointer-events: none;
   opacity: 0;
@@ -1232,16 +1242,16 @@ select.input {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #250f47;
+  color: rgb(var(--wa-color-purple-95));
   transition: width 0.35s var(--ease), height 0.35s var(--ease), margin 0.35s var(--ease), background-color 0.3s, opacity 0.3s;
 }
 .cur-ring.show { opacity: 1; }
-.cur-ring[data-k='1'] { width: 92px; height: 92px; margin: -46px 0 0 -46px; background: #9d73fa; }
-.cur-dot { position: fixed; left: 0; top: 0; z-index: 301; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: #9d73fa; pointer-events: none; opacity: 0; }
+.cur-ring[data-k='1'] { width: 92px; height: 92px; margin: -46px 0 0 -46px; background: rgb(var(--wa-color-purple-50)); }
+.cur-dot { position: fixed; left: 0; top: 0; z-index: 301; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: rgb(var(--wa-color-purple-50)); pointer-events: none; opacity: 0; }
 .cur-dot.show { opacity: 1; }
 @media (hover: none), (pointer: coarse) { .cur-ring, .cur-dot { display: none; } }
 
-.iris { position: fixed; inset: 0; z-index: 380; background: #9d73fa; pointer-events: none; clip-path: circle(0% at var(--ix, 50%) var(--iy, 50%)); }
+.iris { position: fixed; inset: 0; z-index: 380; background: rgb(var(--wa-color-purple-50)); pointer-events: none; clip-path: circle(0% at var(--ix, 50%) var(--iy, 50%)); }
 .iris[data-state='close'] { clip-path: circle(150% at var(--ix, 50%) var(--iy, 50%)); transition: clip-path 0.85s cubic-bezier(0.7, 0, 0.2, 1); pointer-events: all; }
 .iris[data-state='open'] { clip-path: circle(0% at 50% 50%); transition: clip-path 0.9s cubic-bezier(0.7, 0, 0.2, 1); }
 
@@ -1265,8 +1275,8 @@ select.input {
   color: rgb(var(--wa-color-purple-95));
   min-height: 100dvh;
 }
-.ld-system .glass-header { background: rgb(var(--wa-color-purple-05) / 0.96); border-color: rgb(var(--wa-color-purple-30) / 0.9); color: rgb(var(--wa-color-purple-95)); box-shadow: 0 10px 35px -28px rgb(37 16 71 / 0.6); }
-.ld-system .card { background-color: rgb(var(--wa-color-purple-05)); color: rgb(var(--wa-color-purple-95)); border-color: rgb(var(--wa-color-purple-30) / 0.9); box-shadow: 0 18px 50px -34px rgb(15 5 35 / 0.75); }
+.ld-system .glass-header { background: rgb(var(--wa-color-purple-05) / 0.96); border-color: rgb(var(--wa-color-purple-30) / 0.9); color: rgb(var(--wa-color-purple-95)); box-shadow: 0 10px 35px -28px rgb(var(--wa-color-purple-95) / 0.6); }
+.ld-system .card { background-color: rgb(var(--wa-color-purple-05)); color: rgb(var(--wa-color-purple-95)); border-color: rgb(var(--wa-color-purple-30) / 0.9); box-shadow: 0 18px 50px -34px rgb(var(--wa-color-purple-95) / 0.75); }
 .ld-system .input, .ld-system select, .ld-system textarea { background-color: rgb(255 255 255); color: rgb(var(--wa-color-purple-95)); border-color: rgb(var(--wa-color-purple-30)); }
 .ld-system .input::placeholder, .ld-system textarea::placeholder { color: rgb(var(--wa-color-purple-80) / 0.72); }
 .ld-system .btn-primary { background: linear-gradient(135deg, rgb(var(--wa-color-purple-50)), rgb(var(--wa-color-purple-70))); color: white; border-color: transparent; }
@@ -1294,8 +1304,8 @@ select.input {
 .ld-system .card:hover {
   transform: translateY(-3px);
   border-color: rgb(var(--wa-color-purple-50) / 0.72);
-  box-shadow: 0 18px 36px -25px rgb(75 35 130 / 0.48),
-              0 5px 14px -10px rgb(75 35 130 / 0.24);
+  box-shadow: 0 18px 36px -25px rgb(var(--wa-color-purple-90) / 0.48),
+              0 5px 14px -10px rgb(var(--wa-color-purple-90) / 0.24);
 }
 .ld-system .card:active {
   transform: translateY(-1px) scale(.997);
@@ -1303,8 +1313,8 @@ select.input {
 }
 .ld-system .card-hover:hover {
   transform: translateY(-4px);
-  box-shadow: 0 22px 42px -27px rgb(75 35 130 / 0.5),
-              0 6px 16px -11px rgb(75 35 130 / 0.25);
+  box-shadow: 0 22px 42px -27px rgb(var(--wa-color-purple-90) / 0.5),
+              0 6px 16px -11px rgb(var(--wa-color-purple-90) / 0.25);
 }
 @keyframes ld-white-card-enter {
   from { opacity: 0; transform: translateY(9px) scale(.992); }
@@ -1326,37 +1336,37 @@ select.input {
    ===================================================== */
 .chip[data-on='true'] {
   background: linear-gradient(135deg, rgb(var(--wa-color-purple-60)), rgb(var(--wa-color-purple-80))) !important;
-  color: #fff !important;
+  color: rgb(var(--wa-color-purple-05)) !important;
   border-color: transparent !important;
 }
-.chip[data-on='true'] * { color: #fff !important; }
+.chip[data-on='true'] * { color: rgb(var(--wa-color-purple-05)) !important; }
 
 /* Landing: use purple-05/10 as the canvas and reserve deep purple for accents. */
 .ld {
-  background: linear-gradient(180deg, rgb(var(--wa-color-purple-05)) 0%, #fff 45%, rgb(var(--wa-color-purple-10)) 100%);
+  background: linear-gradient(180deg, rgb(var(--wa-color-purple-05)) 0%, rgb(var(--wa-color-purple-05)) 45%, rgb(var(--wa-color-purple-10)) 100%);
   color: rgb(var(--wa-color-purple-95));
 }
 .ld .ld-grain {
   background: radial-gradient(ellipse at 78% 20%, rgb(var(--wa-color-purple-20) / .55), transparent 48%),
-              linear-gradient(135deg, rgb(var(--wa-color-purple-05)), #fff 68%);
+              linear-gradient(135deg, rgb(var(--wa-color-purple-05)), rgb(var(--wa-color-purple-05)) 68%);
 }
 .ld .ld-title, .ld h1, .ld h2, .ld h3, .ld h4 { color: rgb(var(--wa-color-purple-95)); }
 .ld .ld-purple { color: rgb(var(--wa-color-purple-60)) !important; }
 .ld .ld-nav {
-  background: rgb(250 247 255 / .94);
+  background: rgb(var(--wa-color-purple-05) / .94);
   border-color: rgb(var(--wa-color-purple-30) / .72);
   box-shadow: 0 12px 36px -24px rgb(var(--wa-color-purple-95) / .5);
 }
 .ld .ld-nav button.l { color: rgb(var(--wa-color-purple-80)); }
 .ld .ld-nav button.l:hover { color: rgb(var(--wa-color-purple-95)); background: rgb(var(--wa-color-purple-10)); }
-.ld [class*="text-[#faf7ff]"] { color: rgb(var(--wa-color-purple-80) / .86) !important; }
-.ld [class*="border-[#faf7ff]"] { border-color: rgb(var(--wa-color-purple-20) / .9) !important; }
-.ld [class*="bg-[#faf7ff]"] { background-color: rgb(var(--wa-color-purple-20) / .7) !important; }
+.ld [class*="text-[rgb(var(--wa-color-purple-05))]"] { color: rgb(var(--wa-color-purple-80) / .86) !important; }
+.ld [class*="border-[rgb(var(--wa-color-purple-05))]"] { border-color: rgb(var(--wa-color-purple-20) / .9) !important; }
+.ld [class*="bg-[rgb(var(--wa-color-purple-05))]"] { background-color: rgb(var(--wa-color-purple-20) / .7) !important; }
 .ld .dotgrid { background-image: radial-gradient(rgb(var(--wa-color-purple-50) / .18) 1px, transparent 1.3px); }
 .ld .beam-b { stroke: rgb(var(--wa-color-purple-70) / .12); }
 .ld .hz-card, .ld .bn {
   border-color: rgb(var(--wa-color-purple-20) / .95);
-  background: linear-gradient(150deg, #fff, rgb(var(--wa-color-purple-05)) 72%, rgb(var(--wa-color-purple-10)));
+  background: linear-gradient(150deg, rgb(var(--wa-color-purple-05)), rgb(var(--wa-color-purple-05)) 72%, rgb(var(--wa-color-purple-10)));
   color: rgb(var(--wa-color-purple-95));
   box-shadow: 0 20px 50px -38px rgb(var(--wa-color-purple-80) / .28);
 }
@@ -1365,7 +1375,7 @@ select.input {
 .ld #statement { background: rgb(var(--wa-color-purple-10) / .72); }
 .ld #features { background: rgb(255 255 255 / .84); }
 .ld #flow { background: rgb(var(--wa-color-purple-05)); }
-.ld #devices { background: linear-gradient(180deg, #fff, rgb(var(--wa-color-purple-10) / .8)); border-color: rgb(var(--wa-color-purple-20)); }
+.ld #devices { background: linear-gradient(180deg, rgb(var(--wa-color-purple-05)), rgb(var(--wa-color-purple-10) / .8)); border-color: rgb(var(--wa-color-purple-20)); }
 .ld .ld-btn-line { border-color: rgb(var(--wa-color-purple-30)); color: rgb(var(--wa-color-purple-80)); }
 .ld .ld-btn-line:hover { background: rgb(var(--wa-color-purple-10)); border-color: rgb(var(--wa-color-purple-50)); }
 .ld footer { border-color: rgb(var(--wa-color-purple-20)) !important; }
@@ -1374,7 +1384,7 @@ select.input {
 
 /* Accessibility and final interaction polish */
 .chip { color: rgb(var(--wa-color-purple-95)); font-weight: 600; }
-.chip[data-on='true'] { color: #fff !important; }
+.chip[data-on='true'] { color: rgb(var(--wa-color-purple-05)) !important; }
 .ld #features .sf-item[data-on='false'] { opacity: .62; }
 .ld #features .sf-item .font-num { color: rgb(var(--wa-color-purple-60) / .72) !important; }
 .ld #features .sf-item p:not(.font-num) { color: rgb(var(--wa-color-purple-80)) !important; }
@@ -1386,17 +1396,17 @@ select.input {
 .ld #features .sf-vis span,
 .ld #features .sf-vis small,
 .ld #features .sf-vis label { text-shadow: none; }
-.ld #features .sf-vis [class*="text-[#faf7ff]"],
+.ld #features .sf-vis [class*="text-[rgb(var(--wa-color-purple-05))]"],
 .ld #features .sf-vis [class*="text-white"] { color: rgb(var(--wa-color-purple-95)) !important; }
-.ld #features .sf-vis [class*="bg-[#251047]"],
-.ld #features .sf-vis [class*="bg-[#552c9c]"] { background: rgb(var(--wa-color-purple-10)) !important; }
+.ld #features .sf-vis [class*="bg-[rgb(var(--wa-color-purple-95))]"],
+.ld #features .sf-vis [class*="bg-[rgb(var(--wa-color-purple-80))]"] { background: rgb(var(--wa-color-purple-10)) !important; }
 .ld .ld-nav { color: rgb(var(--wa-color-purple-95)); }
 .ld .ld-nav .font-display { color: rgb(var(--wa-color-purple-95)); }
 .ld .ld-btn-line { color: rgb(var(--wa-color-purple-80)); }
-.ld-swal-deny { color: #3a1b6c !important; }
+.ld-swal-deny { color: rgb(var(--wa-color-purple-90)) !important; }
 
 /* Contrast fixes: Spotlight / Tilt / Viewfinder on the landing page */
-.ld .bn [class*="text-[#9d73fa]"],
+.ld .bn [class*="text-[rgb(var(--wa-color-purple-50))]"],
 .ld .bn [class*="text-[#f3a99d]"],
 .ld .bn [class*="text-[#7cbe94]"],
 .ld .bn [class*="text-[#ee705e]"] {
@@ -1409,23 +1419,23 @@ select.input {
   color: rgb(var(--wa-color-purple-95)) !important;
 }
 /* The hero viewfinder intentionally stays dark, so retain high-contrast light text there. */
-.ld .vfinder [class*="text-[#faf7ff]"],
+.ld .vfinder [class*="text-[rgb(var(--wa-color-purple-05))]"],
 .ld .vfinder .mono,
 .ld .vfinder .exif-v {
-  color: #faf7ff !important;
+  color: rgb(var(--wa-color-purple-05)) !important;
 }
-.ld .vfinder [class*="text-[#9d73fa]"] {
-  color: #e1d0ff !important;
+.ld .vfinder [class*="text-[rgb(var(--wa-color-purple-50))]"] {
+  color: rgb(var(--wa-color-purple-20)) !important;
 }
 .ld .vfinder .reticle::before,
 .ld .vfinder .reticle::after,
 .ld .vfinder .reticle i,
 .ld .vfinder .br {
-  border-color: #d8c2ff;
+  border-color: rgb(var(--wa-color-purple-30));
 }
 .ld .vfinder .reticle::before,
-.ld .vfinder .reticle::after { background: #d8c2ff; }
-.ld .vfinder .reticle[data-lock='0'] i { border-color: rgb(250 247 255 / .8); }
+.ld .vfinder .reticle::after { background: rgb(var(--wa-color-purple-30)); }
+.ld .vfinder .reticle[data-lock='0'] i { border-color: rgb(var(--wa-color-purple-05) / .8); }
 
 
 /* Non-blocking notification stack: never covers the page with a modal backdrop. */
@@ -1436,14 +1446,14 @@ select.input {
 }
 .ld-notice {
   display: flex; align-items: center; gap: 12px; padding: 13px 12px; border-radius: var(--radius);
-  color: rgb(var(--ink)); background: linear-gradient(145deg, var(--notice-bg, rgb(243 237 255)), rgb(var(--wa-color-purple-05)));
+  color: rgb(var(--ink)); background: linear-gradient(145deg, var(--notice-bg, rgb(var(--wa-color-purple-10))), rgb(var(--wa-color-purple-05)));
   border: 1px solid rgb(var(--wa-color-purple-30));
-  box-shadow: 0 16px 42px rgb(37 16 71 / .2), 0 0 0 1px rgb(255 255 255 / .7) inset;
+  box-shadow: 0 16px 42px rgb(var(--wa-color-purple-95) / .2), 0 0 0 1px rgb(255 255 255 / .7) inset;
   font-family: 'Prompt', sans-serif !important; pointer-events: auto; animation: swPopupEnter .42s cubic-bezier(.16, 1, .3, 1) both;
 }
 .ld-notice, .ld-notice * { font-family: 'Prompt', sans-serif !important; }
 .ld-notice-out { animation: swPopupExit .18s ease-in both; }
-.ld-notice-mark { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 11px; background: rgb(255 255 255 / .88); color: var(--notice-color); box-shadow: 0 3px 9px rgb(37 16 71 / .09); font-size: 17px; font-weight: 800; }
+.ld-notice-mark { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 11px; background: rgb(255 255 255 / .88); color: var(--notice-color); box-shadow: 0 3px 9px rgb(var(--wa-color-purple-95) / .09); font-size: 17px; font-weight: 800; }
 .ld-notice-copy { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 2px; line-height: 1.45; }
 .ld-notice-copy strong { color: var(--notice-color); font-size: 12px; font-weight: 700; }
 .ld-notice-copy span { color: rgb(var(--ink)); font-size: 13px; overflow-wrap: anywhere; }
@@ -1455,17 +1465,17 @@ select.input {
 @media (max-width: 640px) { .ld-notice-stack { top: max(10px, env(safe-area-inset-top)); right: 10px; width: calc(100vw - 20px); } }
 
 /* Feature showcase mock cards: replace low-contrast purple-on-purple with clear surfaces. */
-.ld #features .sf-vis [class*="bg-[#3a1b6c]"],
-.ld #features .sf-vis [class*="bg-[#251047]"],
-.ld #features .sf-vis [class*="bg-[#552c9c]"],
-.ld #features .sf-vis [class*="bg-[#6d3dc1]"] {
+.ld #features .sf-vis [class*="bg-[rgb(var(--wa-color-purple-90))]"],
+.ld #features .sf-vis [class*="bg-[rgb(var(--wa-color-purple-95))]"],
+.ld #features .sf-vis [class*="bg-[rgb(var(--wa-color-purple-80))]"],
+.ld #features .sf-vis [class*="bg-[rgb(var(--wa-color-purple-70))]"] {
   background-color: rgb(var(--wa-color-purple-10)) !important;
 }
 .ld #features .sf-vis [class*="text-white"],
-.ld #features .sf-vis [class*="text-[#faf7ff]"],
+.ld #features .sf-vis [class*="text-[rgb(var(--wa-color-purple-05))]"],
 .ld #features .sf-vis [class*="text-[#f3a99d]"],
 .ld #features .sf-vis [class*="text-[#7cbe94]"],
-.ld #features .sf-vis [class*="text-[#250f47]"] {
+.ld #features .sf-vis [class*="text-[rgb(var(--wa-color-purple-95))]"] {
   color: rgb(var(--wa-color-purple-95)) !important;
 }
 .ld #features .sf-vis [class*="border-white"] { border-color: rgb(var(--wa-color-purple-30)) !important; }
@@ -1493,17 +1503,17 @@ select.input {
 /* UX13: redesign selected-day panel so it is visibly different and long lists stay inside the card */
 .calendar-day-panel { display:flex; flex-direction:column; min-width:0; max-width:100%; overflow:hidden; border:1px solid rgba(139,92,246,.28); background:linear-gradient(155deg,rgba(255,255,255,.98),rgba(246,241,255,.96)); box-shadow:0 14px 36px rgba(76,29,149,.09); }
 .calendar-selected-header { display:flex; align-items:flex-start; gap:.75rem; padding:1rem; border-bottom:1px solid rgba(139,92,246,.18); background:linear-gradient(120deg,rgba(139,92,246,.11),rgba(255,255,255,.45)); }
-.calendar-selected-icon { display:grid; place-items:center; flex:0 0 2.5rem; width:2.5rem; height:2.5rem; border-radius:.85rem; color:#fff; font-size:1.3rem; background:linear-gradient(145deg,#a78bfa,#6d28d9); box-shadow:0 6px 16px rgba(109,40,217,.24); }
-.calendar-selected-title { margin-top:.35rem; font-family:inherit!important; font-size:1.05rem; line-height:1.4; font-weight:750; color:#2e1757; overflow-wrap:anywhere; }
+.calendar-selected-icon { display:grid; place-items:center; flex:0 0 2.5rem; width:2.5rem; height:2.5rem; border-radius:.85rem; color:rgb(var(--wa-color-purple-05)); font-size:1.3rem; background:linear-gradient(145deg,rgb(var(--wa-color-purple-40)),rgb(var(--wa-color-purple-70))); box-shadow:0 6px 16px rgba(109,40,217,.24); }
+.calendar-selected-title { margin-top:.35rem; font-family:inherit!important; font-size:1.05rem; line-height:1.4; font-weight:750; color:rgb(var(--wa-color-purple-95)); overflow-wrap:anywhere; }
 .calendar-selected-subtitle { margin-top:.2rem; font-size:.72rem; color:#7c65a3; }
-.calendar-selected-count { display:grid; place-items:center; flex:0 0 auto; min-width:2rem; height:2rem; padding:0 .45rem; border-radius:999px; color:#fff; font-size:.8rem; font-weight:700; background:#7c3aed; box-shadow:0 4px 12px rgba(124,58,237,.2); }
+.calendar-selected-count { display:grid; place-items:center; flex:0 0 auto; min-width:2rem; height:2rem; padding:0 .45rem; border-radius:999px; color:rgb(var(--wa-color-purple-05)); font-size:.8rem; font-weight:700; background:rgb(var(--wa-color-purple-60)); box-shadow:0 4px 12px rgba(124,58,237,.2); }
 .calendar-selected-content { min-height:0; padding:.75rem; }
 .calendar-selected-list { display:flex; flex-direction:column; gap:.6rem; max-height:min(52dvh,510px); overflow-y:auto; overscroll-behavior:contain; padding:.1rem .2rem .2rem .1rem; }
 .calendar-selected-list li { min-width:0; max-width:100%; }
 .calendar-selected-booking { display:block; min-width:0; padding:.8rem; border:1px solid rgba(139,92,246,.2); border-radius:.85rem; background:rgba(255,255,255,.8); transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease,background .2s ease; }
-.calendar-selected-booking:hover { transform:translateY(-2px); border-color:rgba(124,58,237,.55); background:#fff; box-shadow:0 8px 18px rgba(76,29,149,.09); }
+.calendar-selected-booking:hover { transform:translateY(-2px); border-color:rgba(124,58,237,.55); background:rgb(var(--wa-color-purple-05)); box-shadow:0 8px 18px rgba(76,29,149,.09); }
 .calendar-selected-equipment { margin-top:.35rem; font-size:.75rem; color:#725a98; overflow-wrap:anywhere; }
-.calendar-selected-time { margin-top:.45rem; font-size:.72rem; font-weight:650; color:#7c3aed; }
+.calendar-selected-time { margin-top:.45rem; font-size:.72rem; font-weight:650; color:rgb(var(--wa-color-purple-60)); }
 .calendar-selected-footer { padding:.65rem .9rem; border-top:1px solid rgba(139,92,246,.16); color:#806b9e; font-size:.7rem; }
 .calendar-empty-day { padding:.75rem .25rem; }
 @media (min-width:1280px) { .calendar-day-panel { max-height:calc(100dvh - 190px); } .calendar-selected-content { overflow:hidden; } .calendar-selected-list { max-height:calc(100dvh - 370px); } }
@@ -1767,11 +1777,21 @@ const FINANCE_CATEGORIES = {
    pickup : จุดนัดรับกล้องปกติ แสดงในใบจอง
    ─────────────────────────────────────────────────────────── */
 const SHOP = {
-  name: 'LensDesk',
-  logo: '',
+  name: 'เช่ากล้องกับแนน',
+  logo: '/logo.png', /* วางไฟล์โลโก้ไว้ที่ frontend/public/logo.png (ถ้ายังไม่มีไฟล์ ระบบจะใช้ไอคอนเลนส์แทนอัตโนมัติ) */
   phone: '',
   line: '',
   pickup: 'สงขลา / เก้าเส้ง',
+};
+
+const THEME_COLORS = {"purple": {"label": "ม่วง", "main": "#8452e0"}, "green": {"label": "เขียว", "main": "#008f47"}, "red": {"label": "แดง", "main": "#d5283b"}, "orange": {"label": "ส้ม", "main": "#d85e06"}, "blue": {"label": "น้ำเงิน", "main": "#0073e6"}, "pink": {"label": "ชมพู", "main": "#c43487"}, "teal": {"label": "เขียวมิ้นต์", "main": "#008984"}, "gold": {"label": "ทอง", "main": "#967000"}, "slate": {"label": "เทาเข้ม", "main": "#657992"}};
+/* อ่านสีธีมปัจจุบัน (hex) ไว้ใช้กับ favicon และหน้าพิมพ์ที่อยู่นอกระบบ CSS ตัวแปร */
+const themeHex = (step = '60') => {
+  try {
+    const t = getComputedStyle(document.documentElement).getPropertyValue(`--wa-color-purple-${step}`).trim().split(/\s+/).map(Number);
+    if (t.length === 3 && t.every(Number.isFinite)) return '#' + t.map((n) => n.toString(16).padStart(2, '0')).join('');
+  } catch { /* ใช้ค่าเริ่มต้น */ }
+  return '#8452e0';
 };
 
 const DEFAULT_SETTINGS = {
@@ -1780,6 +1800,7 @@ const DEFAULT_SETTINGS = {
   radius: 'soft',
   density: 'comfortable',
   motion: true,
+  color: 'purple',
   shopName: SHOP.name,
 };
 
@@ -2116,7 +2137,9 @@ const useSettings = () => useContext(SettingsCtx);
 
 const load = () => {
   try {
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(KEY) || '{}') };
+    const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
+    if (!saved.shopName || saved.shopName === 'LensDesk') delete saved.shopName; // ชื่อเดิมที่เคยบันทึกไว้ → ใช้ชื่อร้านใหม่
+    return { ...DEFAULT_SETTINGS, ...saved };
   } catch {
     return { ...DEFAULT_SETTINGS };
   }
@@ -2130,6 +2153,7 @@ function SettingsProvider({ children }) {
     /* ธีมม่วงเป็นธีมมาตรฐานเดียวทั้งหน้าแนะนำและหน้าระบบ */
     root.dataset.theme = 'light';
     root.dataset.accent = 'purple';
+    root.dataset.color = THEME_COLORS[settings.color] ? settings.color : 'purple';
     root.dataset.radius = settings.radius;
     root.dataset.density = settings.density;
     root.dataset.motion = settings.motion ? 'on' : 'off';
@@ -2598,8 +2622,8 @@ function SpotlightBeam() {
         </filter>
       </defs>
       <g filter="url(#sb-blur)">
-        <ellipse cx="520" cy="260" rx="760" ry="105" transform="rotate(34 520 260)" fill="#9d73fa" fillOpacity="0.2" />
-        <ellipse cx="380" cy="120" rx="420" ry="60" transform="rotate(30 380 120)" fill="#d3bcff" fillOpacity="0.14" />
+        <ellipse cx="520" cy="260" rx="760" ry="105" transform="rotate(34 520 260)" fill="rgb(var(--wa-color-purple-50))" fillOpacity="0.2" />
+        <ellipse cx="380" cy="120" rx="420" ry="60" transform="rotate(30 380 120)" fill="rgb(var(--wa-color-purple-30))" fillOpacity="0.14" />
       </g>
     </svg>
   );
@@ -2708,21 +2732,21 @@ function Preloader({ onDone }) {
 
   return (
     <div className={`pre ${out ? 'out' : ''}`} aria-hidden="true">
-      <div className="mono flex justify-between text-[#faf7ff]/60">
+      <div className="mono flex justify-between text-[rgb(var(--wa-color-purple-05)/0.6)]">
         <span>{SHOP.name}</span>
         <span>{n < 100 ? 'กำลังล้างฟิล์ม' : 'พร้อมแล้ว'}</span>
       </div>
       <div className="flex items-end justify-between">
-        <p className="font-num text-[clamp(7rem,28vw,20rem)] leading-[0.8] text-[#faf7ff]">
+        <p className="font-num text-[clamp(7rem,28vw,20rem)] leading-[0.8] text-[rgb(var(--wa-color-purple-05))]">
           {String(n).padStart(3, '0')}
         </p>
-        <div className="mono mb-3 hidden text-right text-[#9d73fa] sm:block">
+        <div className="mono mb-3 hidden text-right text-[rgb(var(--wa-color-purple-50))] sm:block">
           <p>f/1.4 · 1/250</p>
           <p>ISO 100</p>
         </div>
       </div>
-      <div className="h-px w-full bg-[#faf7ff]/15">
-        <div className="h-full bg-[#9d73fa]" style={{ width: `${n}%` }} />
+      <div className="h-px w-full bg-[rgb(var(--wa-color-purple-05)/0.15)]">
+        <div className="h-full bg-[rgb(var(--wa-color-purple-50))]" style={{ width: `${n}%` }} />
       </div>
     </div>
   );
@@ -3780,12 +3804,78 @@ const alertDuplicate = (items) =>
     confirmButtonText: 'รับทราบ',
   });
 
+/* ช่องทางติดต่อลูกค้า */
+const CONTACT_FIELDS = [
+  { key: 'line', label: 'LINE', ph: 'LINE ID', href: (v) => `https://line.me/ti/p/~${encodeURIComponent(v.replace(/^@/, ''))}` },
+  { key: 'facebook', label: 'Facebook', ph: 'ชื่อ หรือลิงก์โปรไฟล์', href: (v) => (/^https?:/i.test(v) ? v : `https://facebook.com/${encodeURIComponent(v)}`) },
+  { key: 'instagram', label: 'Instagram', ph: '@username', href: (v) => `https://instagram.com/${encodeURIComponent(v.replace(/^@/, ''))}` },
+  { key: 'tiktok', label: 'TikTok', ph: '@username', href: (v) => `https://tiktok.com/@${encodeURIComponent(v.replace(/^@/, ''))}` },
+  { key: 'whatsapp', label: 'WhatsApp', ph: 'เบอร์โทร', href: (v) => `https://wa.me/${v.replace(/\D/g, '')}` },
+  { key: 'other', label: 'อื่นๆ', ph: 'เช่น อีเมล / ช่องทางอื่น', href: null },
+];
+const EMPTY_CONTACTS = { line: '', facebook: '', instagram: '', tiktok: '', whatsapp: '', other: '' };
+
+function ContactChips({ contacts, className = '' }) {
+  const items = CONTACT_FIELDS.filter((f) => contacts && String(contacts[f.key] || '').trim());
+  if (!items.length) return null;
+  return (
+    <span className={`flex flex-wrap gap-1.5 ${className}`}>
+      {items.map((f) => {
+        const v = String(contacts[f.key]).trim();
+        const inner = <><b className="font-semibold text-accent">{f.label}</b><span className="truncate">{v}</span></>;
+        const cls = 'inline-flex max-w-full items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 py-1 text-xs';
+        return f.href ? (
+          <a key={f.key} href={f.href(v)} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className={`${cls} transition hover:border-accent`}>{inner}</a>
+        ) : (
+          <span key={f.key} className={cls}>{inner}</span>
+        );
+      })}
+    </span>
+  );
+}
+
+async function editCustomerFlow(customer, refresh) {
+  const c = customer.contacts || {};
+  const result = await fire({
+    title: 'ข้อมูลลูกค้า',
+    html: `
+      <div class="sw-form">
+        <div><label>ชื่อลูกค้า</label><input id="cu-name" class="input" value="${esc(customer.fullname)}" /></div>
+        <div class="sw-grid2">
+          ${CONTACT_FIELDS.map((f) => `<div><label>${f.label}</label><input id="cu-${f.key}" class="input" placeholder="${esc(f.ph)}" value="${esc(c[f.key] || '')}" /></div>`).join('')}
+        </div>
+      </div>`,
+    showCancelButton: true,
+    confirmButtonText: 'บันทึก',
+    cancelButtonText: 'ยกเลิก',
+    preConfirm: () => {
+      const root = Swal.getPopup();
+      const fullname = root.querySelector('#cu-name').value.trim();
+      if (!fullname) { Swal.showValidationMessage('กรุณากรอกชื่อลูกค้า'); return false; }
+      const contacts = {};
+      CONTACT_FIELDS.forEach((f) => { contacts[f.key] = root.querySelector(`#cu-${f.key}`).value.trim(); });
+      return { fullname, contacts };
+    },
+  });
+  if (!result.isConfirmed) return false;
+  try {
+    await api.patch(`/customers/${customer.id}`, result.value);
+    await refresh();
+    toast('success', 'บันทึกข้อมูลลูกค้าแล้ว');
+    return true;
+  } catch (error) {
+    await showError(errMsg(error));
+    return false;
+  }
+}
+
 function BookingForm() {
   const { bookingModal, closeBooking, equipments, customers, refresh, navigate } = useApp();
   const initialStart = nextSlot();
   const [form, setForm] = useState(() => ({
     customer_name: '',
     phone: '',
+    contacts: { ...EMPTY_CONTACTS },
     start_date: toInputValue(initialStart),
     end_date: toInputValue(new Date(initialStart.getTime() + 86400000)),
     rental_type: 'daily',
@@ -3924,12 +4014,12 @@ function BookingForm() {
   const fillFromName = (name) => {
     set({ customer_name: name });
     const hit = customers.find((c) => c.fullname === name);
-    if (hit && !form.phone) set({ phone: hit.phone });
+    if (hit && !form.phone) set({ phone: hit.phone, contacts: { ...EMPTY_CONTACTS, ...(hit.contacts || {}) } });
   };
   const fillFromPhone = (phone) => {
     set({ phone });
     const hit = customers.find((c) => c.phone === phone);
-    if (hit && !form.customer_name) set({ customer_name: hit.fullname });
+    if (hit && !form.customer_name) set({ customer_name: hit.fullname, contacts: { ...EMPTY_CONTACTS, ...(hit.contacts || {}) } });
   };
 
   const submit = async (event) => {
@@ -3959,6 +4049,7 @@ function BookingForm() {
       const { data } = await api.post('/bookings', {
         customer_name: form.customer_name.trim(),
         phone: form.phone.trim(),
+        contacts: form.contacts,
         equipment_ids: chosen.map((e) => e.id),
         start_date: form.start_date,
         end_date: form.end_date,
@@ -4031,6 +4122,16 @@ function BookingForm() {
                 <input required type="tel" inputMode="tel" list="cust-phones" className="input" placeholder="08X-XXX-XXXX" value={form.phone} onChange={(e) => fillFromPhone(e.target.value)} />
               </Field>
             </div>
+            <details className="mt-3 rounded-2xl border border-line bg-surface2/40 open:bg-surface2/60" open={Object.values(form.contacts || {}).some(Boolean)}>
+              <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-medium">ช่องทางติดต่อเพิ่มเติม <span className="text-xs font-normal text-mute">(LINE · Facebook · IG · ไม่บังคับ)</span></summary>
+              <div className="grid gap-3 px-4 pb-4 sm:grid-cols-2">
+                {CONTACT_FIELDS.map((f) => (
+                  <Field key={f.key} label={f.label}>
+                    <input className="input" placeholder={f.ph} value={form.contacts?.[f.key] || ''} onChange={(e) => set({ contacts: { ...form.contacts, [f.key]: e.target.value } })} />
+                  </Field>
+                ))}
+              </div>
+            </details>
             <datalist id="cust-names">{customers.slice(0, 80).map((c) => <option key={c.id} value={c.fullname} />)}</datalist>
             <datalist id="cust-phones">{customers.slice(0, 80).map((c) => <option key={c.id} value={c.phone} label={c.fullname} />)}</datalist>
           </section>
@@ -4048,16 +4149,6 @@ function BookingForm() {
                   {DELIVERY_METHODS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
                 </select>
               </Field>
-            </div>
-            <div className="mt-3 rounded-2xl border border-accent/20 bg-accent/5 p-3 text-sm leading-relaxed">
-              <p className="font-semibold text-accent">เงื่อนไขร้าน</p>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-mute">
-                <li>รับกล้องเวลาไหน คืนเวลาเดียวกันของวันครบกำหนด</li>
-                <li>สงขลา–เก้าเส้ง นัดรับฟรี</li>
-                <li>รถตู้ / แกร๊ป / ไปรษณีย์ ลูกค้ารับผิดชอบค่าส่งไป–กลับทั้งหมด</li>
-                <li>เงินประกันกล้อง 500 บาท/ตัว ชำระวันรับกล้อง และคืนให้วันส่งกล้องคืน</li>
-              </ul>
-              <p className="mt-2 text-xs text-mute">{REGION_OPTIONS.find((r) => r.value === form.rental_region)?.detail}</p>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
               <button type="button" className="chip" data-on={form.rental_type === 'daily'} onClick={() => { setPriceTouched(false); set({ rental_type: 'daily', duration_days: Math.max(minDays, Number(form.duration_days) || 1) }); }}>
@@ -4142,16 +4233,16 @@ function BookingForm() {
                   <button key={e.id} type="button" disabled={Boolean(reason) && !on} onClick={() => toggle(e)} aria-pressed={on} className={`group relative overflow-hidden rounded-2xl border-2 text-left transition-all duration-200 ${on ? 'border-accent bg-accent/10 ring-2 ring-accent/30 shadow-md' : 'border-line bg-white hover:border-accent/60 hover:shadow-sm'} ${reason ? 'cursor-not-allowed opacity-75' : 'active:scale-[0.98]'}`}>
                     <div className="relative">
                       <EquipmentPhoto item={e} className="h-28 w-full" iconSize={26} zoom />
-                      <span className="absolute left-2 top-2 max-w-[72%] truncate rounded-md border border-white/70 bg-white/95 px-2 py-1 font-mono text-[10px] font-bold text-[#3a1b6c] shadow-sm">{e.code || `CAM-${e.id}`}</span>
-                      <span className={`absolute bottom-2 left-2 rounded-md px-2 py-1 text-[10px] font-semibold shadow-sm ${reason ? 'bg-rose-100 text-rose-800' : on ? 'bg-[#6d3dc1] text-white' : 'bg-white/95 text-[#3a1b6c]'}`}>{reason || (on ? '✓ เลือกแล้ว' : 'พร้อมเลือก')}</span>
-                      {on && <span className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-[#6d3dc1] text-white shadow-md ring-2 ring-white"><Check size={15} strokeWidth={3} /></span>}
+                      <span className="absolute left-2 top-2 max-w-[72%] truncate rounded-md border border-white/70 bg-white/95 px-2 py-1 font-mono text-[10px] font-bold text-[rgb(var(--wa-color-purple-90))] shadow-sm">{e.code || `CAM-${e.id}`}</span>
+                      <span className={`absolute bottom-2 left-2 rounded-md px-2 py-1 text-[10px] font-semibold shadow-sm ${reason ? 'bg-rose-100 text-rose-800' : on ? 'bg-[rgb(var(--wa-color-purple-70))] text-white' : 'bg-white/95 text-[rgb(var(--wa-color-purple-90))]'}`}>{reason || (on ? '✓ เลือกแล้ว' : 'พร้อมเลือก')}</span>
+                      {on && <span className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-[rgb(var(--wa-color-purple-70))] text-white shadow-md ring-2 ring-white"><Check size={15} strokeWidth={3} /></span>}
                     </div>
                     <div className="p-3">
-                      <p className="min-h-[2.8em] text-sm font-bold leading-snug text-[#251047]">{e.name}</p>
-                      <p className="mt-1 min-h-[1.2em] truncate text-[11px] font-medium text-[#6d3dc1]">{[e.brand, e.model].filter(Boolean).join(' · ') || categoryOf(e.category).label}</p>
-                      <div className="mt-2 flex items-center justify-between gap-1 border-t border-[#e7daff] pt-2">
-                        <span className="text-[10px] text-[#6d3dc1]">ค่าเช่า/วัน</span>
-                        <span className="text-xs font-bold text-[#3a1b6c]">฿{money(e.rental_rate_per_day)}</span>
+                      <p className="min-h-[2.8em] text-sm font-bold leading-snug text-[rgb(var(--wa-color-purple-95))]">{e.name}</p>
+                      <p className="mt-1 min-h-[1.2em] truncate text-[11px] font-medium text-[rgb(var(--wa-color-purple-70))]">{[e.brand, e.model].filter(Boolean).join(' · ') || categoryOf(e.category).label}</p>
+                      <div className="mt-2 flex items-center justify-between gap-1 border-t border-[rgb(var(--wa-color-purple-20))] pt-2">
+                        <span className="text-[10px] text-[rgb(var(--wa-color-purple-70))]">ค่าเช่า/วัน</span>
+                        <span className="text-xs font-bold text-[rgb(var(--wa-color-purple-90))]">฿{money(e.rental_rate_per_day)}</span>
                       </div>
                     </div>
                   </button>
@@ -4222,7 +4313,7 @@ function openPrintDoc({ title, size = 'A5', body }) {
     + '<style>@page{size:' + size + ';margin:12mm}*{box-sizing:border-box}'
     + 'body{margin:0;background:#eee9f7;color:#1d1530;font-family:Prompt,"Noto Sans Thai",Tahoma,sans-serif;font-size:13px;line-height:1.55;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
     + '.bar{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 14px;background:#2a1a4d;color:#fff;font-size:12px}'
-    + '.bar button{font:inherit;font-weight:500;border:0;border-radius:10px;padding:9px 14px;background:#8452e0;color:#fff;cursor:pointer}.bar button.g{background:transparent;border:1px solid #ffffff55}'
+    + '.bar button{font:inherit;font-weight:500;border:0;border-radius:10px;padding:9px 14px;background:' + themeHex() + ';color:#fff;cursor:pointer}.bar button.g{background:transparent;border:1px solid #ffffff55}'
     + '.sheet{background:#fff;margin:14px auto;max-width:' + sheetW + ';padding:18px 16px;box-shadow:0 10px 30px -12px #2a1a4d66;overflow-wrap:anywhere}'
     + 'h1{font-size:20px;margin:0}h2{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#6d6385;margin:16px 0 4px}'
     + '.top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;border-bottom:2px solid #1d1530;padding-bottom:8px;margin-bottom:12px}.no{font-size:11px;text-align:right}.no b{display:block;font-size:15px}'
@@ -4281,7 +4372,7 @@ function printSlip(d) {
 }
 
 function BookingDetail() {
-  const { detailId, closeDetail, refresh } = useApp();
+  const { detailId, closeDetail, refresh, customers } = useApp();
   const [detail, setDetail] = useState(null);
   const [error, setError] = useState('');
 
@@ -4362,6 +4453,7 @@ function BookingDetail() {
               <a href={`tel:${detail.phone}`} className="mt-1 inline-flex items-center gap-1.5 text-sm text-accent">
                 <Phone size={14} /> {detail.phone}
               </a>
+              <ContactChips contacts={customers.find((c) => c.id === detail.customer_id)?.contacts} className="mt-2" />
             </div>
             <StatusBadge status={status} />
           </section>
@@ -4796,15 +4888,19 @@ function EquipmentForm() {
 const SIDE_W = { sidebar: 268, rail: 84 };
 const pad2 = (n) => String(n).padStart(2, '0');
 
+function ShopMark({ size = 21, className = '' }) {
+  const [bad, setBad] = useState(false);
+  if (SHOP.logo && !bad) {
+    return <img src={SHOP.logo} alt="" onError={() => setBad(true)} className={`h-full w-full object-cover ${className}`} />;
+  }
+  return <Aperture size={size} strokeWidth={1.6} className={className} />;
+}
+
 function Brand({ name, compact = false, dark = true }) {
   return (
     <div className="group flex items-center gap-3">
-      <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-[11px] bg-accent text-accent-fg shadow-[inset_0_1px_0_rgb(255_255_255/0.3)]">
-        {SHOP.logo ? (
-          <img src={SHOP.logo} alt={name} className="h-full w-full rounded-[11px] object-cover" />
-        ) : (
-          <Aperture size={21} strokeWidth={1.6} className="transition-transform duration-700 group-hover:rotate-[120deg]" />
-        )}
+      <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-[11px] bg-accent text-accent-fg shadow-[inset_0_1px_0_rgb(255_255_255/0.3)]">
+        <ShopMark className="rounded-[11px] transition-transform duration-700" />
       </span>
       {!compact && (
         <div className="min-w-0 leading-tight">
@@ -5178,8 +5274,8 @@ function Reveal({ as: Tag = 'div', a = 'up', delay = 0, className = '', children
    ===================================================== */
 function VisFrame({ label, children }) {
   return (
-    <div className="relative flex h-full w-full flex-col rounded-[24px] border border-white/10 bg-[#3a1b6c] p-5 shadow-[0_60px_110px_-50px_rgba(0,0,0,0.95)] sm:p-6">
-      <div className="mono mb-4 flex justify-between !text-[10px] text-[#faf7ff]/45">
+    <div className="relative flex h-full w-full flex-col rounded-[24px] border border-white/10 bg-[rgb(var(--wa-color-purple-90))] p-5 shadow-[0_60px_110px_-50px_rgba(0,0,0,0.95)] sm:p-6">
+      <div className="mono mb-4 flex justify-between !text-[10px] text-[rgb(var(--wa-color-purple-05)/0.45)]">
         <span>{label}</span>
         <span>ตัวอย่าง</span>
       </div>
@@ -5195,16 +5291,16 @@ function VisInventory() {
       <div className="grid h-full grid-cols-2 gap-3">
         {rows.map(([n, p], i) => (
           <div key={i} className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
-            <div className="relative min-h-[64px] flex-1" style={{ background: `linear-gradient(${130 + i * 40}deg, #552c9c, #3a1b6c)` }}>
-              <Aperture size={44} strokeWidth={0.8} className="absolute bottom-2 right-2 text-[#9d73fa]/40" />
+            <div className="relative min-h-[64px] flex-1" style={{ background: `linear-gradient(${130 + i * 40}deg, rgb(var(--wa-color-purple-80)), rgb(var(--wa-color-purple-90)))` }}>
+              <Aperture size={44} strokeWidth={0.8} className="absolute bottom-2 right-2 text-[rgb(var(--wa-color-purple-50)/0.4)]" />
             </div>
             <div className="p-3">
               <p className="truncate text-xs">{n}</p>
-              <p className="mono mt-1 !text-[9px] text-[#9d73fa]">{p}</p>
+              <p className="mono mt-1 !text-[9px] text-[rgb(var(--wa-color-purple-50))]">{p}</p>
             </div>
           </div>
         ))}
-        <div className="col-span-2 flex flex-row items-center justify-center gap-2 rounded-xl border border-dashed border-[#9d73fa]/50 py-2 text-[#9d73fa]">
+        <div className="col-span-2 flex flex-row items-center justify-center gap-2 rounded-xl border border-dashed border-[rgb(var(--wa-color-purple-50)/0.5)] py-2 text-[rgb(var(--wa-color-purple-50))]">
           <ImagePlus size={22} strokeWidth={1.3} />
           <span className="mono !text-[9px]">ลากรูปมาวางที่นี่</span>
         </div>
@@ -5221,7 +5317,7 @@ function VisGantt() {
     { n: 'อุปกรณ์ 3', bars: [[0, 2, 'b'], [3, 3, 'a']] },
   ];
   const tone = {
-    a: 'bg-[#8452e0] text-white',
+    a: 'bg-[rgb(var(--wa-color-purple-60))] text-white',
     b: 'bg-[#82acd8]/80 text-[#0e1824]',
     x: 'bg-[#ee705e] text-white',
   };
@@ -5229,13 +5325,13 @@ function VisGantt() {
     <VisFrame label="02 — BOOKING">
       <div className="flex h-full flex-col justify-between">
         <div>
-          <div className="mono grid grid-cols-7 pl-[4.5rem] !text-[9px] text-[#faf7ff]/40">
+          <div className="mono grid grid-cols-7 pl-[4.5rem] !text-[9px] text-[rgb(var(--wa-color-purple-05)/0.4)]">
             {days.map((d) => <span key={d} className="text-center">{d}</span>)}
           </div>
           <div className="mt-3 space-y-3">
             {rows.map((r) => (
               <div key={r.n} className="flex items-center gap-3">
-                <span className="mono w-[3.6rem] shrink-0 truncate !text-[9px] text-[#faf7ff]/55">{r.n}</span>
+                <span className="mono w-[3.6rem] shrink-0 truncate !text-[9px] text-[rgb(var(--wa-color-purple-05)/0.55)]">{r.n}</span>
                 <div className="relative h-7 flex-1 rounded-md bg-white/[0.04]">
                   {r.bars.map(([s, l, t]) => (
                     <span
@@ -5267,14 +5363,14 @@ function VisChecklist() {
         <ul className="space-y-2">
           {items.map((t, i) => (
             <li key={t} className="flex items-center gap-3 rounded-lg border border-white/10 px-3.5 py-2.5 text-sm" style={{ animation: 'rise 0.7s var(--ease) both', animationDelay: `${i * 90}ms` }}>
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#8452e0] text-white"><Check size={12} strokeWidth={3} /></span>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[rgb(var(--wa-color-purple-60))] text-white"><Check size={12} strokeWidth={3} /></span>
               {t}
             </li>
           ))}
         </ul>
-        <div className="mono flex items-center justify-between rounded-lg bg-white/[0.05] px-3.5 py-3 !text-[10px] text-[#faf7ff]/70">
+        <div className="mono flex items-center justify-between rounded-lg bg-white/[0.05] px-3.5 py-3 !text-[10px] text-[rgb(var(--wa-color-purple-05)/0.7)]">
           <span>คืนช้า 1 วัน</span>
-          <span className="text-[#9d73fa]">ค่าปรับ ฿300</span>
+          <span className="text-[rgb(var(--wa-color-purple-50))]">ค่าปรับ ฿300</span>
         </div>
       </div>
     </VisFrame>
@@ -5290,10 +5386,10 @@ function VisCalendar() {
         {cells.map((d, i) => (
           <div
             key={i}
-            className={`relative flex items-start justify-start rounded-md p-1.5 text-[10px] ${d > 0 && d <= 31 ? 'bg-white/[0.04] text-[#faf7ff]/70' : 'opacity-0'} ${d === 11 ? 'ring-1 ring-[#9d73fa]' : ''}`}
+            className={`relative flex items-start justify-start rounded-md p-1.5 text-[10px] ${d > 0 && d <= 31 ? 'bg-white/[0.04] text-[rgb(var(--wa-color-purple-05)/0.7)]' : 'opacity-0'} ${d === 11 ? 'ring-1 ring-[rgb(var(--wa-color-purple-50))]' : ''}`}
           >
             {d > 0 && d <= 31 ? d : ''}
-            {booked[d] && <i className={`absolute bottom-1.5 left-1.5 right-1.5 h-[3px] rounded-full ${booked[d] === 'a' ? 'bg-[#9d73fa]' : 'bg-[#82acd8]'}`} />}
+            {booked[d] && <i className={`absolute bottom-1.5 left-1.5 right-1.5 h-[3px] rounded-full ${booked[d] === 'a' ? 'bg-[rgb(var(--wa-color-purple-50))]' : 'bg-[#82acd8]'}`} />}
           </div>
         ))}
       </div>
@@ -5307,15 +5403,15 @@ function VisFinance() {
     <VisFrame label="05 — FINANCE">
       <div className="flex h-full flex-col justify-between">
         <div>
-          <p className="mono !text-[9px] text-[#faf7ff]/45">รายรับเดือนนี้</p>
-          <p className="font-num text-[3.6rem] leading-none text-[#9d73fa]">฿24,800</p>
+          <p className="mono !text-[9px] text-[rgb(var(--wa-color-purple-05)/0.45)]">รายรับเดือนนี้</p>
+          <p className="font-num text-[3.6rem] leading-none text-[rgb(var(--wa-color-purple-50))]">฿24,800</p>
         </div>
         <div className="flex h-28 items-end gap-2.5">
           {bars.map((h, i) => (
-            <div key={i} className="flex-1 origin-bottom rounded-t-[3px] bg-[#9d73fa]" style={{ height: `${h}%`, opacity: 0.4 + h / 160, animation: 'growY 1s var(--ease) both', animationDelay: `${i * 90}ms` }} />
+            <div key={i} className="flex-1 origin-bottom rounded-t-[3px] bg-[rgb(var(--wa-color-purple-50))]" style={{ height: `${h}%`, opacity: 0.4 + h / 160, animation: 'growY 1s var(--ease) both', animationDelay: `${i * 90}ms` }} />
           ))}
         </div>
-        <p className="mono !text-[9px] text-[#faf7ff]/45">รายรับถูกบันทึกอัตโนมัติเมื่อรับคืนอุปกรณ์</p>
+        <p className="mono !text-[9px] text-[rgb(var(--wa-color-purple-05)/0.45)]">รายรับถูกบันทึกอัตโนมัติเมื่อรับคืนอุปกรณ์</p>
       </div>
     </VisFrame>
   );
@@ -5350,33 +5446,33 @@ function HeroFinder() {
       <span className="bokeh" style={{ width: 54, height: 54, left: '22%', bottom: '20%', animationDuration: '13s', animationDelay: '-5s', opacity: 0.7 }} />
       <i className="br tl" /><i className="br tr" /><i className="br bl" /><i className="br brr" />
 
-      <div className="mono absolute left-9 right-9 top-8 flex justify-between !text-[10px] text-[#faf7ff]/70">
+      <div className="mono absolute left-9 right-9 top-8 flex justify-between !text-[10px] text-[rgb(var(--wa-color-purple-05)/0.7)]">
         <span className="flex items-center gap-2"><i className="live-dot h-1.5 w-1.5 rounded-full bg-[#ee705e]" />REC</span>
         <span>AF-S · SINGLE</span>
       </div>
 
       <div className="reticle" data-lock={lock}><i /></div>
-      <p className="mono absolute left-0 right-0 top-[calc(46%+84px)] text-center !text-[10px] text-[#9d73fa]">
+      <p className="mono absolute left-0 right-0 top-[calc(46%+84px)] text-center !text-[10px] text-[rgb(var(--wa-color-purple-50))]">
         {lock ? '● FOCUS LOCKED' : '○ SEARCHING'}
       </p>
 
       <div className="absolute right-6 top-[17%] w-[62%] rounded-xl border border-white/10 bg-black/45 p-3.5 backdrop-blur-md" style={{ animation: 'floaty 7s ease-in-out infinite' }}>
-        <p className="mono !text-[9px] text-[#faf7ff]/50">BK-2610 · ตัวอย่าง</p>
-        <p className="mt-1 text-sm  text-[#ffffff]/50">ตัวอย่างรายการจอง</p>
-        <div className="mt-2.5 flex items-center justify-between text-[11px] text-[#faf7ff]/60">
+        <p className="mono !text-[9px] text-[rgb(var(--wa-color-purple-05)/0.5)]">BK-2610 · ตัวอย่าง</p>
+        <p className="mt-1 text-sm  text-[rgb(var(--wa-color-purple-05)/0.5)]">ตัวอย่างรายการจอง</p>
+        <div className="mt-2.5 flex items-center justify-between text-[11px] text-[rgb(var(--wa-color-purple-05)/0.6)]">
           <span>คืน 12:00 น.</span>
           <span className="flex items-center gap-1.5 text-[#7cbe94]"><i className="h-1.5 w-1.5 rounded-full bg-[#7cbe94]" />ว่างพร้อมส่ง</span>
         </div>
       </div>
 
       <div className="absolute bottom-[19%] left-6 rounded-xl border border-white/10 bg-black/45 px-4 py-3 backdrop-blur-md" style={{ animation: 'floaty 8s ease-in-out -3s infinite' }}>
-        <p className="mono !text-[9px] text-[#faf7ff]/50">รายรับวันนี้ · ตัวอย่าง</p>
-        <p className="font-num text-3xl leading-none text-[#9d73fa]">฿4,300</p>
+        <p className="mono !text-[9px] text-[rgb(var(--wa-color-purple-05)/0.5)]">รายรับวันนี้ · ตัวอย่าง</p>
+        <p className="font-num text-3xl leading-none text-[rgb(var(--wa-color-purple-50))]">฿4,300</p>
       </div>
 
-      <div className="absolute inset-x-8 bottom-7 flex items-end justify-between text-[#faf7ff]/80">
+      <div className="absolute inset-x-8 bottom-7 flex items-end justify-between text-[rgb(var(--wa-color-purple-05)/0.8)]">
         <ExifTicker className="!text-[10px]" />
-        <Aperture size={26} strokeWidth={1} className="text-[#9d73fa]/70" style={{ animation: 'spinSlow 30s linear infinite' }} />
+        <Aperture size={26} strokeWidth={1} className="text-[rgb(var(--wa-color-purple-50)/0.7)]" style={{ animation: 'spinSlow 30s linear infinite' }} />
       </div>
     </Tilt>
   );
@@ -5399,12 +5495,12 @@ function BentoLayouts() {
   return (
     <div className="grid grid-cols-4 gap-2">
       {kinds.map((k, n) => (
-        <div key={k} className={`relative h-16 overflow-hidden rounded-md border transition-colors duration-500 ${n === i ? 'border-[#9d73fa]' : 'border-white/10'}`}>
-          {k === 'sidebar' && <i className="absolute inset-y-0 left-0 w-4 bg-[#faf7ff]/40" />}
-          {k === 'rail' && <i className="absolute inset-y-0 left-0 w-2 bg-[#faf7ff]/40" />}
-          {k === 'topbar' && <i className="absolute inset-x-0 top-0 h-2.5 bg-[#faf7ff]/40" />}
-          {k === 'dock' && <i className="absolute bottom-1 left-1/2 h-2 w-8 -translate-x-1/2 rounded-full bg-[#faf7ff]/40" />}
-          <i className={`absolute rounded-sm transition-colors duration-500 ${n === i ? 'bg-[#9d73fa]/40' : 'bg-white/10'}`} style={{ inset: k === 'sidebar' ? '6px 6px 6px 22px' : k === 'rail' ? '6px 6px 6px 14px' : k === 'topbar' ? '16px 6px 6px' : '6px 6px 16px' }} />
+        <div key={k} className={`relative h-16 overflow-hidden rounded-md border transition-colors duration-500 ${n === i ? 'border-[rgb(var(--wa-color-purple-50))]' : 'border-white/10'}`}>
+          {k === 'sidebar' && <i className="absolute inset-y-0 left-0 w-4 bg-[rgb(var(--wa-color-purple-05)/0.4)]" />}
+          {k === 'rail' && <i className="absolute inset-y-0 left-0 w-2 bg-[rgb(var(--wa-color-purple-05)/0.4)]" />}
+          {k === 'topbar' && <i className="absolute inset-x-0 top-0 h-2.5 bg-[rgb(var(--wa-color-purple-05)/0.4)]" />}
+          {k === 'dock' && <i className="absolute bottom-1 left-1/2 h-2 w-8 -translate-x-1/2 rounded-full bg-[rgb(var(--wa-color-purple-05)/0.4)]" />}
+          <i className={`absolute rounded-sm transition-colors duration-500 ${n === i ? 'bg-[rgb(var(--wa-color-purple-50)/0.4)]' : 'bg-white/10'}`} style={{ inset: k === 'sidebar' ? '6px 6px 6px 22px' : k === 'rail' ? '6px 6px 6px 14px' : k === 'topbar' ? '16px 6px 6px' : '6px 6px 16px' }} />
         </div>
       ))}
     </div>
@@ -5414,7 +5510,7 @@ function BentoLayouts() {
 function Bento() {
   return (
     <section className="relative mx-auto max-w-7xl px-5 py-24 sm:px-8 lg:py-36">
-      <Reveal><span className="eyebrow !text-[#9d73fa]">รายละเอียดที่ใส่ใจ</span></Reveal>
+      <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-50))]">รายละเอียดที่ใส่ใจ</span></Reveal>
       <h2 className="ld-title mt-5 max-w-3xl text-[clamp(1.9rem,4.6vw,3.4rem)]">
         <GenerateText words={['เรื่องเล็กๆ', 'ที่ทำให้', 'ใช้งานจริง', 'ได้ทุกวัน']} />
       </h2>
@@ -5422,12 +5518,12 @@ function Bento() {
       <div className="mt-14 grid gap-4 md:grid-cols-6">
         <Reveal a="up" className="md:col-span-4">
           <Spot className="bn p-7 sm:p-9 min-h-[300px]">
-            <p className="mono !text-[10px] text-[#9d73fa]">ตรวจเวลาซ้อน</p>
+            <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-50))]">ตรวจเวลาซ้อน</p>
             <h3 className="ld-title mt-3 max-w-md text-2xl sm:text-3xl">เลือกวันก่อน แล้วค่อยเห็นว่าชิ้นไหนว่าง</h3>
-            <p className="mt-3 max-w-md text-sm leading-[1.9] text-[#faf7ff]/60">ตอนเปลี่ยนวันรับ–คืน ระบบเช็กใหม่ให้ทันที ชิ้นที่ไม่ว่างจะกดเลือกไม่ได้ พร้อมบอกเลขใบจองที่ใช้อยู่</p>
+            <p className="mt-3 max-w-md text-sm leading-[1.9] text-[rgb(var(--wa-color-purple-05)/0.6)]">ตอนเปลี่ยนวันรับ–คืน ระบบเช็กใหม่ให้ทันที ชิ้นที่ไม่ว่างจะกดเลือกไม่ได้ พร้อมบอกเลขใบจองที่ใช้อยู่</p>
             <div className="mt-7 space-y-2.5">
               <div className="relative h-8 rounded-md bg-white/[0.05]">
-                <span className="mono absolute left-[4%] top-1 flex h-6 w-[46%] items-center justify-center rounded bg-[#9d73fa] !text-[9px] text-[#250f47]">BK-2610</span>
+                <span className="mono absolute left-[4%] top-1 flex h-6 w-[46%] items-center justify-center rounded bg-[rgb(var(--wa-color-purple-50))] !text-[9px] text-[rgb(var(--wa-color-purple-95))]">BK-2610</span>
               </div>
               <div className="relative h-8 rounded-md bg-white/[0.05]">
                 <span className="mono absolute left-[38%] top-1 flex h-6 w-[40%] items-center justify-center rounded border border-dashed border-[#ee705e] bg-[#ee705e]/15 !text-[9px] text-[#f3a99d]">ซ้อนกัน — เลือกไม่ได้</span>
@@ -5439,18 +5535,18 @@ function Bento() {
         <Reveal a="up" delay={80} className="md:col-span-2">
           <Spot className="bn flex h-full min-h-[300px] flex-col justify-between p-7">
             <div>
-              <p className="mono !text-[10px] text-[#9d73fa]">ค่าปรับคืนช้า</p>
+              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-50))]">ค่าปรับคืนช้า</p>
               <h3 className="ld-title mt-3 text-xl">คำนวณเองตามจำนวนวัน</h3>
             </div>
-            <p className="font-num text-[5.4rem] leading-none text-[#9d73fa]"><Counter to={300} prefix="฿" /></p>
-            <p className="text-xs text-[#faf7ff]/50">แก้ตัวเลขได้ก่อนยืนยันเสมอ</p>
+            <p className="font-num text-[5.4rem] leading-none text-[rgb(var(--wa-color-purple-50))]"><Counter to={300} prefix="฿" /></p>
+            <p className="text-xs text-[rgb(var(--wa-color-purple-05)/0.5)]">แก้ตัวเลขได้ก่อนยืนยันเสมอ</p>
           </Spot>
         </Reveal>
 
         <Reveal a="up" delay={0} className="md:col-span-2">
           <Spot className="bn flex h-full min-h-[260px] flex-col justify-between p-7">
             <div>
-              <p className="mono !text-[10px] text-[#9d73fa]">จัดวางได้</p>
+              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-50))]">จัดวางได้</p>
               <h3 className="ld-title mt-3 text-xl">เมนูซ้าย ขวา บน หรือ dock</h3>
             </div>
             <BentoLayouts />
@@ -5460,10 +5556,10 @@ function Bento() {
         <Reveal a="up" delay={80} className="md:col-span-2">
           <Spot className="bn flex h-full min-h-[260px] flex-col justify-between p-7">
             <div>
-              <p className="mono !text-[10px] text-[#9d73fa]">ทุกหน้าจอ</p>
+              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-50))]">ทุกหน้าจอ</p>
               <h3 className="ld-title mt-3 text-xl">มือถือ แท็บเล็ต คอมพิวเตอร์</h3>
             </div>
-            <div className="flex items-end gap-4 text-[#faf7ff]/70">
+            <div className="flex items-end gap-4 text-[rgb(var(--wa-color-purple-05)/0.7)]">
               <Smartphone size={34} strokeWidth={1} /><Tablet size={52} strokeWidth={1} /><Monitor size={78} strokeWidth={1} />
             </div>
           </Spot>
@@ -5472,12 +5568,12 @@ function Bento() {
         <Reveal a="up" delay={160} className="md:col-span-2">
           <Spot className="bn flex h-full min-h-[260px] flex-col justify-between p-7">
             <div>
-              <p className="mono !text-[10px] text-[#9d73fa]">ส่งออก</p>
+              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-50))]">ส่งออก</p>
               <h3 className="ld-title mt-3 text-xl">ประวัติและบัญชีเป็นไฟล์ CSV</h3>
             </div>
             <div className="flex items-center justify-between">
               <div className="space-y-1.5">{[70, 52, 84, 40].map((w) => <i key={w} className="block h-1.5 rounded bg-white/15" style={{ width: w }} />)}</div>
-              <span className="flex h-12 w-12 items-center justify-center rounded-full border border-[#9d73fa]/60 text-[#9d73fa]"><Download size={19} strokeWidth={1.4} /></span>
+              <span className="flex h-12 w-12 items-center justify-center rounded-full border border-[rgb(var(--wa-color-purple-50)/0.6)] text-[rgb(var(--wa-color-purple-50))]"><Download size={19} strokeWidth={1.4} /></span>
             </div>
           </Spot>
         </Reveal>
@@ -5503,29 +5599,29 @@ function DeviceShowcase() {
   const Mini = ({ cols = 3 }) => (
     <div className="flex h-full flex-col gap-1.5 p-2">
       <div className="flex gap-1.5">
-        {Array.from({ length: cols }).map((_, i) => <div key={i} className="h-5 flex-1 rounded bg-[#9d73fa]/20" />)}
+        {Array.from({ length: cols }).map((_, i) => <div key={i} className="h-5 flex-1 rounded bg-[rgb(var(--wa-color-purple-50)/0.2)]" />)}
       </div>
       <div className="flex flex-1 items-end gap-1 rounded bg-white/[0.04] p-1.5">
-        {bars.map((h, i) => <div key={i} className="flex-1 origin-bottom rounded-sm bg-[#9d73fa]/70" style={{ height: `${h}%`, animation: 'growY 1.2s var(--ease) both', animationDelay: `${i * 100}ms` }} />)}
+        {bars.map((h, i) => <div key={i} className="flex-1 origin-bottom rounded-sm bg-[rgb(var(--wa-color-purple-50)/0.7)]" style={{ height: `${h}%`, animation: 'growY 1.2s var(--ease) both', animationDelay: `${i * 100}ms` }} />)}
       </div>
       <div className="space-y-1">{[70, 55, 82].map((w) => <div key={w} className="h-1.5 rounded bg-white/10" style={{ width: `${w}%` }} />)}</div>
     </div>
   );
   return (
     <div ref={ref} onMouseMove={onMove} onMouseLeave={reset} className="relative mx-auto mt-16 flex h-[340px] w-full max-w-5xl items-end justify-center sm:h-[460px]" style={{ perspective: '1400px' }}>
-      <div className="absolute bottom-0 left-1/2 w-[78%] max-w-[640px] rounded-2xl border border-white/15 bg-[#3a1b6c] p-2 shadow-2xl transition-transform duration-500 sm:p-3" style={{ transform: 'translateX(-50%) rotateY(var(--ry,0deg)) rotateX(var(--rx,0deg))' }}>
-        <div className="flex aspect-[16/10] overflow-hidden rounded-lg bg-[#251047]">
+      <div className="absolute bottom-0 left-1/2 w-[78%] max-w-[640px] rounded-2xl border border-white/15 bg-[rgb(var(--wa-color-purple-90))] p-2 shadow-2xl transition-transform duration-500 sm:p-3" style={{ transform: 'translateX(-50%) rotateY(var(--ry,0deg)) rotateX(var(--rx,0deg))' }}>
+        <div className="flex aspect-[16/10] overflow-hidden rounded-lg bg-[rgb(var(--wa-color-purple-95))]">
           <div className="w-[16%] space-y-1.5 border-r border-white/10 p-2">
-            {Array.from({ length: 7 }).map((_, i) => <div key={i} className={`h-2 rounded ${i === 1 ? 'bg-[#9d73fa]/70' : 'bg-white/10'}`} />)}
+            {Array.from({ length: 7 }).map((_, i) => <div key={i} className={`h-2 rounded ${i === 1 ? 'bg-[rgb(var(--wa-color-purple-50)/0.7)]' : 'bg-white/10'}`} />)}
           </div>
           <div className="flex-1"><Mini cols={4} /></div>
         </div>
       </div>
-      <div className="absolute bottom-0 left-[2%] hidden w-[30%] rounded-[1.4rem] border border-white/15 bg-[#3a1b6c] p-1.5 shadow-2xl transition-transform duration-500 sm:block" style={{ transform: 'translateZ(60px) rotateY(calc(var(--ry,0deg) * 1.6 + 8deg)) rotateX(var(--rx,0deg))' }}>
-        <div className="aspect-[3/4] overflow-hidden rounded-[1.1rem] bg-[#251047]"><Mini cols={2} /></div>
+      <div className="absolute bottom-0 left-[2%] hidden w-[30%] rounded-[1.4rem] border border-white/15 bg-[rgb(var(--wa-color-purple-90))] p-1.5 shadow-2xl transition-transform duration-500 sm:block" style={{ transform: 'translateZ(60px) rotateY(calc(var(--ry,0deg) * 1.6 + 8deg)) rotateX(var(--rx,0deg))' }}>
+        <div className="aspect-[3/4] overflow-hidden rounded-[1.1rem] bg-[rgb(var(--wa-color-purple-95))]"><Mini cols={2} /></div>
       </div>
-      <div className="absolute bottom-0 right-[3%] w-[24%] max-w-[170px] rounded-[1.4rem] border border-white/15 bg-[#3a1b6c] p-1.5 shadow-2xl transition-transform duration-500 sm:right-[4%]" style={{ transform: 'translateZ(120px) rotateY(calc(var(--ry,0deg) * 2.2 - 8deg)) rotateX(var(--rx,0deg))' }}>
-        <div className="aspect-[9/17] overflow-hidden rounded-[1.1rem] bg-[#251047]"><Mini cols={2} /></div>
+      <div className="absolute bottom-0 right-[3%] w-[24%] max-w-[170px] rounded-[1.4rem] border border-white/15 bg-[rgb(var(--wa-color-purple-90))] p-1.5 shadow-2xl transition-transform duration-500 sm:right-[4%]" style={{ transform: 'translateZ(120px) rotateY(calc(var(--ry,0deg) * 2.2 - 8deg)) rotateX(var(--rx,0deg))' }}>
+        <div className="aspect-[9/17] overflow-hidden rounded-[1.1rem] bg-[rgb(var(--wa-color-purple-95))]"><Mini cols={2} /></div>
       </div>
     </div>
   );
@@ -5641,12 +5737,12 @@ function Landing({ onEnter }) {
     <div data-theme="light" className={`ld relative min-h-dvh overflow-x-clip ${ready ? 'ld-ready' : ''}`}>
       {showPre && <Preloader onDone={onPre} />}
       <CursorRing />
-      <div ref={progressRef} className="fixed left-0 top-0 z-[90] h-[3px] w-full origin-left bg-[#9d73fa]" style={{ transform: 'scaleX(0)' }} />
+      <div ref={progressRef} className="fixed left-0 top-0 z-[90] h-[3px] w-full origin-left bg-[rgb(var(--wa-color-purple-50))]" style={{ transform: 'scaleX(0)' }} />
 
       {/* NAV — ลอย ซ่อนตอนเลื่อนลง */}
       <header ref={navRef} data-hide="false" className="ld-nav safe-t">
         <span className="flex items-center gap-2.5 pr-3">
-          <span className="flex h-8 w-8 items-center justify-center rounded-[9px] bg-[#8452e0] text-white"><Aperture size={17} strokeWidth={1.7} /></span>
+          <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-[9px] bg-[rgb(var(--wa-color-purple-60))] text-white"><ShopMark size={17} className="rounded-[9px]" /></span>
           <span className="font-display text-[1.3rem] font-semibold tracking-tight">{SHOP.name}</span>
         </span>
         <span className="hidden items-center md:flex">
@@ -5654,7 +5750,7 @@ function Landing({ onEnter }) {
             <button key={id} className="l" onClick={() => scrollTo(id)}>{label}</button>
           ))}
         </span>
-        <button onClick={go} data-cursor="เข้าระบบ" className="ml-1 flex whitespace-nowrap items-center gap-2 rounded-full bg-[#8452e0] px-4 py-2 text-[0.82rem] font-medium text-white transition-transform hover:scale-[1.04]">
+        <button onClick={go} data-cursor="เข้าระบบ" className="ml-1 flex whitespace-nowrap items-center gap-2 rounded-full bg-[rgb(var(--wa-color-purple-60))] px-4 py-2 text-[0.82rem] font-medium text-white transition-transform hover:scale-[1.04]">
           เข้าสู่ระบบ <ArrowRight size={15} />
         </button>
       </header>
@@ -5668,7 +5764,7 @@ function Landing({ onEnter }) {
 
         <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 px-5 pb-20 pt-32 sm:px-8 lg:grid-cols-[1.12fr_0.88fr] lg:gap-8">
           <div>
-            <p className="eyebrow ld-fade !text-[#9d73fa]" style={{ '--i': 0 }}>ระบบจัดการร้านเช่ากล้อง</p>
+            <p className="eyebrow ld-fade !text-[rgb(var(--wa-color-purple-50))]" style={{ '--i': 0 }}>ระบบจัดการร้านเช่ากล้อง</p>
             <h1 className="ld-title mt-7 text-[clamp(2.7rem,8.2vw,6.8rem)]">
               {heroLines.map((line, li) => (
                 <span key={li} className="block">
@@ -5683,7 +5779,7 @@ function Landing({ onEnter }) {
                 </span>
               ))}
             </h1>
-            <p className="ld-fade mt-8 max-w-xl text-base leading-[1.95] text-[#faf7ff]/65 sm:text-lg" style={{ '--i': 6 }}>
+            <p className="ld-fade mt-8 max-w-xl text-base leading-[1.95] text-[rgb(var(--wa-color-purple-05)/0.65)] sm:text-lg" style={{ '--i': 6 }}>
               เก็บเรื่องอุปกรณ์ ใบจอง นัดรับ–คืน และรายรับรายจ่ายไว้ที่เดียว
               ทำมาให้ร้านที่มีคนดูแลคนเดียว เปิดจากมือถือหน้างานก็ได้
             </p>
@@ -5695,8 +5791,8 @@ function Landing({ onEnter }) {
               </Magnetic>
               <button onClick={() => scrollTo('statement')} className="ld-btn ld-btn-line">ดูว่าทำอะไรได้ <ArrowDown size={17} /></button>
             </div>
-            <div className="ld-fade mt-12 flex items-center gap-4 text-[#faf7ff]/50" style={{ '--i': 10 }}>
-              <span className="h-px w-10 bg-[#faf7ff]/25" />
+            <div className="ld-fade mt-12 flex items-center gap-4 text-[rgb(var(--wa-color-purple-05)/0.5)]" style={{ '--i': 10 }}>
+              <span className="h-px w-10 bg-[rgb(var(--wa-color-purple-05)/0.25)]" />
               <ExifTicker />
             </div>
           </div>
@@ -5707,20 +5803,20 @@ function Landing({ onEnter }) {
         </div>
 
         <div className="absolute bottom-7 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 sm:flex">
-          <span className="mono !text-[9px] !tracking-[0.3em] text-[#faf7ff]/40">Scroll</span>
-          <span className="h-10 w-px overflow-hidden bg-[#faf7ff]/20"><span className="block h-4 w-px bg-[#9d73fa]" style={{ animation: 'floaty 1.8s ease-in-out infinite' }} /></span>
+          <span className="mono !text-[9px] !tracking-[0.3em] text-[rgb(var(--wa-color-purple-05)/0.4)]">Scroll</span>
+          <span className="h-10 w-px overflow-hidden bg-[rgb(var(--wa-color-purple-05)/0.2)]"><span className="block h-4 w-px bg-[rgb(var(--wa-color-purple-50))]" style={{ animation: 'floaty 1.8s ease-in-out infinite' }} /></span>
         </div>
       </section>
 
       {/* MARQUEE */}
-      <div className="overflow-hidden border-y border-[#faf7ff]/10 py-6">
+      <div className="overflow-hidden border-y border-[rgb(var(--wa-color-purple-05)/0.1)] py-6">
         <div className="ld-marquee">
           {[0, 1].map((k) => (
             <div key={k} className="flex shrink-0 items-center" aria-hidden={k === 1}>
               {MARQUEE.map((w) => (
                 <span key={w + k} className="flex items-center">
                   <span className="ld-title px-8 text-[clamp(2rem,5vw,3.6rem)] text-transparent" style={{ WebkitTextStroke: '1px rgb(239 232 218 / 0.38)' }}>{w}</span>
-                  <Aperture size={22} className="text-[#9d73fa]" strokeWidth={1.3} />
+                  <Aperture size={22} className="text-[rgb(var(--wa-color-purple-50))]" strokeWidth={1.3} />
                 </span>
               ))}
             </div>
@@ -5732,7 +5828,7 @@ function Landing({ onEnter }) {
       <section id="statement" ref={stmtRef} className="relative h-[240vh]">
         <div className="sticky top-0 flex h-dvh items-center">
           <div className="mx-auto max-w-5xl px-5 sm:px-8">
-            <span className="eyebrow !text-[#9d73fa]">แนวคิด</span>
+            <span className="eyebrow !text-[rgb(var(--wa-color-purple-50))]">แนวคิด</span>
             <p className="ld-title mt-8 text-[clamp(1.9rem,5.4vw,4rem)] leading-[1.3]">
               {STATEMENT.map((w, i) => <span key={i} className="ld-word mr-[0.28em] inline-block" data-on="false">{w}</span>)}
             </p>
@@ -5742,7 +5838,7 @@ function Landing({ onEnter }) {
 
       {/* FEATURES — sticky scroll reveal */}
       <section id="features" className="relative mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:py-32">
-        <Reveal><span className="eyebrow !text-[#9d73fa]">ฟีเจอร์</span></Reveal>
+        <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-50))]">ฟีเจอร์</span></Reveal>
         <h2 className="ld-title mt-5 max-w-2xl text-[clamp(1.9rem,4.6vw,3.4rem)] lg:ml-16">
           <GenerateText words={['ครบทุกงาน', 'ของร้านเช่า', 'ในหน้าจอเดียว']} />
         </h2>
@@ -5750,9 +5846,9 @@ function Landing({ onEnter }) {
           <div>
             {FEATURES.map((f, i) => (
               <div key={f.title} ref={(el) => { itemRefs.current[i] = el; }} data-on={active === i} className="sf-item">
-                <p className="font-num text-[5.5rem] leading-none text-[#9d73fa]/55">0{i + 1}</p>
+                <p className="font-num text-[5.5rem] leading-none text-[rgb(var(--wa-color-purple-50)/0.55)]">0{i + 1}</p>
                 <h3 className="ld-title mt-4 text-[clamp(1.5rem,3vw,2.2rem)]">{f.title}</h3>
-                <p className="mt-4 max-w-md text-base leading-[1.95] text-[#faf7ff]/60">{f.text}</p>
+                <p className="mt-4 max-w-md text-base leading-[1.95] text-[rgb(var(--wa-color-purple-05)/0.6)]">{f.text}</p>
                 <div className="relative mt-8 h-[300px] lg:hidden">
                   <div className="sf-vis" data-on="true"><f.Vis /></div>
                 </div>
@@ -5775,7 +5871,7 @@ function Landing({ onEnter }) {
       <section id="flow" ref={hzRef} className="relative h-[330vh]">
         <div className="sticky top-0 flex h-dvh flex-col justify-center overflow-hidden">
           <div className="mx-auto mb-10 w-full max-w-7xl px-5 sm:px-8">
-            <span className="eyebrow !text-[#9d73fa]">ขั้นตอน</span>
+            <span className="eyebrow !text-[rgb(var(--wa-color-purple-50))]">ขั้นตอน</span>
             <h2 className="ld-title mt-5 max-w-2xl text-[clamp(1.9rem,4.6vw,3.4rem)]">
               จากอุปกรณ์หนึ่งชิ้น <span className="ld-purple">ถึงรายรับหนึ่งรายการ</span>
             </h2>
@@ -5786,39 +5882,39 @@ function Landing({ onEnter }) {
                 <p className="hz-no">{s.no}</p>
                 <div>
                   <h3 className="font-serif text-2xl font-medium">{s.title}</h3>
-                  <p className="mt-3 max-w-sm text-sm leading-[1.9] text-[#faf7ff]/60 sm:text-base">{s.text}</p>
+                  <p className="mt-3 max-w-sm text-sm leading-[1.9] text-[rgb(var(--wa-color-purple-05)/0.6)] sm:text-base">{s.text}</p>
                 </div>
               </article>
             ))}
             <div className="w-6 shrink-0 sm:w-24" />
           </div>
-          <div className="mx-auto mt-10 h-px w-[calc(100%-2.5rem)] max-w-7xl bg-[#faf7ff]/15 sm:w-[calc(100%-4rem)]">
-            <div ref={hzBarRef} className="h-full origin-left bg-[#9d73fa]" style={{ transform: 'scaleX(0)' }} />
+          <div className="mx-auto mt-10 h-px w-[calc(100%-2.5rem)] max-w-7xl bg-[rgb(var(--wa-color-purple-05)/0.15)] sm:w-[calc(100%-4rem)]">
+            <div ref={hzBarRef} className="h-full origin-left bg-[rgb(var(--wa-color-purple-50))]" style={{ transform: 'scaleX(0)' }} />
           </div>
         </div>
       </section>
 
       {/* DEVICES */}
-      <section id="devices" className="relative overflow-hidden border-t border-[#faf7ff]/10 px-5 py-24 sm:px-8 md:py-36">
+      <section id="devices" className="relative overflow-hidden border-t border-[rgb(var(--wa-color-purple-05)/0.1)] px-5 py-24 sm:px-8 md:py-36">
         <div className="mx-auto max-w-5xl">
-          <Reveal><span className="eyebrow !text-[#9d73fa]">ใช้ได้ทุกจอ</span></Reveal>
+          <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-50))]">ใช้ได้ทุกจอ</span></Reveal>
           <Reveal a="zoom"><h2 className="ld-title mt-5 max-w-3xl text-[clamp(1.9rem,4.6vw,3.4rem)]">ที่ร้าน ระหว่างทาง หรือบนโซฟา<br /><span className="ld-purple">ก็จัดการได้เหมือนกัน</span></h2></Reveal>
           <Reveal a="rotate" delay={200}><DeviceShowcase /></Reveal>
         </div>
       </section>
 
       {/* กติกาการเช่า — ข้อมูลจริงของร้าน */}
-      <section className="border-y border-[#faf7ff]/10 px-5 py-16 sm:px-8 md:py-24">
+      <section className="border-y border-[rgb(var(--wa-color-purple-05)/0.1)] px-5 py-16 sm:px-8 md:py-24">
         <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)] md:gap-16">
           <div>
-            <span className="eyebrow !text-[#9d73fa]">กติกาการเช่า</span>
+            <span className="eyebrow !text-[rgb(var(--wa-color-purple-50))]">กติกาการเช่า</span>
             <h2 className="ld-title mt-5 text-[clamp(1.7rem,3.8vw,2.7rem)]">สิ่งที่ระบบเช็กให้<br />ทุกครั้งที่จอง</h2>
           </div>
-          <dl className="divide-y divide-[#faf7ff]/10 border-y border-[#faf7ff]/10">
+          <dl className="divide-y divide-[rgb(var(--wa-color-purple-05)/0.1)] border-y border-[rgb(var(--wa-color-purple-05)/0.1)]">
             {RULES.map(([k, v]) => (
               <div key={k} className="grid gap-1 py-4 sm:grid-cols-[11rem_1fr] sm:gap-6">
-                <dt className="text-sm text-[#faf7ff]/45">{k}</dt>
-                <dd className="text-[#faf7ff]/85">{v}</dd>
+                <dt className="text-sm text-[rgb(var(--wa-color-purple-05)/0.45)]">{k}</dt>
+                <dd className="text-[rgb(var(--wa-color-purple-05)/0.85)]">{v}</dd>
               </div>
             ))}
           </dl>
@@ -5833,7 +5929,7 @@ function Landing({ onEnter }) {
             <h2 className="ld-title text-[clamp(2.4rem,8vw,6rem)]">
               <GenerateText words={['พร้อมเปิด', 'ชัตเตอร์', 'แล้วหรือยัง']} step={140} />
             </h2>
-            <p className="mx-auto mt-6 max-w-md text-[#faf7ff]/55">เข้าระบบแล้วเพิ่มกล้องตัวแรกได้เลย</p>
+            <p className="mx-auto mt-6 max-w-md text-[rgb(var(--wa-color-purple-05)/0.55)]">เข้าระบบแล้วเพิ่มกล้องตัวแรกได้เลย</p>
             <div className="mt-12">
               <Magnetic>
                 <span className="mb">
@@ -5847,8 +5943,8 @@ function Landing({ onEnter }) {
         </Lamp>
       </section>
 
-      <footer className="border-t border-[#faf7ff]/10 px-5 py-10 text-center">
-        <p className="mono !text-[10px] text-[#faf7ff]/40">{SHOP.name} — ระบบจัดการร้านเช่ากล้อง</p>
+      <footer className="border-t border-[rgb(var(--wa-color-purple-05)/0.1)] px-5 py-10 text-center">
+        <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-05)/0.4)]">{SHOP.name} — ระบบจัดการร้านเช่ากล้อง</p>
       </footer>
     </div>
   );
@@ -5961,7 +6057,7 @@ function Dashboard() {
               {greeting()}
               <br />
               วันนี้มี{' '}
-              <span className="font-num text-[1.3em] font-medium text-[#9d73fa]">
+              <span className="font-num text-[1.3em] font-medium text-[rgb(var(--wa-color-purple-50))]">
                 <CountUp value={today.length} />
               </span>{' '}
               งานที่ต้องดูแล
@@ -6143,7 +6239,7 @@ function Dashboard() {
           )}
         </Panel>
 
-        <Panel index={6} no="№ 05 · ยอดนิยม" title="เช่าบ่อยที่สุด" caption="นับจากรายการที่ส่งมอบแล้ว" className="lg:col-span-2 xl:col-span-1">
+        <Panel index={6} no="№ 05 · ยอดนิยม" title="เช่าบ่อยที่สุด" caption="นับจากรายการที่รับคืนแล้ว (ตรงกับรายรับ)" className="lg:col-span-2 xl:col-span-1">
           {top.length === 0 ? (
             <EmptyState title="ยังไม่มีข้อมูล" description="ยังไม่มีการรับ–คืนกล้อง" />
           ) : (
@@ -6885,7 +6981,7 @@ function Maintenance() {
 const initials = (name) => (name || '?').trim().slice(0, 1);
 
 function Customers() {
-  const { customers, bookings, openDetail } = useApp();
+  const { customers, bookings, openDetail, refresh } = useApp();
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(null);
 
@@ -6923,11 +7019,11 @@ function Customers() {
                     <span className="mt-0.5 flex items-center gap-1.5 text-xs text-mute"><Phone size={12} /> {c.phone}</span>
                   </span>
                   <span className="hidden text-right sm:block">
-                    <span className="block text-xs text-mute">เช่าทั้งหมด</span>
-                    <b className="font-num text-xl">{c.booking_count} ครั้ง</b>
+                    <span className="block text-xs text-mute">เช่าสำเร็จ</span>
+                    <b className="font-num text-xl">{c.returned_count ?? 0} ครั้ง</b>
                   </span>
                   <span className="text-right">
-                    <span className="block text-xs text-mute">ยอดรวม</span>
+                    <span className="block text-xs text-mute">ยอดที่ชำระแล้ว</span>
                     <b className="font-num text-xl text-accent">{baht(c.total_spent)}</b>
                   </span>
                   <ChevronDown size={18} className={`shrink-0 text-mute transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
@@ -6935,10 +7031,14 @@ function Customers() {
 
                 {isOpen && (
                   <div className="page-in border-t border-line bg-surface2/40 p-4 sm:p-5">
-                    <p className="mb-3 text-xs text-mute">
-                      {c.contact_channel ? `ช่องทางติดต่อ: ${c.contact_channel} · ` : ''}
-                      {c.last_booking ? `จองล่าสุด ${fmtDate(c.last_booking)}` : 'ยังไม่เคยจอง'}
-                    </p>
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-xs text-mute">
+                        {c.contact_channel ? `ช่องทางติดต่อ: ${c.contact_channel} · ` : ''}
+                        จองทั้งหมด {c.booking_count} ครั้ง · {c.last_booking ? `ล่าสุด ${fmtDate(c.last_booking)}` : 'ยังไม่เคยจอง'}
+                      </p>
+                      <button type="button" onClick={() => editCustomerFlow(c, refresh)} className="btn btn-ghost !min-h-9 !px-3 text-xs"><Pencil size={13} /> แก้ไข / ช่องทางติดต่อ</button>
+                    </div>
+                    <ContactChips contacts={c.contacts} className="mb-3" />
                     {history.length === 0 ? (
                       <p className="text-sm text-mute">ไม่มีประวัติการจอง</p>
                     ) : (
@@ -7416,13 +7516,33 @@ function Settings() {
           </div>
         </Group>
 
-        <Group index={2} title="ความปลอดภัย" caption="เปลี่ยนรหัสผ่านเข้าระบบของเจ้าของร้านได้ที่นี่ ไม่ต้องแก้โค้ดหรือตั้งค่าเซิร์ฟเวอร์">
+        <Group index={2} title="สีธีมของระบบ" caption="เปลี่ยนสีหลักทั้งระบบพร้อมกัน — เมนู ปุ่ม กราฟ หน้าแนะนำระบบ และหน้าต่างแจ้งเตือน">
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+            {Object.entries(THEME_COLORS).map(([id, t]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => update({ color: id })}
+                aria-pressed={settings.color === id}
+                className="chip flex-col !gap-2 !py-3"
+                data-on={settings.color === id}
+              >
+                <span className="relative block h-8 w-8 rounded-full ring-2 ring-white/70" style={{ background: t.main, boxShadow: `0 8px 18px -8px ${t.main}` }}>
+                  {settings.color === id && <Check size={16} strokeWidth={3} className="absolute inset-0 m-auto text-white" />}
+                </span>
+                <span className="text-xs">{t.label}</span>
+              </button>
+            ))}
+          </div>
+        </Group>
+
+        <Group index={3} title="ความปลอดภัย" caption="เปลี่ยนรหัสผ่านเข้าระบบของเจ้าของร้านได้ที่นี่ ไม่ต้องแก้โค้ดหรือตั้งค่าเซิร์ฟเวอร์">
           <button type="button" className="btn btn-primary" onClick={() => changePasswordFlow()}>
             เปลี่ยนรหัสผ่าน
           </button>
         </Group>
 
-        <Group index={3} title="สำรองข้อมูลและส่งออก" caption="เลือกรูปแบบที่ต้องการ ไฟล์ไม่มีรหัสผ่านร้าน แนะนำให้สำรองไฟล์เต็ม (JSON) สัปดาห์ละครั้ง">
+        <Group index={4} title="สำรองข้อมูลและส่งออก" caption="เลือกรูปแบบที่ต้องการ ไฟล์ไม่มีรหัสผ่านร้าน แนะนำให้สำรองไฟล์เต็ม (JSON) สัปดาห์ละครั้ง">
           <div className="grid gap-3 sm:grid-cols-3">
             <button type="button" className="btn btn-primary" onClick={backupPdfFlow}>
               <Printer size={16} /> รายงาน PDF
@@ -7840,8 +7960,11 @@ function Root() {
     document.title = page === 'notfound' ? `ไม่พบหน้า — ${name}` : `${name} — ระบบจัดการร้านเช่ากล้อง`;
     let link = document.querySelector('link[rel="icon"]');
     if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
-    link.href = SHOP.logo || 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#8452e0"/><circle cx="16" cy="16" r="8" fill="none" stroke="#fff" stroke-width="2"/><circle cx="16" cy="16" r="3" fill="#fff"/></svg>');
-  }, [shopSettings.shopName, page]);
+    link.href = SHOP.logo || 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="${themeHex()}"/><circle cx="16" cy="16" r="8" fill="none" stroke="#fff" stroke-width="2"/><circle cx="16" cy="16" r="3" fill="#fff"/></svg>`);
+    let meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'theme-color'; document.head.appendChild(meta); }
+    meta.content = themeHex('95');
+  }, [shopSettings.shopName, shopSettings.color, page]);
 
   return (
     <>
