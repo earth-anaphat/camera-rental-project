@@ -6430,7 +6430,7 @@ function Dashboard() {
           )}
         </Panel>
 
-        <Panel index={6} no="№ 05 · ยอดนิยม" title="เช่าบ่อยที่สุด" caption="นับจากรายการที่รับคืนแล้ว (ตรงกับรายรับ)" className="lg:col-span-2 xl:col-span-1">
+        <Panel index={6} no="№ 05 · ยอดนิยม" title="เช่าบ่อยที่สุด" caption="นับจากรายการที่รับคืนแล้ว" className="lg:col-span-2 xl:col-span-1">
           {top.length === 0 ? (
             <EmptyState title="ยังไม่มีข้อมูล" description="ยังไม่มีการรับ–คืนกล้อง" />
           ) : (
@@ -6737,7 +6737,6 @@ function CalendarPage() {
             {Object.values(CAL_KINDS).map((k) => (
               <span key={k.label} className="inline-flex items-center gap-1.5"><i className={`h-2.5 w-2.5 rounded-full ${k.dot}`} />{k.label}</span>
             ))}
-            <span className="basis-full text-[10.5px] opacity-80">แสดงเฉพาะ “วันรับ” และ “วันคืน” — วันที่อยู่ระหว่างเช่าจะไม่แสดง</span>
           </div>
 
           <div className="calendar-weekdays grid grid-cols-7 border-b border-line bg-surface2/50 text-center text-[11px] font-semibold text-mute">
