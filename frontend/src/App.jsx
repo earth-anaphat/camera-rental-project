@@ -4891,7 +4891,7 @@ const pad2 = (n) => String(n).padStart(2, '0');
 function ShopMark({ size = 21, className = '' }) {
   const [bad, setBad] = useState(false);
   if (SHOP.logo && !bad) {
-    return <img src={SHOP.logo} alt="" onError={() => setBad(true)} className={`h-full w-full object-cover ${className}`} />;
+    return <img src={SHOP.logo} alt="" onError={() => setBad(true)} className={`h-full w-full object-contain p-[18%] ${className}`} />;
   }
   return <Aperture size={size} strokeWidth={1.6} className={className} />;
 }
@@ -7385,9 +7385,9 @@ function History() {
 }
 
 /* ═════ pages/Settings.jsx ═════ */
-function Group({ title, caption, children, index = 0 }) {
+function Group({ title, caption, children, index = 0, className = '' }) {
   return (
-    <section className="card card-pad anim-i" style={{ '--i': index }}>
+    <section className={`card card-pad anim-i ${className}`} style={{ '--i': index }}>
       <h2 className="font-serif text-lg font-semibold">{title}</h2>
       {caption && <p className="mt-1 text-sm text-mute">{caption}</p>}
       <div className="mt-5">{children}</div>
@@ -7516,8 +7516,8 @@ function Settings() {
           </div>
         </Group>
 
-        <Group index={2} title="สีธีมของระบบ" caption="เปลี่ยนสีหลักทั้งระบบพร้อมกัน — เมนู ปุ่ม กราฟ หน้าแนะนำระบบ และหน้าต่างแจ้งเตือน">
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+        <Group index={2} className="xl:col-span-2" title="สีธีมของระบบ" caption="เปลี่ยนสีหลักทั้งระบบพร้อมกัน — เมนู ปุ่ม กราฟ หน้าแนะนำระบบ และหน้าต่างแจ้งเตือน">
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-5 xl:grid-cols-9">
             {Object.entries(THEME_COLORS).map(([id, t]) => (
               <button
                 key={id}
@@ -7536,13 +7536,13 @@ function Settings() {
           </div>
         </Group>
 
-        <Group index={3} title="ความปลอดภัย" caption="เปลี่ยนรหัสผ่านเข้าระบบของเจ้าของร้านได้ที่นี่ ไม่ต้องแก้โค้ดหรือตั้งค่าเซิร์ฟเวอร์">
+        <Group index={3} title="ความปลอดภัยและสำรองข้อมูล" caption="เปลี่ยนรหัสผ่านเจ้าของร้านได้ที่นี่ ไม่ต้องแก้โค้ดหรือตั้งค่าเซิร์ฟเวอร์ · ไฟล์สำรองไม่มีรหัสผ่านร้าน แนะนำให้สำรองไฟล์เต็ม (JSON) สัปดาห์ละครั้ง" className="xl:col-span-2">
+          <p className="mb-2 text-sm font-medium">ความปลอดภัย</p>
           <button type="button" className="btn btn-primary" onClick={() => changePasswordFlow()}>
             เปลี่ยนรหัสผ่าน
           </button>
-        </Group>
-
-        <Group index={4} title="สำรองข้อมูลและส่งออก" caption="เลือกรูปแบบที่ต้องการ ไฟล์ไม่มีรหัสผ่านร้าน แนะนำให้สำรองไฟล์เต็ม (JSON) สัปดาห์ละครั้ง">
+          <div className="my-6 h-px bg-line/70" />
+          <p className="mb-2 text-sm font-medium">สำรองข้อมูลและส่งออก</p>
           <div className="grid gap-3 sm:grid-cols-3">
             <button type="button" className="btn btn-primary" onClick={backupPdfFlow}>
               <Printer size={16} /> รายงาน PDF
@@ -7753,6 +7753,10 @@ class PageBoundary extends React.Component {
 
 /* ═════ รหัสผ่าน: หน้าต่างเข้าสู่ระบบ + เปลี่ยนรหัสผ่าน ═════ */
 const LG_MARK = '<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m14.31 8 5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16 3.95 6.06M14.31 16H2.83M16.62 12l-5.74 9.94"/></svg>';
+/* โลโก้ร้านในหน้าล็อกอิน: ใช้ไฟล์โลโก้ ถ้ายังไม่มีไฟล์จะแสดงไอคอนเลนส์แทน */
+const lgMark = () => SHOP.logo
+  ? `<img src="${SHOP.logo}" alt="" style="width:62%;height:62%;object-fit:contain;animation:none" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" /><span style="display:none">${LG_MARK}</span>`
+  : LG_MARK;
 const LG_LOCK = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 
 const lgField = (id, label, placeholder, autocomplete) => `
@@ -7810,7 +7814,7 @@ async function changePasswordFlow({ force = false, current = '' } = {}) {
   const result = await Swal.fire({
     title: '',
     html: `
-      <div class="lg-mark">${LG_MARK}</div>
+      <div class="lg-mark">${lgMark()}</div>
       <p class="lg-eyebrow">SECURITY</p>
       <h2 class="lg-title">${force ? 'ตั้งรหัสผ่านของคุณเอง' : 'เปลี่ยนรหัสผ่าน'}</h2>
       <p class="lg-sub">${force
@@ -7880,7 +7884,7 @@ function Root() {
     const result = await Swal.fire({
       title: '',
       html: `
-        <div class="lg-mark">${LG_MARK}</div>
+        <div class="lg-mark">${lgMark()}</div>
         <p class="lg-eyebrow">OWNER ACCESS</p>
         <h2 class="lg-title">เข้าสู่ระบบเจ้าของร้าน</h2>
         <p class="lg-sub">กรอกรหัสผ่านเพื่อเข้าถึงข้อมูลการจอง อุปกรณ์ และรายรับ–รายจ่ายอย่างปลอดภัย</p>
@@ -7960,7 +7964,22 @@ function Root() {
     document.title = page === 'notfound' ? `ไม่พบหน้า — ${name}` : `${name} — ระบบจัดการร้านเช่ากล้อง`;
     let link = document.querySelector('link[rel="icon"]');
     if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
-    link.href = SHOP.logo || 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="${themeHex()}"/><circle cx="16" cy="16" r="8" fill="none" stroke="#fff" stroke-width="2"/><circle cx="16" cy="16" r="3" fill="#fff"/></svg>`);
+    const fallbackIcon = () => { link.href = 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="${themeHex()}"/><circle cx="16" cy="16" r="8" fill="none" stroke="#fff" stroke-width="2"/><circle cx="16" cy="16" r="3" fill="#fff"/></svg>`); };
+    if (SHOP.logo) {
+      // โลโก้เป็นไอคอนสีขาว จึงวางบนพื้นสีธีมให้มองเห็นบนแท็บเบราว์เซอร์
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          const g = c.getContext('2d');
+          g.fillStyle = themeHex(); g.beginPath(); g.roundRect(0, 0, 64, 64, 16); g.fill();
+          g.drawImage(img, 11, 11, 42, 42);
+          link.href = c.toDataURL('image/png');
+        } catch { fallbackIcon(); }
+      };
+      img.onerror = fallbackIcon;
+      img.src = SHOP.logo;
+    } else fallbackIcon();
     let meta = document.querySelector('meta[name="theme-color"]');
     if (!meta) { meta = document.createElement('meta'); meta.name = 'theme-color'; document.head.appendChild(meta); }
     meta.content = themeHex('95');
