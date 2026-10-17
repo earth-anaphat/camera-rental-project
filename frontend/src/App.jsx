@@ -1722,6 +1722,47 @@ html[data-scrolled='true'] .glass-header { box-shadow: 0 14px 34px -22px rgb(var
 .ld-leave i { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; transform-origin: left; background: rgb(var(--wa-color-purple-40)); animation: lnBar 2.8s linear both; }
 @media (prefers-reduced-motion: reduce) { .lgp-bg, .lgp-card, .lgp-st, .lgp-step, .lgp-orb, .ld-leave, .ld-leave i { animation-duration: .01ms !important; animation-delay: 0ms !important; } }
 
+/* =====================================================
+   TOUCH / TABLET PERFORMANCE — ลดภาระ GPU บนมือถือและไอแพดให้เลื่อนลื่น
+   ===================================================== */
+.ld-nav { width: max-content; max-width: calc(100vw - 20px); }
+.ld-nav button { white-space: nowrap; }
+.ld-nav-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: clamp(1.02rem, 4.6vw, 1.3rem); line-height: 1.2; }
+@media (max-width: 380px) { .ld-nav { padding-left: .7rem; } .ld-nav button:not(.l) { padding-left: .8rem; padding-right: .8rem; } }
+
+@media (max-width: 1180px), (hover: none), (pointer: coarse) {
+  /* blur ด้านหลังแถบที่ลอยตลอด/ฉากหลังเต็มจอ เป็นตัวการหลักของอาการกระตุกบน iOS → ใช้สีทึบแทน */
+  .glass-header { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(var(--bg) / 0.97); }
+  .bottom-bar { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(var(--surface) / 0.98); }
+  .dock { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(var(--side) / 0.97); }
+  .overlay { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(6 5 3 / 0.7); }
+  .swal2-container { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  .ld-nav { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(255 255 255 / 0.94); }
+  .ld-leave { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .lgp-card { backdrop-filter: none; -webkit-backdrop-filter: none; background: linear-gradient(160deg, rgb(255 255 255 / .12), rgb(255 255 255 / .06)); }
+
+  /* ตกแต่งที่วนไม่รู้จบ + blur ใหญ่ ๆ — ปิดบนอุปกรณ์สัมผัส (ภาพนิ่งยังสวยเหมือนเดิม) */
+  .lgp-orb { animation: none; filter: none; opacity: .28; }
+  .bokeh { animation: none; }
+  .vf::before, .vf::after { animation: none !important; }
+  .tilt { transform: none !important; will-change: auto; transition: box-shadow .3s, border-color .3s; }
+  .tilt .glare { display: none; }
+  .spot::before, .spot::after { display: none; }
+
+  /* คีย์เฟรมที่ใช้ filter: blur ทำให้ต้องวาดใหม่ทุกเฟรม → เปลี่ยนเป็น fade + เลื่อนอย่างเดียว */
+  @keyframes exifIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes ldTitle { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes lgpCard { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
+  @keyframes lgpCardOut { to { opacity: 0; transform: translateY(16px); } }
+  @keyframes lnIn { from { opacity: 0; transform: translate(-50%, -26px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  @keyframes lnOut { to { opacity: 0; transform: translate(-50%, -18px); } }
+  @keyframes swPopupEnter { from { opacity: 0; transform: translateY(22px) scale(.95); } to { opacity: 1; transform: none; } }
+  @keyframes swPopupExit { to { opacity: 0; transform: translateY(8px); } }
+
+  html { -webkit-tap-highlight-color: transparent; }
+  body { overscroll-behavior-y: none; }
+}
+
 `;
 if (typeof document !== 'undefined' && !document.getElementById('lensdesk-css')) {
   const el = document.createElement('style');
@@ -5857,41 +5898,19 @@ function Landing({ onEnter }) {
   const lastY = useRef(0);
   const [active, setActive] = useState(0);
 
+  const wordsRef = useRef(null);
+  const wordState = useRef(-1);
   useScrollLoop(() => {
+    // อ่านค่า layout ทั้งหมดก่อน แล้วค่อยเขียน style ทีเดียว (กัน layout thrashing ตอนเลื่อน)
     const vh = window.innerHeight;
     const vw = window.innerWidth;
     const sy = window.scrollY;
     const max = document.documentElement.scrollHeight - vh;
     const clamp = (v) => Math.min(1, Math.max(0, v));
 
-    if (progressRef.current) progressRef.current.style.transform = `scaleX(${max > 0 ? sy / max : 0})`;
-
-    if (navRef.current) {
-      const down = sy > lastY.current + 4;
-      const up = sy < lastY.current - 4;
-      if (sy < 140 || up) navRef.current.dataset.hide = 'false';
-      else if (down) navRef.current.dataset.hide = 'true';
-      lastY.current = sy;
-    }
-
-    if (stmtRef.current) {
-      const r = stmtRef.current.getBoundingClientRect();
-      const p = clamp(-r.top / Math.max(1, r.height - vh));
-      const words = stmtRef.current.querySelectorAll('.ld-word');
-      words.forEach((w, i) => {
-        w.dataset.on = p * 1.15 > (i / words.length) * 0.92 + 0.04 ? 'true' : 'false';
-      });
-    }
-
-    if (hzRef.current && trackRef.current) {
-      const r = hzRef.current.getBoundingClientRect();
-      const p = clamp(-r.top / Math.max(1, r.height - vh));
-      const dist = Math.max(0, trackRef.current.scrollWidth - vw + 72);
-      trackRef.current.style.transform = `translate3d(${-p * dist}px,0,0)`;
-      if (hzBarRef.current) hzBarRef.current.style.transform = `scaleX(${p})`;
-    }
-
-    // feature ที่อยู่ใกล้กึ่งกลางจอที่สุด
+    const stmtR = stmtRef.current ? stmtRef.current.getBoundingClientRect() : null;
+    const hzR = hzRef.current && trackRef.current ? hzRef.current.getBoundingClientRect() : null;
+    const hzDist = hzR ? Math.max(0, trackRef.current.scrollWidth - vw + 72) : 0;
     let best = 0;
     let bestD = Infinity;
     itemRefs.current.forEach((el, i) => {
@@ -5903,6 +5922,43 @@ function Landing({ onEnter }) {
         best = i;
       }
     });
+
+    if (progressRef.current) progressRef.current.style.transform = `scaleX(${max > 0 ? sy / max : 0})`;
+
+    if (navRef.current) {
+      const down = sy > lastY.current + 4;
+      const up = sy < lastY.current - 4;
+      let next = navRef.current.dataset.hide;
+      if (sy < 140 || up) next = 'false';
+      else if (down) next = 'true';
+      if (next !== navRef.current.dataset.hide) navRef.current.dataset.hide = next;
+      lastY.current = sy;
+    }
+
+    if (stmtR && stmtRef.current) {
+      if (!wordsRef.current) wordsRef.current = Array.from(stmtRef.current.querySelectorAll('.ld-word'));
+      const words = wordsRef.current;
+      const p = clamp(-stmtR.top / Math.max(1, stmtR.height - vh));
+      // นับว่าสว่างกี่คำ แล้วเขียนเฉพาะคำที่สถานะเปลี่ยน
+      let lit = 0;
+      words.forEach((_, i) => {
+        if (p * 1.15 > (i / words.length) * 0.92 + 0.04) lit = i + 1;
+      });
+      const prev = wordState.current;
+      if (lit !== prev) {
+        const lo = Math.min(lit, prev < 0 ? 0 : prev);
+        const hi = Math.max(lit, prev < 0 ? words.length : prev);
+        for (let i = lo; i < hi; i += 1) words[i].dataset.on = i < lit ? 'true' : 'false';
+        wordState.current = lit;
+      }
+    }
+
+    if (hzR) {
+      const p = clamp(-hzR.top / Math.max(1, hzR.height - vh));
+      trackRef.current.style.transform = `translate3d(${-p * hzDist}px,0,0)`;
+      if (hzBarRef.current) hzBarRef.current.style.transform = `scaleX(${p})`;
+    }
+
     setActive((a) => (a === best ? a : best));
   });
 
@@ -5931,9 +5987,9 @@ function Landing({ onEnter }) {
 
       {/* NAV — ลอย ซ่อนตอนเลื่อนลง */}
       <header ref={navRef} data-hide="false" className="ld-nav safe-t">
-        <span className="flex items-center gap-2.5 pr-3">
-          <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-[9px] bg-[rgb(var(--wa-color-purple-60))] text-white"><ShopMark size={17} className="rounded-[9px]" /></span>
-          <span className="font-display text-[1.3rem] font-semibold tracking-tight">{SHOP.name}</span>
+        <span className="flex min-w-0 shrink items-center gap-2 pr-2 sm:gap-2.5 sm:pr-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-[9px] bg-[rgb(var(--wa-color-purple-60))] text-white"><ShopMark size={17} className="rounded-[9px]" /></span>
+          <span className="ld-nav-name font-display font-semibold tracking-tight">{SHOP.name}</span>
         </span>
         <span className="hidden items-center md:flex">
           {[['features', 'ฟีเจอร์'], ['flow', 'ขั้นตอน'], ['devices', 'ทุกอุปกรณ์']].map(([id, label]) => (
@@ -6148,6 +6204,137 @@ const greeting = () => {
   return 'สวัสดีตอนเย็น';
 };
 
+/* ───── กระดานงานวันนี้: ใครต้องรับกล้อง / ใครต้องคืน / ใครเลยกำหนด (เวลานับสดทุก 30 วินาที) ───── */
+function useNow(ms = 30000) {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => {
+      if (!document.hidden) setNow(new Date());
+    }, ms);
+    return () => clearInterval(t);
+  }, [ms]);
+  return now;
+}
+
+// 95 นาที → "1 ชม. 35 นาที" · 3 วัน 4 ชม. → "3 วัน 4 ชม."
+const fmtSpan = (ms) => {
+  const min = Math.max(1, Math.round(Math.abs(ms) / 60000));
+  if (min < 60) return `${min} นาที`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `${h} ชม.${min % 60 ? ` ${min % 60} นาที` : ''}`;
+  const d = Math.floor(h / 24);
+  return `${d} วัน${h % 24 ? ` ${h % 24} ชม.` : ''}`;
+};
+
+function TodayBoard({ className = '' }) {
+  const { bookings, openDetail, navigate } = useApp();
+  const now = useNow();
+
+  const { pickups, returns, late } = useMemo(() => {
+    const pick = [];
+    const ret = [];
+    const lat = [];
+    bookings.forEach((b) => {
+      if (b.status === 'cancelled' || b.status === 'returned') return;
+      const s = parseDate(b.start_date);
+      const e = parseDate(b.end_date);
+      if (s && ['pending', 'confirmed'].includes(b.status) && sameDay(s, now)) pick.push({ b, at: s });
+      if (e && b.status === 'picked_up') {
+        if (e < now) lat.push({ b, at: e });
+        else if (sameDay(e, now)) ret.push({ b, at: e });
+      }
+    });
+    pick.sort((x, y) => x.at - y.at);
+    ret.sort((x, y) => x.at - y.at);
+    lat.sort((x, y) => x.at - y.at); // เลยมานานสุดขึ้นก่อน
+    return { pickups: pick, returns: ret, late: lat };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bookings, now.getDate(), Math.floor(now.getTime() / 60000)]);
+
+  const tiles = [
+    {
+      key: 'pickup', tone: 'accent', title: 'ต้องส่งกล้องให้ลูกค้า', sub: 'วันนี้', unit: 'ราย', rows: pickups,
+      empty: 'วันนี้ไม่มีนัดรับกล้อง',
+      when: (at) => (at >= now ? `อีก ${fmtSpan(at - now)}` : `เลยเวลานัด ${fmtSpan(now - at)}`),
+      isLate: (at) => at < now,
+    },
+    {
+      key: 'return', tone: 'warn', title: 'ลูกค้านัดคืนกล้อง', sub: 'วันนี้ (ยังไม่ถึงเวลา)', unit: 'ราย', rows: returns,
+      empty: 'วันนี้ไม่มีนัดคืนกล้อง',
+      when: (at) => `อีก ${fmtSpan(at - now)}`,
+      isLate: () => false,
+    },
+    {
+      key: 'late', tone: 'bad', title: 'เลยกำหนดคืนแล้ว', sub: 'ต้องรีบติดต่อ', unit: 'ราย', rows: late,
+      empty: 'ไม่มีรายการเลยกำหนด',
+      when: (at) => `เลยมา ${fmtSpan(now - at)}`,
+      isLate: () => true,
+    },
+  ];
+  const TONE = {
+    accent: { text: 'text-accent', chip: 'bg-accent/12 text-accent', bar: 'before:bg-accent' },
+    warn: { text: 'text-warn', chip: 'bg-warn/12 text-warn', bar: 'before:bg-warn' },
+    bad: { text: 'text-bad', chip: 'bg-bad/12 text-bad', bar: 'before:bg-bad' },
+  };
+
+  return (
+    <section className={`today-board ${className}`} aria-label="งานวันนี้">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-x-3 gap-y-0.5">
+        <div className="min-w-0">
+          <p className="mono-l">งานวันนี้</p>
+          <h2 className="font-serif text-[1.1rem] font-medium sm:text-[1.15rem]">{fmtLongDate()}</h2>
+        </div>
+        <span className="whitespace-nowrap text-[11px] text-mute">นับเวลาสด · {fmtTime(now)} น.</span>
+      </div>
+      <div className="grid gap-3 lg:grid-cols-3">
+        {tiles.map((t) => {
+          const tone = TONE[t.tone];
+          const shown = t.rows.slice(0, 3);
+          const hot = t.key === 'late' && t.rows.length > 0;
+          return (
+            <article key={t.key} className={`card relative overflow-hidden px-4 py-4 ${hot ? 'ring-1 ring-bad/40' : ''}`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold">{t.title}</h3>
+                  <p className="text-[11px] text-mute">{t.sub}</p>
+                </div>
+                <p className={`font-num shrink-0 text-[2.4rem] font-semibold leading-none ${t.rows.length ? tone.text : 'text-mute/50'}`}>
+                  {t.rows.length}<span className="ml-1 text-xs font-normal text-mute">{t.unit}</span>
+                </p>
+              </div>
+              {shown.length === 0 ? (
+                <p className="mt-2 text-xs text-mute">{t.empty}</p>
+              ) : (
+                <ul className="mt-3 space-y-1.5">
+                  {shown.map(({ b, at }) => {
+                    const lateNow = t.isLate(at);
+                    return (
+                      <li key={b.id}>
+                        <button type="button" onClick={() => openDetail(b.id)} className="flex min-h-11 w-full flex-wrap items-center justify-between gap-x-2 gap-y-1 rounded-xl border border-line bg-surface2/40 px-3 py-2 text-left transition-colors hover:bg-surface2">
+                          <span className="min-w-0 flex-1 basis-40">
+                            <span className="block truncate text-sm font-medium">{b.customer_name}</span>
+                            <span className="block truncate text-[11px] text-mute">{equipmentTitle(b)} · นัด {fmtTime(at)} น.</span>
+                          </span>
+                          <span className={`shrink-0 whitespace-nowrap rounded-full px-2 py-1 text-[11px] font-semibold ${lateNow ? 'bg-bad/12 text-bad' : tone.chip}`}>{t.when(at)}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+              {t.rows.length > shown.length && (
+                <button type="button" onClick={() => navigate('operations')} className="mt-2 w-full rounded-lg py-1.5 text-center text-xs font-medium text-accent hover:underline">
+                  และอีก {t.rows.length - shown.length} ราย — ดูทั้งหมด
+                </button>
+              )}
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function Panel({ no, title, caption, action, children, className = '', index = 0 }) {
   return (
     <Spot as="section" className={`card vf card-pad anim-i ${className}`} style={{ '--i': index }}>
@@ -6166,7 +6353,7 @@ function Panel({ no, title, caption, action, children, className = '', index = 0
 
 function Dashboard() {
   const {
-    equipments, dashboard, report, openBooking, navigate, openDetail,
+    equipments, bookings, dashboard, report, openBooking, navigate, openDetail,
   } = useApp();
   const { settings } = useSettings();
 
@@ -6182,12 +6369,18 @@ function Dashboard() {
     };
   }, [dashboard.statusCounts, equipments]);
 
-  const overdue = dashboard.overdueBookings || [];
   const now = new Date();
+  // นับจากรายการจองจริง (ตรงกับกระดานงานวันนี้) เลยมานานสุดขึ้นก่อน
+  const overdue = useMemo(
+    () => bookings.filter((b) => b.status === 'picked_up' && parseDate(b.end_date) && parseDate(b.end_date) < new Date())
+      .sort((x, y) => parseDate(x.end_date) - parseDate(y.end_date)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [bookings],
+  );
 
   const today = useMemo(() => {
     const rows = [];
-    (dashboard.todayBookings || []).forEach((b) => {
+    bookings.forEach((b) => {
       const s = parseDate(b.start_date);
       const e = parseDate(b.end_date);
       if (s && sameDay(s, now) && ['pending', 'confirmed'].includes(b.status)) rows.push({ kind: 'pickup', at: s, b });
@@ -6195,7 +6388,7 @@ function Dashboard() {
     });
     return rows.sort((a, b) => a.at - b.at);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dashboard.todayBookings]);
+  }, [bookings]);
 
   const months = useMemo(() => {
     const map = new Map((report?.monthly || []).map((m) => [m.month, m]));
@@ -6223,6 +6416,7 @@ function Dashboard() {
 
   return (
     <div className="space-y-5">
+      <TodayBoard />
       <div className="grid gap-5 xl:grid-cols-12">
         {/* HERO — ห้องมืด */}
         <section className="anim-i relative flex min-h-[400px] flex-col justify-between overflow-hidden rounded-[26px] border border-white/[0.07] bg-side text-side-ink shadow-[0_40px_90px_-40px_rgb(0_0_0/0.8)] xl:col-span-8">
@@ -6248,7 +6442,7 @@ function Dashboard() {
               <br />
               วันนี้มี{' '}
               <span className="font-num text-[1.3em] font-medium text-[rgb(var(--wa-color-purple-50))]">
-                <CountUp value={today.length} />
+                <CountUp value={today.length + overdue.length} />
               </span>{' '}
               งานที่ต้องดูแล
             </h1>
@@ -6720,11 +6914,6 @@ function CalendarPage() {
   const dayPickups = dayList.filter((ev) => ev.type === 'รับ');
   const dayReturns = dayList.filter((ev) => ev.type === 'คืน');
 
-  const todayList = byDay.get(today.toDateString()) || [];
-  const todayPickWait = todayList.filter((ev) => ev.kind === 'pickup_wait').length;
-  const todayRetWait = todayList.filter((ev) => ev.kind === 'return_wait' || ev.kind === 'return_late').length;
-  const lateCount = bookings.filter((b) => b.status !== 'cancelled' && effectiveStatus(b) === 'overdue').length;
-
   const selectedIsToday = sameDay(selected, today);
   const selectedLabel = selected.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long' });
 
@@ -6769,20 +6958,7 @@ function CalendarPage() {
         }
       />
 
-      <div className="mb-4 grid grid-cols-3 gap-2 sm:gap-3">
-        <div className="card px-3 py-3 sm:px-4">
-          <p className="text-[11px] text-mute sm:text-xs">วันนี้ต้องให้รับกล้อง</p>
-          <p className="font-num text-2xl font-semibold text-accent sm:text-3xl">{todayPickWait}<span className="ml-1 text-xs font-normal text-mute">ราย</span></p>
-        </div>
-        <div className="card px-3 py-3 sm:px-4">
-          <p className="text-[11px] text-mute sm:text-xs">วันนี้ต้องรับกล้องคืน</p>
-          <p className="font-num text-2xl font-semibold text-warn sm:text-3xl">{todayRetWait}<span className="ml-1 text-xs font-normal text-mute">ราย</span></p>
-        </div>
-        <div className="card px-3 py-3 sm:px-4">
-          <p className="text-[11px] text-mute sm:text-xs">เลยกำหนดคืน (ทั้งหมด)</p>
-          <p className={`font-num text-2xl font-semibold sm:text-3xl ${lateCount ? 'text-bad' : 'text-ok'}`}>{lateCount}<span className="ml-1 text-xs font-normal text-mute">ราย</span></p>
-        </div>
-      </div>
+      <TodayBoard className="mb-5" />
 
       <div className="calendar-layout grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
         <section className="calendar-month-card card min-w-0 overflow-hidden">
