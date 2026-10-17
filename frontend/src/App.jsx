@@ -1722,6 +1722,14 @@ html[data-scrolled='true'] .glass-header { box-shadow: 0 14px 34px -22px rgb(var
 .ld-leave i { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; transform-origin: left; background: rgb(var(--wa-color-purple-40)); animation: lnBar 2.8s linear both; }
 @media (prefers-reduced-motion: reduce) { .lgp-bg, .lgp-card, .lgp-st, .lgp-step, .lgp-orb, .ld-leave, .ld-leave i { animation-duration: .01ms !important; animation-delay: 0ms !important; } }
 
+/* กระดิ่งแจ้งเตือน */
+.bell-panel { position: absolute; right: -52px; top: calc(100% + 10px); z-index: 70; width: min(380px, calc(100vw - 24px)); border-radius: 18px; border: 1px solid rgb(var(--line)); background: rgb(var(--surface)); box-shadow: 0 30px 70px -24px rgb(0 0 0 / .45); overflow: hidden; transform-origin: top right; }
+@media (min-width: 640px) { .bell-panel { right: -8px; } }
+@keyframes ldBellRing { 0%, 100% { transform: rotate(0); } 10%, 30% { transform: rotate(14deg); } 20%, 40% { transform: rotate(-12deg); } 50% { transform: rotate(0); } }
+.ld-bell-ring { transform-origin: 50% 10%; animation: ldBellRing 3.5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .ld-bell-ring { animation: none; } }
+html[data-motion='off'] .ld-bell-ring { animation: none; }
+
 /* =====================================================
    TOUCH / TABLET PERFORMANCE — ลดภาระ GPU บนมือถือและไอแพดให้เลื่อนลื่น
    ===================================================== */
@@ -5336,7 +5344,7 @@ function Shell({ children }) {
 
   const hasSide = nav === 'sidebar' || nav === 'rail';
   const sideW = hasSide ? SIDE_W[nav] : 0;
-  const overdue = dashboard.overdueBookings?.length || 0;
+  const overdue = useTodayTasks().counts.late;
   const idx = Math.max(0, NAV_ITEMS.findIndex((n) => n.id === page));
   const current = NAV_ITEMS[idx];
 
@@ -5376,17 +5384,7 @@ function Shell({ children }) {
               <button onClick={refresh} className="icon-btn" title="รีเฟรชข้อมูล" aria-label="รีเฟรช">
                 <RefreshCw size={17} className={loading ? 'animate-spin' : ''} />
               </button>
-              <button
-                onClick={() => navigate('operations')}
-                className="icon-btn relative"
-                title="รายการที่ต้องติดตาม"
-                aria-label="แจ้งเตือน"
-              >
-                <Bell size={17} />
-                {overdue > 0 && (
-                  <span className="live-dot absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-bad ring-2 ring-bg" />
-                )}
-              </button>
+              <BellMenu />
               <button
                 onClick={() => navigate('settings')}
                 className="ml-1 flex h-9 w-9 items-center justify-center rounded-full bg-ink font-display text-lg font-semibold text-bg transition-transform hover:scale-110"
@@ -6204,7 +6202,7 @@ const greeting = () => {
   return 'สวัสดีตอนเย็น';
 };
 
-/* ───── กระดานงานวันนี้: ใครต้องรับกล้อง / ใครต้องคืน / ใครเลยกำหนด (เวลานับสดทุก 30 วินาที) ───── */
+/* ───── งานวันนี้: รายการเรียงตามความเร่งด่วน (ใช้ร่วมกันทั้งการ์ดหน้าภาพรวม/ปฏิทิน และกระดิ่งแจ้งเตือน) ───── */
 function useNow(ms = 30000) {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
@@ -6226,112 +6224,225 @@ const fmtSpan = (ms) => {
   return `${d} วัน${h % 24 ? ` ${h % 24} ชม.` : ''}`;
 };
 
-function TodayBoard({ className = '' }) {
-  const { bookings, openDetail, navigate } = useApp();
-  const now = useNow();
+/* สไตล์ของแต่ละประเภทงาน — สีเข้มชัดเจนแม้ไม่ได้อ่านตัวหนังสือ */
+const TASK_KIND = {
+  late: { label: 'เลยกำหนดคืน', short: 'เลยกำหนด', icon: AlertTriangle, bar: 'bg-bad', tile: 'bg-bad text-white', pill: 'bg-bad text-white', row: 'border-bad/40 bg-bad/[0.07]', dot: 'bg-bad', text: 'text-bad' },
+  pickup: { label: 'ส่งกล้องให้ลูกค้า', short: 'ส่งกล้อง', icon: LogOut, bar: 'bg-accent', tile: 'bg-accent text-accent-fg', pill: 'bg-accent/15 text-accent', row: 'border-line bg-surface2/40', dot: 'bg-accent', text: 'text-accent' },
+  return: { label: 'ลูกค้ามาคืนกล้อง', short: 'รับคืน', icon: LogIn, bar: 'bg-warn', tile: 'bg-warn text-white', pill: 'bg-warn/15 text-warn', row: 'border-line bg-surface2/40', dot: 'bg-warn', text: 'text-warn' },
+};
 
-  const { pickups, returns, late } = useMemo(() => {
-    const pick = [];
-    const ret = [];
-    const lat = [];
+function useTodayTasks() {
+  const { bookings } = useApp();
+  const now = useNow();
+  const minute = Math.floor(now.getTime() / 60000);
+  return useMemo(() => {
+    const items = [];
     bookings.forEach((b) => {
       if (b.status === 'cancelled' || b.status === 'returned') return;
       const s = parseDate(b.start_date);
       const e = parseDate(b.end_date);
-      if (s && ['pending', 'confirmed'].includes(b.status) && sameDay(s, now)) pick.push({ b, at: s });
+      if (s && ['pending', 'confirmed'].includes(b.status) && sameDay(s, now)) {
+        items.push({ id: `${b.id}-p`, kind: 'pickup', b, at: s, over: s < now });
+      }
       if (e && b.status === 'picked_up') {
-        if (e < now) lat.push({ b, at: e });
-        else if (sameDay(e, now)) ret.push({ b, at: e });
+        if (e < now) items.push({ id: `${b.id}-l`, kind: 'late', b, at: e, over: true });
+        else if (sameDay(e, now)) items.push({ id: `${b.id}-r`, kind: 'return', b, at: e, over: false });
       }
     });
-    pick.sort((x, y) => x.at - y.at);
-    ret.sort((x, y) => x.at - y.at);
-    lat.sort((x, y) => x.at - y.at); // เลยมานานสุดขึ้นก่อน
-    return { pickups: pick, returns: ret, late: lat };
+    // เลยกำหนด (เลยมานานสุดก่อน) → เลยเวลานัดส่งกล้อง → ที่เหลือเรียงตามเวลา
+    const rank = (x) => (x.kind === 'late' ? 0 : x.over ? 1 : 2);
+    items.sort((x, y) => rank(x) - rank(y) || x.at - y.at);
+    const counts = {
+      all: items.length,
+      pickup: items.filter((i) => i.kind === 'pickup').length,
+      return: items.filter((i) => i.kind === 'return').length,
+      late: items.filter((i) => i.kind === 'late').length,
+    };
+    return { items, counts, now };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bookings, now.getDate(), Math.floor(now.getTime() / 60000)]);
+  }, [bookings, minute]);
+}
 
-  const tiles = [
-    {
-      key: 'pickup', tone: 'accent', title: 'ต้องส่งกล้องให้ลูกค้า', sub: 'วันนี้', unit: 'ราย', rows: pickups,
-      empty: 'วันนี้ไม่มีนัดรับกล้อง',
-      when: (at) => (at >= now ? `อีก ${fmtSpan(at - now)}` : `เลยเวลานัด ${fmtSpan(now - at)}`),
-      isLate: (at) => at < now,
-    },
-    {
-      key: 'return', tone: 'warn', title: 'ลูกค้านัดคืนกล้อง', sub: 'วันนี้ (ยังไม่ถึงเวลา)', unit: 'ราย', rows: returns,
-      empty: 'วันนี้ไม่มีนัดคืนกล้อง',
-      when: (at) => `อีก ${fmtSpan(at - now)}`,
-      isLate: () => false,
-    },
-    {
-      key: 'late', tone: 'bad', title: 'เลยกำหนดคืนแล้ว', sub: 'ต้องรีบติดต่อ', unit: 'ราย', rows: late,
-      empty: 'ไม่มีรายการเลยกำหนด',
-      when: (at) => `เลยมา ${fmtSpan(now - at)}`,
-      isLate: () => true,
-    },
+const taskWhen = (it, now) => {
+  if (it.kind === 'late') return `เลยมา ${fmtSpan(now - it.at)}`;
+  if (it.at < now) return `เลยเวลานัด ${fmtSpan(now - it.at)}`;
+  return `อีก ${fmtSpan(it.at - now)}`;
+};
+
+function TaskRow({ it, now, onOpen, compact = false, index = 0 }) {
+  const k = TASK_KIND[it.kind];
+  const Icon = k.icon;
+  const hot = it.kind === 'late' || it.over;
+  return (
+    <li style={{ '--i': index }}>
+      <button
+        type="button"
+        onClick={() => onOpen(it.b.id)}
+        className={`group relative flex w-full items-center gap-3 overflow-hidden rounded-xl border py-2.5 pl-4 pr-3 text-left transition-colors hover:brightness-[0.98] ${k.row} ${compact ? 'min-h-[60px]' : 'min-h-[64px]'}`}
+      >
+        <span className={`absolute inset-y-0 left-0 w-1.5 ${k.bar}`} aria-hidden="true" />
+        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${k.tile}`} aria-hidden="true">
+          <Icon size={19} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="flex items-center gap-1.5">
+            <span className="truncate text-[15px] font-semibold leading-tight">{it.b.customer_name}</span>
+            {it.kind === 'late' && <i className="live-dot h-2 w-2 shrink-0 rounded-full bg-bad" aria-hidden="true" />}
+          </span>
+          <span className="mt-0.5 block truncate text-xs text-mute">
+            <b className={`font-semibold ${k.text}`}>{k.short}</b> · {equipmentTitle(it.b)} · นัด {fmtTime(it.at)} น.
+          </span>
+        </span>
+        <span className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11.5px] font-bold leading-none ${hot && it.kind !== 'late' ? 'bg-bad/15 text-bad' : k.pill}`}>
+          {taskWhen(it, now)}
+        </span>
+      </button>
+    </li>
+  );
+}
+
+function TodayBoard({ className = '' }) {
+  const { openDetail } = useApp();
+  const { items, counts, now } = useTodayTasks();
+  const [filter, setFilter] = useState('all');
+  const [all, setAll] = useState(false);
+
+  const shown = items.filter((i) => filter === 'all' || i.kind === filter);
+  const LIMIT = 5;
+  const visible = all ? shown : shown.slice(0, LIMIT);
+
+  const chips = [
+    { id: 'all', label: 'ทั้งหมด', n: counts.all, dot: 'bg-ink' },
+    { id: 'late', label: 'เลยกำหนดคืน', n: counts.late, dot: 'bg-bad' },
+    { id: 'pickup', label: 'ส่งกล้อง', n: counts.pickup, dot: 'bg-accent' },
+    { id: 'return', label: 'รับคืน', n: counts.return, dot: 'bg-warn' },
   ];
-  const TONE = {
-    accent: { text: 'text-accent', chip: 'bg-accent/12 text-accent', bar: 'before:bg-accent' },
-    warn: { text: 'text-warn', chip: 'bg-warn/12 text-warn', bar: 'before:bg-warn' },
-    bad: { text: 'text-bad', chip: 'bg-bad/12 text-bad', bar: 'before:bg-bad' },
-  };
 
   return (
-    <section className={`today-board ${className}`} aria-label="งานวันนี้">
+    <section className={`today-board card px-4 py-4 sm:px-5 sm:py-5 ${counts.late ? 'ring-1 ring-bad/35' : ''} ${className}`} aria-label="งานวันนี้">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-x-3 gap-y-0.5">
         <div className="min-w-0">
           <p className="mono-l">งานวันนี้</p>
-          <h2 className="font-serif text-[1.1rem] font-medium sm:text-[1.15rem]">{fmtLongDate()}</h2>
+          <h2 className="font-serif text-[1.1rem] font-medium sm:text-[1.2rem]">{fmtLongDate()}</h2>
         </div>
         <span className="whitespace-nowrap text-[11px] text-mute">นับเวลาสด · {fmtTime(now)} น.</span>
       </div>
-      <div className="grid gap-3 lg:grid-cols-3">
-        {tiles.map((t) => {
-          const tone = TONE[t.tone];
-          const shown = t.rows.slice(0, 3);
-          const hot = t.key === 'late' && t.rows.length > 0;
-          return (
-            <article key={t.key} className={`card relative overflow-hidden px-4 py-4 ${hot ? 'ring-1 ring-bad/40' : ''}`}>
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h3 className="text-sm font-semibold">{t.title}</h3>
-                  <p className="text-[11px] text-mute">{t.sub}</p>
-                </div>
-                <p className={`font-num shrink-0 text-[2.4rem] font-semibold leading-none ${t.rows.length ? tone.text : 'text-mute/50'}`}>
-                  {t.rows.length}<span className="ml-1 text-xs font-normal text-mute">{t.unit}</span>
-                </p>
-              </div>
-              {shown.length === 0 ? (
-                <p className="mt-2 text-xs text-mute">{t.empty}</p>
-              ) : (
-                <ul className="mt-3 space-y-1.5">
-                  {shown.map(({ b, at }) => {
-                    const lateNow = t.isLate(at);
-                    return (
-                      <li key={b.id}>
-                        <button type="button" onClick={() => openDetail(b.id)} className="flex min-h-11 w-full flex-wrap items-center justify-between gap-x-2 gap-y-1 rounded-xl border border-line bg-surface2/40 px-3 py-2 text-left transition-colors hover:bg-surface2">
-                          <span className="min-w-0 flex-1 basis-40">
-                            <span className="block truncate text-sm font-medium">{b.customer_name}</span>
-                            <span className="block truncate text-[11px] text-mute">{equipmentTitle(b)} · นัด {fmtTime(at)} น.</span>
-                          </span>
-                          <span className={`shrink-0 whitespace-nowrap rounded-full px-2 py-1 text-[11px] font-semibold ${lateNow ? 'bg-bad/12 text-bad' : tone.chip}`}>{t.when(at)}</span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-              {t.rows.length > shown.length && (
-                <button type="button" onClick={() => navigate('operations')} className="mt-2 w-full rounded-lg py-1.5 text-center text-xs font-medium text-accent hover:underline">
-                  และอีก {t.rows.length - shown.length} ราย — ดูทั้งหมด
-                </button>
-              )}
-            </article>
-          );
-        })}
+
+      {counts.late > 0 && (
+        <div role="alert" className="mb-3 flex items-center gap-2.5 rounded-xl bg-bad px-3.5 py-2.5 text-white">
+          <AlertTriangle size={18} className="shrink-0" />
+          <p className="text-sm font-semibold leading-snug">มี {counts.late} รายการเลยกำหนดคืนแล้ว — ควรติดต่อลูกค้าทันที</p>
+        </div>
+      )}
+
+      <div className="-mx-1 mb-3 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]" role="tablist" aria-label="กรองประเภทงาน">
+        {chips.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            role="tab"
+            aria-selected={filter === c.id}
+            onClick={() => { setFilter(c.id); setAll(false); }}
+            className="chip shrink-0 !min-h-10 gap-2 !px-3.5"
+            data-on={filter === c.id}
+          >
+            <i className={`h-2 w-2 rounded-full ${c.dot}`} />
+            {c.label}
+            <b className="font-num">{c.n}</b>
+          </button>
+        ))}
       </div>
+
+      {shown.length === 0 ? (
+        <div className="flex items-center gap-3 rounded-xl border border-dashed border-line px-4 py-5 text-sm text-mute">
+          <CheckCircle2 size={22} className="shrink-0 text-ok" />
+          <span>{counts.all === 0 ? 'วันนี้เรียบร้อย ไม่มีนัดรับ–คืน และไม่มีรายการเลยกำหนด' : 'ไม่มีรายการในหมวดนี้'}</span>
+        </div>
+      ) : (
+        <ul className="stagger space-y-2" key={filter}>
+          {visible.map((it, i) => (
+            <TaskRow key={it.id} it={it} now={now} onOpen={openDetail} index={i} />
+          ))}
+        </ul>
+      )}
+
+      {shown.length > LIMIT && (
+        <button type="button" onClick={() => setAll((v) => !v)} className="mt-3 flex min-h-10 w-full items-center justify-center gap-1.5 rounded-xl text-sm font-medium text-accent hover:bg-accent/10">
+          {all ? 'ย่อรายการ' : `ดูทั้งหมด ${shown.length} รายการ`}
+          <ChevronDown size={16} className={`transition-transform ${all ? 'rotate-180' : ''}`} />
+        </button>
+      )}
     </section>
+  );
+}
+
+/* กระดิ่งแจ้งเตือนบนแถบบน: ตัวเลขนับงาน + แผงรายการ */
+function BellMenu() {
+  const { openDetail, navigate } = useApp();
+  const { items, counts, now } = useTodayTasks();
+  const [open, setOpen] = useState(false);
+  const box = useRef(null);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDown = (e) => { if (box.current && !box.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('pointerdown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const urgent = counts.late > 0;
+  return (
+    <div ref={box} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="icon-btn relative"
+        title="แจ้งเตือนงานวันนี้"
+        aria-label={`แจ้งเตือน ${counts.all} รายการ`}
+        aria-expanded={open}
+      >
+        <Bell size={17} className={urgent ? 'ld-bell-ring' : ''} />
+        {counts.all > 0 && (
+          <span className={`absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none text-white ring-2 ring-bg ${urgent ? 'bg-bad' : 'bg-accent'}`}>
+            {counts.all > 99 ? '99+' : counts.all}
+          </span>
+        )}
+      </button>
+      {open && (
+        <div className="bell-panel page-in" role="dialog" aria-label="แจ้งเตือนงานวันนี้">
+          <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-3">
+            <div>
+              <p className="text-sm font-semibold">งานวันนี้</p>
+              <p className="text-[11px] text-mute">
+                {counts.all === 0 ? 'ไม่มีงานค้าง' : `เลยกำหนด ${counts.late} · ส่งกล้อง ${counts.pickup} · รับคืน ${counts.return}`}
+              </p>
+            </div>
+            <button type="button" onClick={() => setOpen(false)} className="icon-btn" aria-label="ปิด"><X size={17} /></button>
+          </div>
+          <div className="max-h-[min(60dvh,460px)] overflow-y-auto p-3">
+            {items.length === 0 ? (
+              <div className="flex items-center gap-3 px-1 py-4 text-sm text-mute">
+                <CheckCircle2 size={22} className="shrink-0 text-ok" /> วันนี้เรียบร้อย ไม่มีงานค้าง
+              </div>
+            ) : (
+              <ul className="space-y-2">
+                {items.map((it) => (
+                  <TaskRow key={it.id} it={it} now={now} compact onOpen={(id) => { setOpen(false); openDetail(id); }} />
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="border-t border-line p-2">
+            <button type="button" onClick={() => { setOpen(false); navigate('operations'); }} className="btn btn-ghost w-full">ไปหน้ารับ–คืนอุปกรณ์</button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
