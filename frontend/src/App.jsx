@@ -6023,7 +6023,7 @@ function Landing({ onEnter }) {
                 </span>
               ))}
             </h1>
-            <p className="ld-fade mt-8 max-w-xl text-base leading-[1.95] text-[rgb(var(--wa-color-purple-05)/0.65)] sm:text-lg" style={{ '--i': 6 }}>
+            <p className="ld-fade mt-8 max-w-xl text-base leading-[1.95] text-[rgb(var(--wa-color-purple-65)/0.65)] sm:text-lg" style={{ '--i': 6 }}>
               เก็บเรื่องอุปกรณ์ ใบจอง นัดรับ–คืน และรายรับรายจ่ายไว้ที่เดียว
               ทำมาให้ร้านที่มีคนดูแลคนเดียว เปิดจากมือถือหน้างานก็ได้
             </p>
@@ -6325,7 +6325,7 @@ function TodayBoard({ className = '' }) {
           <p className="mono-l">งานวันนี้</p>
           <h2 className="font-serif text-[1.1rem] font-medium sm:text-[1.2rem]">{fmtLongDate()}</h2>
         </div>
-        <span className="whitespace-nowrap text-[11px] text-mute">นับเวลาสด · {fmtTime(now)} น.</span>
+        <span className="whitespace-nowrap text-[11px] text-mute"> {fmtTime(now)} น.</span>
       </div>
 
       {counts.late > 0 && (
