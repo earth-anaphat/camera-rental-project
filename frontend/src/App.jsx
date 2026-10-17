@@ -1084,7 +1084,7 @@ select.input {
 .ld-ready .ld-fade { animation: rise 1s var(--ease) forwards; animation-delay: calc(var(--i, 0) * 100ms + 500ms); }
 
 .ld-grain { position: relative; }
-.ld-word { opacity: 0.14; transition: opacity 0.4s linear; }
+.ld-word { opacity: 0.4; transition: opacity 0.4s linear; }
 .ld-word[data-on='true'] { opacity: 1; }
 .ld-marquee { display: flex; width: max-content; animation: marquee 44s linear infinite; }
 .ld-marquee.rev { animation: marqueeR 52s linear infinite; }
@@ -1385,8 +1385,9 @@ select.input {
 /* Accessibility and final interaction polish */
 .chip { color: rgb(var(--wa-color-purple-95)); font-weight: 600; }
 .chip[data-on='true'] { color: rgb(var(--wa-color-purple-05)) !important; }
-.ld #features .sf-item[data-on='false'] { opacity: .62; }
+.ld #features .sf-item[data-on='false'] { opacity: .85; }
 .ld #features .sf-item .font-num { color: rgb(var(--wa-color-purple-60) / .72) !important; }
+.ld #features .sf-vis .font-num { color: rgb(var(--wa-color-purple-70)) !important; }
 .ld #features .sf-item p:not(.font-num) { color: rgb(var(--wa-color-purple-80)) !important; }
 .ld #features .sf-vis .bn,
 .ld #features .sf-vis .hz-card,
@@ -1549,7 +1550,7 @@ select.input {
   .calendar-month-header h2 { font-size: 1rem; }
   .calendar-month-header h2 span { font-size: 1.15rem; }
   .calendar-month-header .btn { padding-inline: .5rem; }
-  .calendar-day { height: clamp(54px, calc((100dvh - 310px) / 6), 76px); padding: 3px; gap: 2px; }
+  .calendar-day { height: auto; min-height: 84px; padding: 3px; gap: 2px; }
   .calendar-weekdays > div { padding-top: .45rem; padding-bottom: .45rem; font-size: 9px; }
   .calendar-day > span:first-child { width: 1.25rem; height: 1.25rem; font-size: .68rem; }
 }
@@ -3861,26 +3862,30 @@ function Actions({ b, refresh, block = false }) {
     e.stopPropagation();
     fn(b, refresh);
   };
-  const size = block ? '!min-h-11 !text-sm' : '';
+  // ปุ่มทุกตัวขนาดเท่ากันเสมอ และไม่ตกบรรทัด: ตารางใช้ 3 ช่องกว้างคงที่, การ์ดใช้ 3 ช่องเท่ากันเต็มความกว้าง
+  const size = block ? '!min-h-11 !text-sm' : '!min-h-9 !text-xs';
+  const base = `btn btn-sm w-full justify-center whitespace-nowrap !px-2 ${size}`;
+  const canEdit = ['pending', 'confirmed', 'picked_up'].includes(b.status);
+  const waiting = ['pending', 'confirmed'].includes(b.status);
   return (
-    <div className={block ? 'grid grid-flow-col auto-cols-fr gap-2' : 'flex flex-wrap justify-end gap-1.5'}>
-      {['pending', 'confirmed', 'picked_up'].includes(b.status) && (
-        <button onClick={(e) => { e.stopPropagation(); openBooking([], b); }} title="แก้ไขการจอง" className={`btn btn-sm btn-ghost ${size}`}>
+    <div className={block ? 'grid grid-cols-3 gap-2' : 'grid gap-1.5'} style={block ? undefined : { gridTemplateColumns: 'repeat(3, 5.25rem)' }}>
+      {canEdit && (
+        <button onClick={(e) => { e.stopPropagation(); openBooking([], b); }} title="แก้ไขการจอง" className={`${base} btn-ghost`}>
           <Pencil size={14} /> <span>แก้ไข</span>
         </button>
       )}
-      {['pending', 'confirmed'].includes(b.status) && (
+      {waiting && (
         <>
-          <button onClick={stop(checkoutFlow)} title="ส่งมอบอุปกรณ์" className={`btn btn-sm border border-info/30 bg-info/10 text-info hover:bg-info/20 ${size}`}>
+          <button onClick={stop(checkoutFlow)} title="ส่งมอบอุปกรณ์" className={`${base} border border-info/30 bg-info/10 text-info hover:bg-info/20`}>
             <LogOut size={14} /> <span>ส่งมอบ</span>
           </button>
-          <button onClick={stop(cancelFlow)} title="ยกเลิกการจอง" className={`btn btn-sm border border-bad/25 bg-bad/5 text-bad hover:bg-bad/10 ${size}`}>
+          <button onClick={stop(cancelFlow)} title="ยกเลิกการจอง" className={`${base} border border-bad/25 bg-bad/5 text-bad hover:bg-bad/10`}>
             <Ban size={14} /> <span>ยกเลิก</span>
           </button>
         </>
       )}
       {b.status === 'picked_up' && (
-        <button onClick={stop(returnFlow)} title="รับคืนอุปกรณ์" className={`btn btn-sm border border-ok/30 bg-ok/10 text-ok hover:bg-ok/20 ${size}`}>
+        <button onClick={stop(returnFlow)} title="รับคืนอุปกรณ์" className={`${base} border border-ok/30 bg-ok/10 text-ok hover:bg-ok/20 ${block ? 'col-span-2' : ''}`}>
           <LogIn size={14} /> <span>รับคืน</span>
         </button>
       )}
@@ -3894,19 +3899,18 @@ function BookingList({ rows, showActions = true }) {
   return (
     <>
       {/* จอใหญ่: ตาราง */}
-      <div className="card hidden overflow-hidden md:block">
+      <div className="card hidden overflow-hidden xl:block">
         <div className="booking-table-scroll scroll-thin">
-          <table className="tbl min-w-[980px]">
+          <table className="tbl min-w-[960px]">
             <thead>
               <tr>
                 <th>เลขที่จอง</th>
                 <th>ผู้เช่า</th>
                 <th>อุปกรณ์</th>
-                <th>รับ</th>
-                <th>คืน</th>
+                <th>วันรับ – วันคืน</th>
                 <th className="text-right">ยอดสุทธิ</th>
                 <th>สถานะ</th>
-                {showActions && <th />}
+                {showActions && <th className="w-[17.5rem]" />}
               </tr>
             </thead>
             <tbody>
@@ -3922,9 +3926,11 @@ function BookingList({ rows, showActions = true }) {
                     <p className="font-medium">{b.customer_name}</p>
                     <p className="text-xs text-mute">{b.phone}</p>
                   </td>
-                  <td className="max-w-[220px] truncate">{equipmentTitle(b)}</td>
-                  <td className="whitespace-nowrap text-xs text-mute">{fmtDateTime(b.start_date)}</td>
-                  <td className="whitespace-nowrap text-xs text-mute">{fmtDateTime(b.end_date)}</td>
+                  <td className="max-w-[190px] truncate">{equipmentTitle(b)}</td>
+                  <td className="whitespace-nowrap text-xs leading-relaxed text-mute">
+                    <p><b className="font-semibold text-ink">รับ</b> {fmtDateTime(b.start_date)}</p>
+                    <p><b className="font-semibold text-ink">คืน</b> {fmtDateTime(b.end_date)}</p>
+                  </td>
                   <td className="text-right font-medium">{baht(b.net_total)}</td>
                   <td><StatusBadge status={effectiveStatus(b)} /></td>
                   {showActions && <td><Actions b={b} refresh={refresh} /></td>}
@@ -3936,14 +3942,14 @@ function BookingList({ rows, showActions = true }) {
       </div>
 
       {/* มือถือ: การ์ด */}
-      <ul className="stagger space-y-3 md:hidden">
+      <ul className="stagger grid gap-3 md:grid-cols-2 xl:hidden">
         {rows.map((b, i) => (
-          <li key={b.id} style={{ '--i': Math.min(i, 8) }}>
+          <li key={b.id} style={{ '--i': Math.min(i, 8) }} className="min-w-0">
             <div
               role="button"
               tabIndex={0}
               onClick={() => openDetail(b.id)}
-              className="card card-pad !p-4 text-left active:scale-[0.985]"
+              className="card card-pad flex h-full flex-col !p-4 text-left active:scale-[0.985]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -3963,7 +3969,7 @@ function BookingList({ rows, showActions = true }) {
                   {!showActions && <ChevronRight size={16} className="text-mute" />}
                 </div>
               </div>
-              {showActions && <div className="mt-3"><Actions b={b} refresh={refresh} block /></div>}
+              {showActions && <div className="mt-auto pt-3"><Actions b={b} refresh={refresh} block /></div>}
             </div>
           </li>
         ))}
@@ -5504,7 +5510,7 @@ function Reveal({ as: Tag = 'div', a = 'up', delay = 0, className = '', children
 function VisFrame({ label, children }) {
   return (
     <div className="relative flex h-full w-full flex-col rounded-[24px] border border-white/10 bg-[rgb(var(--wa-color-purple-90))] p-5 shadow-[0_60px_110px_-50px_rgba(0,0,0,0.95)] sm:p-6">
-      <div className="mono mb-4 flex justify-between !text-[10px] text-[rgb(var(--wa-color-purple-05)/0.45)]">
+      <div className="mono mb-4 flex justify-between !text-[10px] text-[rgb(var(--wa-color-purple-95)/0.85)]">
         <span>{label}</span>
         <span>ตัวอย่าง</span>
       </div>
@@ -5520,16 +5526,16 @@ function VisInventory() {
       <div className="grid h-full grid-cols-2 gap-3">
         {rows.map(([n, p], i) => (
           <div key={i} className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.03]">
-            <div className="relative min-h-[64px] flex-1" style={{ background: `linear-gradient(${130 + i * 40}deg, rgb(var(--wa-color-purple-80)), rgb(var(--wa-color-purple-90)))` }}>
+            <div className="relative min-h-[30px] flex-1" style={{ background: `linear-gradient(${130 + i * 40}deg, rgb(var(--wa-color-purple-80)), rgb(var(--wa-color-purple-90)))` }}>
               <Aperture size={44} strokeWidth={0.8} className="absolute bottom-2 right-2 text-[rgb(var(--wa-color-purple-50)/0.4)]" />
             </div>
-            <div className="p-3">
-              <p className="truncate text-xs">{n}</p>
-              <p className="mono mt-1 !text-[9px] text-[rgb(var(--wa-color-purple-50))]">{p}</p>
+            <div className="shrink-0 px-3 py-2">
+              <p className="truncate text-xs font-medium">{n}</p>
+              <p className="mono mt-0.5 !text-[9px] text-[rgb(var(--wa-color-purple-70))]">{p}</p>
             </div>
           </div>
         ))}
-        <div className="col-span-2 flex flex-row items-center justify-center gap-2 rounded-xl border border-dashed border-[rgb(var(--wa-color-purple-50)/0.5)] py-2 text-[rgb(var(--wa-color-purple-50))]">
+        <div className="col-span-2 flex flex-row items-center justify-center gap-2 rounded-xl border border-dashed border-[rgb(var(--wa-color-purple-50)/0.5)] py-2 text-[rgb(var(--wa-color-purple-70))]">
           <ImagePlus size={22} strokeWidth={1.3} />
           <span className="mono !text-[9px]">ลากรูปมาวางที่นี่</span>
         </div>
@@ -5554,13 +5560,13 @@ function VisGantt() {
     <VisFrame label="02 — BOOKING">
       <div className="flex h-full flex-col justify-between">
         <div>
-          <div className="mono grid grid-cols-7 pl-[4.5rem] !text-[9px] text-[rgb(var(--wa-color-purple-05)/0.4)]">
+          <div className="mono grid grid-cols-7 pl-[4.5rem] !text-[9px] text-[rgb(var(--wa-color-purple-95)/0.7)]">
             {days.map((d) => <span key={d} className="text-center">{d}</span>)}
           </div>
           <div className="mt-3 space-y-3">
             {rows.map((r) => (
               <div key={r.n} className="flex items-center gap-3">
-                <span className="mono w-[3.6rem] shrink-0 truncate !text-[9px] text-[rgb(var(--wa-color-purple-05)/0.55)]">{r.n}</span>
+                <span className="mono w-[3.6rem] shrink-0 truncate !text-[9px] text-[rgb(var(--wa-color-purple-95)/0.7)]">{r.n}</span>
                 <div className="relative h-7 flex-1 rounded-md bg-white/[0.04]">
                   {r.bars.map(([s, l, t]) => (
                     <span
@@ -5597,9 +5603,9 @@ function VisChecklist() {
             </li>
           ))}
         </ul>
-        <div className="mono flex items-center justify-between rounded-lg bg-white/[0.05] px-3.5 py-3 !text-[10px] text-[rgb(var(--wa-color-purple-05)/0.7)]">
+        <div className="mono flex items-center justify-between rounded-lg bg-white/[0.05] px-3.5 py-3 !text-[10px] text-[rgb(var(--wa-color-purple-95)/0.85)]">
           <span>คืนช้า 1 วัน</span>
-          <span className="text-[rgb(var(--wa-color-purple-50))]">ค่าปรับ ฿300</span>
+          <span className="text-[rgb(var(--wa-color-purple-70))]">ค่าปรับ ฿300</span>
         </div>
       </div>
     </VisFrame>
@@ -5615,7 +5621,7 @@ function VisCalendar() {
         {cells.map((d, i) => (
           <div
             key={i}
-            className={`relative flex items-start justify-start rounded-md p-1.5 text-[10px] ${d > 0 && d <= 31 ? 'bg-white/[0.04] text-[rgb(var(--wa-color-purple-05)/0.7)]' : 'opacity-0'} ${d === 11 ? 'ring-1 ring-[rgb(var(--wa-color-purple-50))]' : ''}`}
+            className={`relative flex items-start justify-start rounded-md p-1.5 text-[10px] ${d > 0 && d <= 31 ? 'bg-white/[0.04] text-[rgb(var(--wa-color-purple-95)/0.85)]' : 'opacity-0'} ${d === 11 ? 'ring-1 ring-[rgb(var(--wa-color-purple-50))]' : ''}`}
           >
             {d > 0 && d <= 31 ? d : ''}
             {booked[d] && <i className={`absolute bottom-1.5 left-1.5 right-1.5 h-[3px] rounded-full ${booked[d] === 'a' ? 'bg-[rgb(var(--wa-color-purple-50))]' : 'bg-[#82acd8]'}`} />}
@@ -5632,15 +5638,15 @@ function VisFinance() {
     <VisFrame label="05 — FINANCE">
       <div className="flex h-full flex-col justify-between">
         <div>
-          <p className="mono !text-[9px] text-[rgb(var(--wa-color-purple-05)/0.45)]">รายรับเดือนนี้</p>
-          <p className="font-num text-[3.6rem] leading-none text-[rgb(var(--wa-color-purple-50))]">฿24,800</p>
+          <p className="mono !text-[9px] text-[rgb(var(--wa-color-purple-95)/0.7)]">รายรับเดือนนี้</p>
+          <p className="font-num text-[3.6rem] leading-none text-[rgb(var(--wa-color-purple-70))]">฿24,800</p>
         </div>
         <div className="flex h-28 items-end gap-2.5">
           {bars.map((h, i) => (
             <div key={i} className="flex-1 origin-bottom rounded-t-[3px] bg-[rgb(var(--wa-color-purple-50))]" style={{ height: `${h}%`, opacity: 0.4 + h / 160, animation: 'growY 1s var(--ease) both', animationDelay: `${i * 90}ms` }} />
           ))}
         </div>
-        <p className="mono !text-[9px] text-[rgb(var(--wa-color-purple-05)/0.45)]">รายรับถูกบันทึกอัตโนมัติเมื่อรับคืนอุปกรณ์</p>
+        <p className="mono !text-[9px] text-[rgb(var(--wa-color-purple-95)/0.7)]">รายรับถูกบันทึกอัตโนมัติเมื่อรับคืนอุปกรณ์</p>
       </div>
     </VisFrame>
   );
@@ -5675,31 +5681,31 @@ function HeroFinder() {
       <span className="bokeh" style={{ width: 54, height: 54, left: '22%', bottom: '20%', animationDuration: '13s', animationDelay: '-5s', opacity: 0.7 }} />
       <i className="br tl" /><i className="br tr" /><i className="br bl" /><i className="br brr" />
 
-      <div className="mono absolute left-9 right-9 top-8 flex justify-between !text-[10px] text-[rgb(var(--wa-color-purple-05)/0.7)]">
+      <div className="mono absolute left-9 right-9 top-8 flex justify-between !text-[10px] text-[rgb(var(--wa-color-purple-95)/0.85)]">
         <span className="flex items-center gap-2"><i className="live-dot h-1.5 w-1.5 rounded-full bg-[#ee705e]" />REC</span>
         <span>AF-S · SINGLE</span>
       </div>
 
       <div className="reticle" data-lock={lock}><i /></div>
-      <p className="mono absolute left-0 right-0 top-[calc(46%+84px)] text-center !text-[10px] text-[rgb(var(--wa-color-purple-50))]">
+      <p className="mono absolute left-0 right-0 top-[calc(46%+84px)] text-center !text-[10px] text-[rgb(var(--wa-color-purple-70))]">
         {lock ? '● FOCUS LOCKED' : '○ SEARCHING'}
       </p>
 
       <div className="absolute right-6 top-[17%] w-[62%] rounded-xl border border-white/10 bg-black/45 p-3.5 backdrop-blur-md" style={{ animation: 'floaty 7s ease-in-out infinite' }}>
-        <p className="mono !text-[9px] text-[rgb(var(--wa-color-purple-05)/0.5)]">BK-2610 · ตัวอย่าง</p>
-        <p className="mt-1 text-sm  text-[rgb(var(--wa-color-purple-05)/0.5)]">ตัวอย่างรายการจอง</p>
-        <div className="mt-2.5 flex items-center justify-between text-[11px] text-[rgb(var(--wa-color-purple-05)/0.6)]">
+        <p className="mono !text-[9px] text-[rgb(var(--wa-color-purple-05)/0.8)]">BK-2610 · ตัวอย่าง</p>
+        <p className="mt-1 text-sm  text-[rgb(var(--wa-color-purple-05)/0.8)]">ตัวอย่างรายการจอง</p>
+        <div className="mt-2.5 flex items-center justify-between text-[11px] text-[rgb(var(--wa-color-purple-05)/0.85)]">
           <span>คืน 12:00 น.</span>
           <span className="flex items-center gap-1.5 text-[#7cbe94]"><i className="h-1.5 w-1.5 rounded-full bg-[#7cbe94]" />ว่างพร้อมส่ง</span>
         </div>
       </div>
 
       <div className="absolute bottom-[19%] left-6 rounded-xl border border-white/10 bg-black/45 px-4 py-3 backdrop-blur-md" style={{ animation: 'floaty 8s ease-in-out -3s infinite' }}>
-        <p className="mono !text-[9px] text-[rgb(var(--wa-color-purple-05)/0.5)]">รายรับวันนี้ · ตัวอย่าง</p>
+        <p className="mono !text-[9px] text-[rgb(var(--wa-color-purple-05)/0.8)]">รายรับวันนี้ · ตัวอย่าง</p>
         <p className="font-num text-3xl leading-none text-[rgb(var(--wa-color-purple-50))]">฿4,300</p>
       </div>
 
-      <div className="absolute inset-x-8 bottom-7 flex items-end justify-between text-[rgb(var(--wa-color-purple-05)/0.8)]">
+      <div className="absolute inset-x-8 bottom-7 flex items-end justify-between text-[rgb(var(--wa-color-purple-95)/0.85)]">
         <ExifTicker className="!text-[10px]" />
         <Aperture size={26} strokeWidth={1} className="text-[rgb(var(--wa-color-purple-50)/0.7)]" style={{ animation: 'spinSlow 30s linear infinite' }} />
       </div>
@@ -5739,7 +5745,7 @@ function BentoLayouts() {
 function Bento() {
   return (
     <section className="relative mx-auto max-w-7xl px-5 py-24 sm:px-8 lg:py-36">
-      <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-50))]">รายละเอียดที่ใส่ใจ</span></Reveal>
+      <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">รายละเอียดที่ใส่ใจ</span></Reveal>
       <h2 className="ld-title mt-5 max-w-3xl text-[clamp(1.9rem,4.6vw,3.4rem)]">
         <GenerateText words={['เรื่องเล็กๆ', 'ที่ทำให้', 'ใช้งานจริง', 'ได้ทุกวัน']} />
       </h2>
@@ -5747,9 +5753,9 @@ function Bento() {
       <div className="mt-14 grid gap-4 md:grid-cols-6">
         <Reveal a="up" className="md:col-span-4">
           <Spot className="bn p-7 sm:p-9 min-h-[300px]">
-            <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-50))]">ตรวจเวลาซ้อน</p>
+            <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-70))]">ตรวจเวลาซ้อน</p>
             <h3 className="ld-title mt-3 max-w-md text-2xl sm:text-3xl">เลือกวันก่อน แล้วค่อยเห็นว่าชิ้นไหนว่าง</h3>
-            <p className="mt-3 max-w-md text-sm leading-[1.9] text-[rgb(var(--wa-color-purple-05)/0.6)]">ตอนเปลี่ยนวันรับ–คืน ระบบเช็กใหม่ให้ทันที ชิ้นที่ไม่ว่างจะกดเลือกไม่ได้ พร้อมบอกเลขใบจองที่ใช้อยู่</p>
+            <p className="mt-3 max-w-md text-sm leading-[1.9] text-[rgb(var(--wa-color-purple-95)/0.7)]">ตอนเปลี่ยนวันรับ–คืน ระบบเช็กใหม่ให้ทันที ชิ้นที่ไม่ว่างจะกดเลือกไม่ได้ พร้อมบอกเลขใบจองที่ใช้อยู่</p>
             <div className="mt-7 space-y-2.5">
               <div className="relative h-8 rounded-md bg-white/[0.05]">
                 <span className="mono absolute left-[4%] top-1 flex h-6 w-[46%] items-center justify-center rounded bg-[rgb(var(--wa-color-purple-50))] !text-[9px] text-[rgb(var(--wa-color-purple-95))]">BK-2610</span>
@@ -5764,18 +5770,18 @@ function Bento() {
         <Reveal a="up" delay={80} className="md:col-span-2">
           <Spot className="bn flex h-full min-h-[300px] flex-col justify-between p-7">
             <div>
-              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-50))]">ค่าปรับคืนช้า</p>
+              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-70))]">ค่าปรับคืนช้า</p>
               <h3 className="ld-title mt-3 text-xl">คำนวณเองตามจำนวนวัน</h3>
             </div>
-            <p className="font-num text-[5.4rem] leading-none text-[rgb(var(--wa-color-purple-50))]"><Counter to={300} prefix="฿" /></p>
-            <p className="text-xs text-[rgb(var(--wa-color-purple-05)/0.5)]">แก้ตัวเลขได้ก่อนยืนยันเสมอ</p>
+            <p className="font-num text-[5.4rem] leading-none text-[rgb(var(--wa-color-purple-70))]"><Counter to={300} prefix="฿" /></p>
+            <p className="text-xs text-[rgb(var(--wa-color-purple-95)/0.7)]">แก้ตัวเลขได้ก่อนยืนยันเสมอ</p>
           </Spot>
         </Reveal>
 
         <Reveal a="up" delay={0} className="md:col-span-2">
           <Spot className="bn flex h-full min-h-[260px] flex-col justify-between p-7">
             <div>
-              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-50))]">จัดวางได้</p>
+              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-70))]">จัดวางได้</p>
               <h3 className="ld-title mt-3 text-xl">เมนูซ้าย ขวา บน หรือ dock</h3>
             </div>
             <BentoLayouts />
@@ -5785,10 +5791,10 @@ function Bento() {
         <Reveal a="up" delay={80} className="md:col-span-2">
           <Spot className="bn flex h-full min-h-[260px] flex-col justify-between p-7">
             <div>
-              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-50))]">ทุกหน้าจอ</p>
+              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-70))]">ทุกหน้าจอ</p>
               <h3 className="ld-title mt-3 text-xl">มือถือ แท็บเล็ต คอมพิวเตอร์</h3>
             </div>
-            <div className="flex items-end gap-4 text-[rgb(var(--wa-color-purple-05)/0.7)]">
+            <div className="flex items-end gap-4 text-[rgb(var(--wa-color-purple-95)/0.85)]">
               <Smartphone size={34} strokeWidth={1} /><Tablet size={52} strokeWidth={1} /><Monitor size={78} strokeWidth={1} />
             </div>
           </Spot>
@@ -5797,12 +5803,12 @@ function Bento() {
         <Reveal a="up" delay={160} className="md:col-span-2">
           <Spot className="bn flex h-full min-h-[260px] flex-col justify-between p-7">
             <div>
-              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-50))]">ส่งออก</p>
+              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-70))]">ส่งออก</p>
               <h3 className="ld-title mt-3 text-xl">ประวัติและบัญชีเป็นไฟล์ CSV</h3>
             </div>
             <div className="flex items-center justify-between">
               <div className="space-y-1.5">{[70, 52, 84, 40].map((w) => <i key={w} className="block h-1.5 rounded bg-white/15" style={{ width: w }} />)}</div>
-              <span className="flex h-12 w-12 items-center justify-center rounded-full border border-[rgb(var(--wa-color-purple-50)/0.6)] text-[rgb(var(--wa-color-purple-50))]"><Download size={19} strokeWidth={1.4} /></span>
+              <span className="flex h-12 w-12 items-center justify-center rounded-full border border-[rgb(var(--wa-color-purple-50)/0.6)] text-[rgb(var(--wa-color-purple-70))]"><Download size={19} strokeWidth={1.4} /></span>
             </div>
           </Spot>
         </Reveal>
@@ -5994,7 +6000,7 @@ function Landing({ onEnter }) {
             <button key={id} className="l" onClick={() => scrollTo(id)}>{label}</button>
           ))}
         </span>
-        <button onClick={go} data-cursor="เข้าระบบ" className="ml-1 flex whitespace-nowrap items-center gap-2 rounded-full bg-[rgb(var(--wa-color-purple-60))] px-4 py-2 text-[0.82rem] font-medium text-white transition-transform hover:scale-[1.04]">
+        <button onClick={go} data-cursor="เข้าระบบ" className="ml-1 flex whitespace-nowrap items-center gap-2 rounded-full bg-[rgb(var(--wa-color-purple-70))] px-4 py-2 text-[0.82rem] font-medium text-white transition-transform hover:scale-[1.04]">
           เข้าสู่ระบบ <ArrowRight size={15} />
         </button>
       </header>
@@ -6008,7 +6014,7 @@ function Landing({ onEnter }) {
 
         <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 px-5 pb-20 pt-32 sm:px-8 lg:grid-cols-[1.12fr_0.88fr] lg:gap-8">
           <div>
-            <p className="eyebrow ld-fade !text-[rgb(var(--wa-color-purple-50))]" style={{ '--i': 0 }}>ระบบจัดการร้านเช่ากล้อง</p>
+            <p className="eyebrow ld-fade !text-[rgb(var(--wa-color-purple-70))]" style={{ '--i': 0 }}>ระบบจัดการร้านเช่ากล้อง</p>
             <h1 className="ld-title mt-7 text-[clamp(2.7rem,8.2vw,6.8rem)]">
               {heroLines.map((line, li) => (
                 <span key={li} className="block">
@@ -6023,7 +6029,7 @@ function Landing({ onEnter }) {
                 </span>
               ))}
             </h1>
-            <p className="ld-fade mt-8 max-w-xl text-base leading-[1.95] text-[rgb(var(--wa-color-purple-65)/0.65)] sm:text-lg" style={{ '--i': 6 }}>
+            <p className="ld-fade mt-8 max-w-xl text-base leading-[1.95] text-[rgb(var(--wa-color-purple-95)/0.7)] sm:text-lg" style={{ '--i': 6 }}>
               เก็บเรื่องอุปกรณ์ ใบจอง นัดรับ–คืน และรายรับรายจ่ายไว้ที่เดียว
               ทำมาให้ร้านที่มีคนดูแลคนเดียว เปิดจากมือถือหน้างานก็ได้
             </p>
@@ -6035,7 +6041,7 @@ function Landing({ onEnter }) {
               </Magnetic>
               <button onClick={() => scrollTo('statement')} className="ld-btn ld-btn-line">ดูว่าทำอะไรได้ <ArrowDown size={17} /></button>
             </div>
-            <div className="ld-fade mt-12 flex items-center gap-4 text-[rgb(var(--wa-color-purple-05)/0.5)]" style={{ '--i': 10 }}>
+            <div className="ld-fade mt-12 flex items-center gap-4 text-[rgb(var(--wa-color-purple-95)/0.7)]" style={{ '--i': 10 }}>
               <span className="h-px w-10 bg-[rgb(var(--wa-color-purple-05)/0.25)]" />
               <ExifTicker />
             </div>
@@ -6047,7 +6053,7 @@ function Landing({ onEnter }) {
         </div>
 
         <div className="absolute bottom-7 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 sm:flex">
-          <span className="mono !text-[9px] !tracking-[0.3em] text-[rgb(var(--wa-color-purple-05)/0.4)]">Scroll</span>
+          <span className="mono !text-[9px] !tracking-[0.3em] text-[rgb(var(--wa-color-purple-95)/0.7)]">Scroll</span>
           <span className="h-10 w-px overflow-hidden bg-[rgb(var(--wa-color-purple-05)/0.2)]"><span className="block h-4 w-px bg-[rgb(var(--wa-color-purple-50))]" style={{ animation: 'floaty 1.8s ease-in-out infinite' }} /></span>
         </div>
       </section>
@@ -6060,7 +6066,7 @@ function Landing({ onEnter }) {
               {MARQUEE.map((w) => (
                 <span key={w + k} className="flex items-center">
                   <span className="ld-title px-8 text-[clamp(2rem,5vw,3.6rem)] text-transparent" style={{ WebkitTextStroke: '1px rgb(239 232 218 / 0.38)' }}>{w}</span>
-                  <Aperture size={22} className="text-[rgb(var(--wa-color-purple-50))]" strokeWidth={1.3} />
+                  <Aperture size={22} className="text-[rgb(var(--wa-color-purple-70))]" strokeWidth={1.3} />
                 </span>
               ))}
             </div>
@@ -6072,7 +6078,7 @@ function Landing({ onEnter }) {
       <section id="statement" ref={stmtRef} className="relative h-[240vh]">
         <div className="sticky top-0 flex h-dvh items-center">
           <div className="mx-auto max-w-5xl px-5 sm:px-8">
-            <span className="eyebrow !text-[rgb(var(--wa-color-purple-50))]">แนวคิด</span>
+            <span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">แนวคิด</span>
             <p className="ld-title mt-8 text-[clamp(1.9rem,5.4vw,4rem)] leading-[1.3]">
               {STATEMENT.map((w, i) => <span key={i} className="ld-word mr-[0.28em] inline-block" data-on="false">{w}</span>)}
             </p>
@@ -6082,7 +6088,7 @@ function Landing({ onEnter }) {
 
       {/* FEATURES — sticky scroll reveal */}
       <section id="features" className="relative mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:py-32">
-        <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-50))]">ฟีเจอร์</span></Reveal>
+        <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">ฟีเจอร์</span></Reveal>
         <h2 className="ld-title mt-5 max-w-2xl text-[clamp(1.9rem,4.6vw,3.4rem)] lg:ml-16">
           <GenerateText words={['ครบทุกงาน', 'ของร้านเช่า', 'ในหน้าจอเดียว']} />
         </h2>
@@ -6092,7 +6098,7 @@ function Landing({ onEnter }) {
               <div key={f.title} ref={(el) => { itemRefs.current[i] = el; }} data-on={active === i} className="sf-item">
                 <p className="font-num text-[5.5rem] leading-none text-[rgb(var(--wa-color-purple-50)/0.55)]">0{i + 1}</p>
                 <h3 className="ld-title mt-4 text-[clamp(1.5rem,3vw,2.2rem)]">{f.title}</h3>
-                <p className="mt-4 max-w-md text-base leading-[1.95] text-[rgb(var(--wa-color-purple-05)/0.6)]">{f.text}</p>
+                <p className="mt-4 max-w-md text-base leading-[1.95] text-[rgb(var(--wa-color-purple-95)/0.7)]">{f.text}</p>
                 <div className="relative mt-8 h-[300px] lg:hidden">
                   <div className="sf-vis" data-on="true"><f.Vis /></div>
                 </div>
@@ -6115,7 +6121,7 @@ function Landing({ onEnter }) {
       <section id="flow" ref={hzRef} className="relative h-[330vh]">
         <div className="sticky top-0 flex h-dvh flex-col justify-center overflow-hidden">
           <div className="mx-auto mb-10 w-full max-w-7xl px-5 sm:px-8">
-            <span className="eyebrow !text-[rgb(var(--wa-color-purple-50))]">ขั้นตอน</span>
+            <span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">ขั้นตอน</span>
             <h2 className="ld-title mt-5 max-w-2xl text-[clamp(1.9rem,4.6vw,3.4rem)]">
               จากอุปกรณ์หนึ่งชิ้น <span className="ld-purple">ถึงรายรับหนึ่งรายการ</span>
             </h2>
@@ -6126,7 +6132,7 @@ function Landing({ onEnter }) {
                 <p className="hz-no">{s.no}</p>
                 <div>
                   <h3 className="font-serif text-2xl font-medium">{s.title}</h3>
-                  <p className="mt-3 max-w-sm text-sm leading-[1.9] text-[rgb(var(--wa-color-purple-05)/0.6)] sm:text-base">{s.text}</p>
+                  <p className="mt-3 max-w-sm text-sm leading-[1.9] text-[rgb(var(--wa-color-purple-95)/0.7)] sm:text-base">{s.text}</p>
                 </div>
               </article>
             ))}
@@ -6141,7 +6147,7 @@ function Landing({ onEnter }) {
       {/* DEVICES */}
       <section id="devices" className="relative overflow-hidden border-t border-[rgb(var(--wa-color-purple-05)/0.1)] px-5 py-24 sm:px-8 md:py-36">
         <div className="mx-auto max-w-5xl">
-          <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-50))]">ใช้ได้ทุกจอ</span></Reveal>
+          <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">ใช้ได้ทุกจอ</span></Reveal>
           <Reveal a="zoom"><h2 className="ld-title mt-5 max-w-3xl text-[clamp(1.9rem,4.6vw,3.4rem)]">ที่ร้าน ระหว่างทาง หรือบนโซฟา<br /><span className="ld-purple">ก็จัดการได้เหมือนกัน</span></h2></Reveal>
           <Reveal a="rotate" delay={200}><DeviceShowcase /></Reveal>
         </div>
@@ -6151,14 +6157,14 @@ function Landing({ onEnter }) {
       <section className="border-y border-[rgb(var(--wa-color-purple-05)/0.1)] px-5 py-16 sm:px-8 md:py-24">
         <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)] md:gap-16">
           <div>
-            <span className="eyebrow !text-[rgb(var(--wa-color-purple-50))]">กติกาการเช่า</span>
+            <span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">กติกาการเช่า</span>
             <h2 className="ld-title mt-5 text-[clamp(1.7rem,3.8vw,2.7rem)]">สิ่งที่ระบบเช็กให้<br />ทุกครั้งที่จอง</h2>
           </div>
           <dl className="divide-y divide-[rgb(var(--wa-color-purple-05)/0.1)] border-y border-[rgb(var(--wa-color-purple-05)/0.1)]">
             {RULES.map(([k, v]) => (
               <div key={k} className="grid gap-1 py-4 sm:grid-cols-[11rem_1fr] sm:gap-6">
-                <dt className="text-sm text-[rgb(var(--wa-color-purple-50)/0.45)]">{k}</dt>
-                <dd className="text-[rgb(var(--wa-color-purple-50)/0.85)]">{v}</dd>
+                <dt className="text-sm text-[rgb(var(--wa-color-purple-95)/0.7)]">{k}</dt>
+                <dd className="text-[rgb(var(--wa-color-purple-95)/0.85)]">{v}</dd>
               </div>
             ))}
           </dl>
@@ -6173,7 +6179,7 @@ function Landing({ onEnter }) {
             <h2 className="ld-title text-[clamp(2.4rem,8vw,6rem)]">
               <GenerateText words={['พร้อมเปิด', 'ชัตเตอร์', 'แล้วหรือยัง']} step={140} />
             </h2>
-            <p className="mx-auto mt-6 max-w-md text-[rgb(var(--wa-color-purple-50)/0.55)]">เข้าระบบแล้วเพิ่มกล้องตัวแรกได้เลย</p>
+            <p className="mx-auto mt-6 max-w-md text-[rgb(var(--wa-color-purple-95)/0.7)]">เข้าระบบแล้วเพิ่มกล้องตัวแรกได้เลย</p>
             <div className="mt-12">
               <Magnetic>
                 <span className="mb">
@@ -6188,7 +6194,7 @@ function Landing({ onEnter }) {
       </section>
 
       <footer className="border-t border-[rgb(var(--wa-color-purple-05)/0.1)] px-5 py-10 text-center">
-        <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-05)/0.4)]">{SHOP.name} — ระบบจัดการร้านเช่ากล้อง</p>
+        <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-95)/0.7)]">{SHOP.name} — ระบบจัดการร้านเช่ากล้อง</p>
       </footer>
     </div>
   );
@@ -6325,7 +6331,7 @@ function TodayBoard({ className = '' }) {
           <p className="mono-l">งานวันนี้</p>
           <h2 className="font-serif text-[1.1rem] font-medium sm:text-[1.2rem]">{fmtLongDate()}</h2>
         </div>
-        <span className="whitespace-nowrap text-[11px] text-mute"> {fmtTime(now)} น.</span>
+        <span className="whitespace-nowrap text-[11px] text-mute">นับเวลาสด · {fmtTime(now)} น.</span>
       </div>
 
       {counts.late > 0 && (
@@ -6959,14 +6965,15 @@ function Operations() {
 }
 
 /* ═════ pages/CalendarPage.jsx ═════ */
-/* ปฏิทิน: แสดงเฉพาะ "นัดรับ" และ "นัดคืน" (วันที่อยู่ระหว่างเช่าไม่แสดง)
-   เขียนเป็นคำพูดธรรมดา ไม่ใช้ศัพท์เทคนิค และไม่พึ่งสีอย่างเดียว (มีคำ "รับ"/"คืน" กำกับเสมอ) */
+/* ปฏิทิน: วันรับ = "รับ", วันคืน = "คืน", วันที่อยู่ระหว่างเช่า = "เช่า"
+   เขียนเป็นคำพูดธรรมดา ไม่ใช้ศัพท์เทคนิค และไม่พึ่งสีอย่างเดียว (มีคำกำกับเสมอ) */
 const CAL_KINDS = {
   pickup_wait: { group: 'pickup', label: 'รอลูกค้ามารับ', short: 'รับ', chip: 'bg-accent/15 text-accent', dot: 'bg-accent', bar: 'border-l-accent' },
   pickup_done: { group: 'pickup', label: 'ลูกค้ารับไปแล้ว', short: 'รับ', chip: 'bg-info/15 text-info', dot: 'bg-info', bar: 'border-l-info' },
   return_wait: { group: 'return', label: 'รอลูกค้านำมาคืน', short: 'คืน', chip: 'bg-warn/15 text-warn', dot: 'bg-warn', bar: 'border-l-warn' },
   return_late: { group: 'return', label: 'เลยกำหนดคืนแล้ว', short: 'คืน', chip: 'bg-bad/15 text-bad', dot: 'bg-bad', bar: 'border-l-bad' },
   return_done: { group: 'return', label: 'คืนกล้องแล้ว', short: 'คืน', chip: 'bg-ok/15 text-ok', dot: 'bg-ok', bar: 'border-l-ok' },
+  during: { group: 'during', label: 'อยู่ระหว่างเช่า', short: 'เช่า', chip: 'bg-ink/[0.07] text-ink/75', dot: 'bg-mute', bar: 'border-l-mute' },
 };
 const calEventsOf = (b) => {
   const s = parseDate(b.start_date);
@@ -6975,11 +6982,20 @@ const calEventsOf = (b) => {
   const st = effectiveStatus(b);
   const pickup = ['confirmed', 'pending'].includes(st) ? 'pickup_wait' : 'pickup_done';
   const ret = st === 'returned' ? 'return_done' : st === 'overdue' ? 'return_late' : 'return_wait';
-  return [
+  const out = [
     { id: `${b.id}-s`, b, date: s, type: 'รับ', kind: pickup },
     { id: `${b.id}-e`, b, date: e, type: 'คืน', kind: ret },
   ];
+  // วันที่อยู่ระหว่างเช่า (หลังวันรับ ก่อนวันคืน) เช่า 25–28 → 26, 27 เป็น "อยู่ระหว่างเช่า"
+  const d = new Date(s.getFullYear(), s.getMonth(), s.getDate() + 1);
+  const last = new Date(e.getFullYear(), e.getMonth(), e.getDate());
+  for (let n = 0; d < last && n < 120; n += 1) {
+    out.push({ id: `${b.id}-d${n}`, b, date: new Date(d), type: 'ระหว่าง', kind: 'during' });
+    d.setDate(d.getDate() + 1);
+  }
+  return out;
 };
+const CAL_ORDER = { รับ: 0, คืน: 1, ระหว่าง: 2 };
 
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
@@ -6987,7 +7003,7 @@ const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 const calGroupKind = (list, group) => {
   const kinds = list.filter((ev) => CAL_KINDS[ev.kind].group === group).map((ev) => ev.kind);
   if (!kinds.length) return null;
-  const order = group === 'pickup' ? ['pickup_wait', 'pickup_done'] : ['return_late', 'return_wait', 'return_done'];
+  const order = group === 'pickup' ? ['pickup_wait', 'pickup_done'] : group === 'during' ? ['during'] : ['return_late', 'return_wait', 'return_done'];
   return order.find((k) => kinds.includes(k));
 };
 
@@ -7016,7 +7032,7 @@ function CalendarPage() {
           map.get(key).push(ev);
         });
       });
-    map.forEach((list) => list.sort((x, y) => x.date - y.date));
+    map.forEach((list) => list.sort((x, y) => CAL_ORDER[x.type] - CAL_ORDER[y.type] || x.date - y.date));
     return map;
   }, [bookings]);
 
@@ -7024,6 +7040,7 @@ function CalendarPage() {
   const dayList = byDay.get(selected.toDateString()) || [];
   const dayPickups = dayList.filter((ev) => ev.type === 'รับ');
   const dayReturns = dayList.filter((ev) => ev.type === 'คืน');
+  const dayDuring = dayList.filter((ev) => ev.type === 'ระหว่าง');
 
   const selectedIsToday = sameDay(selected, today);
   const selectedLabel = selected.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -7048,7 +7065,9 @@ function CalendarPage() {
                     <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${k.chip}`}>{k.label}</span>
                   </div>
                   <p className="calendar-selected-equipment">{equipmentTitle(b)}</p>
-                  <p className="calendar-selected-time">เวลา {fmtTime(ev.date)} น. · เลขที่ {b.booking_no}</p>
+                  <p className="calendar-selected-time">
+                    {ev.type === 'ระหว่าง' ? `คืนวันที่ ${fmtDateTime(b.end_date)}` : `เวลา ${fmtTime(ev.date)} น.`} · เลขที่ {b.booking_no}
+                  </p>
                 </button>
               </li>
             );
@@ -7091,7 +7110,7 @@ function CalendarPage() {
             </button>
             {help && (
               <div className="page-in mt-3 space-y-3 text-xs text-mute">
-                <p>ในช่องวันที่จะมีป้ายเล็ก ๆ ว่า <b className="text-ink">รับ</b> = ลูกค้ามารับกล้องวันนั้น และ <b className="text-ink">คืน</b> = ลูกค้านำกล้องมาคืนวันนั้น วันที่กล้องอยู่กับลูกค้าระหว่างทางจะไม่แสดง</p>
+                <p>ในช่องวันที่จะมีป้ายเล็ก ๆ: <b className="text-ink">รับ</b> = ลูกค้ามารับกล้องวันนั้น · <b className="text-ink">คืน</b> = ลูกค้านำกล้องมาคืนวันนั้น · <b className="text-ink">เช่า</b> = กล้องอยู่กับลูกค้าในวันนั้น (เช่น จอง 25–28 → 25 รับ, 26–27 เช่า, 28 คืน)</p>
                 <div className="grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
                   {Object.values(CAL_KINDS).map((k) => (
                     <span key={k.label} className="inline-flex items-center gap-2">
@@ -7123,13 +7142,15 @@ function CalendarPage() {
               const isSel = sameDay(d, selected);
               const pk = calGroupKind(list, 'pickup');
               const rk = calGroupKind(list, 'return');
+              const dk = calGroupKind(list, 'during');
               const pn = list.filter((ev) => ev.type === 'รับ').length;
               const rn = list.filter((ev) => ev.type === 'คืน').length;
+              const dn = list.filter((ev) => ev.type === 'ระหว่าง').length;
               return (
                 <button
                   key={i}
                   onClick={() => setSelected(startOfDay(d))}
-                  aria-label={`${d.getDate()} ${MONTHS_TH[d.getMonth()]} รับ ${pn} คืน ${rn}`}
+                  aria-label={`${d.getDate()} ${MONTHS_TH[d.getMonth()]} รับ ${pn} คืน ${rn} ระหว่างเช่า ${dn}`}
                   className={`calendar-day relative flex min-w-0 flex-col items-stretch gap-1 overflow-hidden border-b border-r border-line/70 p-1.5 text-left transition-colors ${
                     inMonth ? '' : 'bg-surface2/40 text-mute/50'
                   } ${isSel ? '!bg-accent/10 ring-2 ring-inset ring-accent' : 'hover:bg-surface2/60'}`}
@@ -7140,7 +7161,7 @@ function CalendarPage() {
                   <span className="hidden min-h-0 min-w-0 flex-col gap-0.5 overflow-hidden sm:flex">
                     {list.slice(0, 3).map((ev) => (
                       <span key={ev.id} className={`flex max-w-full items-center gap-1 truncate rounded px-1 py-0.5 text-[10px] font-medium ${CAL_KINDS[ev.kind].chip}`}>
-                        <b className="shrink-0 rounded-sm bg-surface/70 px-1 font-semibold">{ev.type}</b>
+                        <b className="shrink-0 rounded-sm bg-surface/70 px-1 font-semibold">{CAL_KINDS[ev.kind].short}</b>
                         <span className="truncate">{ev.b.customer_name}</span>
                       </span>
                     ))}
@@ -7149,6 +7170,7 @@ function CalendarPage() {
                   <span className="flex flex-col gap-0.5 sm:hidden">
                     {pk && <span className={`rounded px-1 text-center text-[10px] font-semibold leading-4 ${CAL_KINDS[pk].chip}`}>รับ {pn}</span>}
                     {rk && <span className={`rounded px-1 text-center text-[10px] font-semibold leading-4 ${CAL_KINDS[rk].chip}`}>คืน {rn}</span>}
+                    {dk && <span className={`rounded px-1 text-center text-[10px] font-semibold leading-4 ${CAL_KINDS[dk].chip}`}>เช่า {dn}</span>}
                   </span>
                 </button>
               );
@@ -7163,7 +7185,7 @@ function CalendarPage() {
                 <p className="eyebrow">{selectedIsToday ? 'วันนี้' : 'วันที่คุณเลือก'}</p>
                 <h3 className="calendar-selected-title">{selectedLabel}</h3>
                 <p className="calendar-selected-subtitle">
-                  {dayList.length === 0 ? 'ไม่มีนัดรับหรือนัดคืน' : `รับ ${dayPickups.length} · คืน ${dayReturns.length}`}
+                  {dayList.length === 0 ? 'ไม่มีรายการในวันนี้' : `รับ ${dayPickups.length} · คืน ${dayReturns.length}${dayDuring.length ? ` · ระหว่างเช่า ${dayDuring.length}` : ''}`}
                 </p>
               </div>
             </header>
@@ -7177,6 +7199,7 @@ function CalendarPage() {
                 <div key={selected.toISOString()} className="page-in">
                   <Group title="นัดรับกล้อง" hint="ไม่มีลูกค้ามารับกล้องวันนี้" items={dayPickups} />
                   <Group title="นัดคืนกล้อง" hint="ไม่มีลูกค้านำกล้องมาคืนวันนี้" items={dayReturns} />
+                  {dayDuring.length > 0 && <Group title="อยู่ระหว่างเช่า" hint="" items={dayDuring} />}
                 </div>
               )}
             </div>
