@@ -6331,7 +6331,7 @@ function TodayBoard({ className = '' }) {
           <p className="mono-l">งานวันนี้</p>
           <h2 className="font-serif text-[1.1rem] font-medium sm:text-[1.2rem]">{fmtLongDate()}</h2>
         </div>
-        <span className="whitespace-nowrap text-[11px] text-mute">นับเวลาสด · {fmtTime(now)} น.</span>
+        <span className="whitespace-nowrap text-[11px] text-mute">เวลา · {fmtTime(now)} น.</span>
       </div>
 
       {counts.late > 0 && (
@@ -7110,7 +7110,7 @@ function CalendarPage() {
             </button>
             {help && (
               <div className="page-in mt-3 space-y-3 text-xs text-mute">
-                <p>ในช่องวันที่จะมีป้ายเล็ก ๆ: <b className="text-ink">รับ</b> = ลูกค้ามารับกล้องวันนั้น · <b className="text-ink">คืน</b> = ลูกค้านำกล้องมาคืนวันนั้น · <b className="text-ink">เช่า</b> = กล้องอยู่กับลูกค้าในวันนั้น (เช่น จอง 25–28 → 25 รับ, 26–27 เช่า, 28 คืน)</p>
+                <p>ในช่องวันที่จะมีป้ายเล็ก ๆ: <b className="text-ink">รับ</b> = ลูกค้ามารับกล้องวันนั้น · <b className="text-ink">คืน</b> = ลูกค้านำกล้องมาคืนวันนั้น · <b className="text-ink">เช่า</b> = กล้องอยู่กับลูกค้าในวันนั้น</p>
                 <div className="grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
                   {Object.values(CAL_KINDS).map((k) => (
                     <span key={k.label} className="inline-flex items-center gap-2">
