@@ -6157,8 +6157,8 @@ function Landing({ onEnter }) {
           <dl className="divide-y divide-[rgb(var(--wa-color-purple-50)/0.65)] border-y border-[rgb(var(--wa-color-purple-50)/0.65)]">
             {RULES.map(([k, v]) => (
               <div key={k} className="grid gap-1 py-4 sm:grid-cols-[11rem_1fr] sm:gap-6">
-                <dt className="text-sm text-[rgb(var(--wa-color-purple-05)/0.45)]">{k}</dt>
-                <dd className="text-[rgb(var(--wa-color-purple-05)/0.85)]">{v}</dd>
+                <dt className="text-sm text-[rgb(var(--wa-color-purple-50)/0.45)]">{k}</dt>
+                <dd className="text-[rgb(var(--wa-color-purple-50)/0.85)]">{v}</dd>
               </div>
             ))}
           </dl>
