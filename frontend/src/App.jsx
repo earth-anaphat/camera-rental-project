@@ -6154,7 +6154,7 @@ function Landing({ onEnter }) {
             <span className="eyebrow !text-[rgb(var(--wa-color-purple-50))]">กติกาการเช่า</span>
             <h2 className="ld-title mt-5 text-[clamp(1.7rem,3.8vw,2.7rem)]">สิ่งที่ระบบเช็กให้<br />ทุกครั้งที่จอง</h2>
           </div>
-          <dl className="divide-y divide-[rgb(var(--wa-color-purple-05)/0.1)] border-y border-[rgb(var(--wa-color-purple-05)/0.1)]">
+          <dl className="divide-y divide-[rgb(var(--wa-color-purple-50)/0.1)] border-y border-[rgb(var(--wa-color-purple-50)/0.1)]">
             {RULES.map(([k, v]) => (
               <div key={k} className="grid gap-1 py-4 sm:grid-cols-[11rem_1fr] sm:gap-6">
                 <dt className="text-sm text-[rgb(var(--wa-color-purple-05)/0.45)]">{k}</dt>
@@ -6173,7 +6173,7 @@ function Landing({ onEnter }) {
             <h2 className="ld-title text-[clamp(2.4rem,8vw,6rem)]">
               <GenerateText words={['พร้อมเปิด', 'ชัตเตอร์', 'แล้วหรือยัง']} step={140} />
             </h2>
-            <p className="mx-auto mt-6 max-w-md text-[rgb(var(--wa-color-purple-05)/0.55)]">เข้าระบบแล้วเพิ่มกล้องตัวแรกได้เลย</p>
+            <p className="mx-auto mt-6 max-w-md text-[rgb(var(--wa-color-purple-50)/0.55)]">เข้าระบบแล้วเพิ่มกล้องตัวแรกได้เลย</p>
             <div className="mt-12">
               <Magnetic>
                 <span className="mb">
