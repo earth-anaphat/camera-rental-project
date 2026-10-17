@@ -1577,6 +1577,9 @@ select.input {
   .calendar-empty-day { flex: 1; display: flex; align-items: center; justify-content: center; }
   .calendar-empty-day > * { width: 100%; min-height: 0 !important; }
 }
+/* รายการรับ/คืนแบ่งเป็น 2 กลุ่ม — ให้ทั้งกรอบเลื่อนได้แทนการเลื่อนซ้อนในแต่ละกลุ่ม */
+.calendar-day-panel ul { max-height: none !important; overflow: visible !important; padding-right: 0; }
+@media (min-width: 1280px) { .calendar-selected-content { overflow-y: auto !important; display: block; overscroll-behavior: contain; } }
 
 
 
@@ -4190,15 +4193,12 @@ function BookingForm() {
     }));
   };
 
+  // เลือกจาก "ชื่อ" เท่านั้น: ถ้าชื่อตรงกับลูกค้าเดิม ระบบเติมเบอร์และช่องทางติดต่อให้
+  // ส่วนเบอร์โทรเป็นช่องพิมพ์ธรรมดา ไม่ดึงข้อมูลลูกค้ากลับมา
   const fillFromName = (name) => {
-    set({ customer_name: name });
     const hit = customers.find((c) => c.fullname === name);
-    if (hit && !form.phone) set({ phone: hit.phone, contacts: { ...EMPTY_CONTACTS, ...(hit.contacts || {}) } });
-  };
-  const fillFromPhone = (phone) => {
-    set({ phone });
-    const hit = customers.find((c) => c.phone === phone);
-    if (hit && !form.customer_name) set({ customer_name: hit.fullname, contacts: { ...EMPTY_CONTACTS, ...(hit.contacts || {}) } });
+    if (hit) set({ customer_name: name, phone: hit.phone || '', contacts: { ...EMPTY_CONTACTS, ...(hit.contacts || {}) } });
+    else set({ customer_name: name });
   };
 
   const submit = async (event) => {
@@ -4303,10 +4303,10 @@ function BookingForm() {
             <h3 className="eyebrow mb-3">ข้อมูลผู้เช่า</h3>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="ชื่อผู้เช่า *">
-                <input required list="cust-names" className="input" placeholder="ชื่อ–นามสกุล" value={form.customer_name} onChange={(e) => fillFromName(e.target.value)} />
+                <input required list="cust-names" autoComplete="off" className="input" placeholder="พิมพ์หรือเลือกชื่อลูกค้าเดิม" value={form.customer_name} onChange={(e) => fillFromName(e.target.value)} />
               </Field>
               <Field label="เบอร์โทรศัพท์ (ไม่บังคับ)">
-                <input type="tel" inputMode="tel" list="cust-phones" className="input" placeholder="08X-XXX-XXXX" value={form.phone} onChange={(e) => fillFromPhone(e.target.value)} />
+                <input type="tel" inputMode="tel" className="input" placeholder="08X-XXX-XXXX" value={form.phone} onChange={(e) => set({ phone: e.target.value })} />
               </Field>
             </div>
             <details className="mt-3 rounded-2xl border border-line bg-surface2/40 open:bg-surface2/60" open={Object.values(form.contacts || {}).some(Boolean)}>
@@ -4319,8 +4319,7 @@ function BookingForm() {
                 ))}
               </div>
             </details>
-            <datalist id="cust-names">{customers.slice(0, 80).map((c) => <option key={c.id} value={c.fullname} />)}</datalist>
-            <datalist id="cust-phones">{customers.slice(0, 80).map((c) => <option key={c.id} value={c.phone} label={c.fullname} />)}</datalist>
+            <datalist id="cust-names">{customers.map((c) => <option key={c.id} value={c.fullname} label={c.phone || undefined} />)}</datalist>
           </section>
 
           <section>
@@ -6430,7 +6429,7 @@ function Dashboard() {
           )}
         </Panel>
 
-        <Panel index={6} no="№ 05 · ยอดนิยม" title="เช่าบ่อยที่สุด" caption="นับจากรายการที่รับคืนแล้ว" className="lg:col-span-2 xl:col-span-1">
+        <Panel index={6} no="№ 05 · ยอดนิยม" title="เช่าบ่อยที่สุด" caption="นับจากรายการที่รับคืนแล้ว (ตรงกับรายรับ)" className="lg:col-span-2 xl:col-span-1">
           {top.length === 0 ? (
             <EmptyState title="ยังไม่มีข้อมูล" description="ยังไม่มีการรับ–คืนกล้อง" />
           ) : (
@@ -6655,13 +6654,14 @@ function Operations() {
 }
 
 /* ═════ pages/CalendarPage.jsx ═════ */
-/* ปฏิทิน: แสดงเฉพาะ "วันรับ" และ "วันคืน" (วันที่อยู่ระหว่างเช่าไม่แสดง) — สีบอกสถานะ */
+/* ปฏิทิน: แสดงเฉพาะ "นัดรับ" และ "นัดคืน" (วันที่อยู่ระหว่างเช่าไม่แสดง)
+   เขียนเป็นคำพูดธรรมดา ไม่ใช้ศัพท์เทคนิค และไม่พึ่งสีอย่างเดียว (มีคำ "รับ"/"คืน" กำกับเสมอ) */
 const CAL_KINDS = {
-  pickup_wait: { label: 'รอรับกล้อง', short: 'รับ', chip: 'bg-accent/15 text-accent', dot: 'bg-accent', bar: 'border-l-accent' },
-  pickup_done: { label: 'รับกล้องแล้ว', short: 'รับ', chip: 'bg-info/15 text-info', dot: 'bg-info', bar: 'border-l-info' },
-  return_wait: { label: 'กำหนดคืนกล้อง', short: 'คืน', chip: 'bg-warn/15 text-warn', dot: 'bg-warn', bar: 'border-l-warn' },
-  return_late: { label: 'เกินกำหนดคืน', short: 'คืน', chip: 'bg-bad/15 text-bad', dot: 'bg-bad', bar: 'border-l-bad' },
-  return_done: { label: 'คืนกล้องแล้ว', short: 'คืน', chip: 'bg-ok/15 text-ok', dot: 'bg-ok', bar: 'border-l-ok' },
+  pickup_wait: { group: 'pickup', label: 'รอลูกค้ามารับ', short: 'รับ', chip: 'bg-accent/15 text-accent', dot: 'bg-accent', bar: 'border-l-accent' },
+  pickup_done: { group: 'pickup', label: 'ลูกค้ารับไปแล้ว', short: 'รับ', chip: 'bg-info/15 text-info', dot: 'bg-info', bar: 'border-l-info' },
+  return_wait: { group: 'return', label: 'รอลูกค้านำมาคืน', short: 'คืน', chip: 'bg-warn/15 text-warn', dot: 'bg-warn', bar: 'border-l-warn' },
+  return_late: { group: 'return', label: 'เลยกำหนดคืนแล้ว', short: 'คืน', chip: 'bg-bad/15 text-bad', dot: 'bg-bad', bar: 'border-l-bad' },
+  return_done: { group: 'return', label: 'คืนกล้องแล้ว', short: 'คืน', chip: 'bg-ok/15 text-ok', dot: 'bg-ok', bar: 'border-l-ok' },
 };
 const calEventsOf = (b) => {
   const s = parseDate(b.start_date);
@@ -6678,11 +6678,20 @@ const calEventsOf = (b) => {
 
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
+/* สีของป้ายสรุปรายวัน: เลือกสถานะที่ "ต้องทำ" ก่อน */
+const calGroupKind = (list, group) => {
+  const kinds = list.filter((ev) => CAL_KINDS[ev.kind].group === group).map((ev) => ev.kind);
+  if (!kinds.length) return null;
+  const order = group === 'pickup' ? ['pickup_wait', 'pickup_done'] : ['return_late', 'return_wait', 'return_done'];
+  return order.find((k) => kinds.includes(k));
+};
+
 function CalendarPage() {
   const { bookings, openDetail, openBooking } = useApp();
   const today = new Date();
   const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selected, setSelected] = useState(startOfDay(today));
+  const [help, setHelp] = useState(false);
 
   const cells = useMemo(() => {
     const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
@@ -6708,35 +6717,111 @@ function CalendarPage() {
 
   const move = (n) => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + n, 1));
   const dayList = byDay.get(selected.toDateString()) || [];
+  const dayPickups = dayList.filter((ev) => ev.type === 'รับ');
+  const dayReturns = dayList.filter((ev) => ev.type === 'คืน');
+
+  const todayList = byDay.get(today.toDateString()) || [];
+  const todayPickWait = todayList.filter((ev) => ev.kind === 'pickup_wait').length;
+  const todayRetWait = todayList.filter((ev) => ev.kind === 'return_wait' || ev.kind === 'return_late').length;
+  const lateCount = bookings.filter((b) => b.status !== 'cancelled' && effectiveStatus(b) === 'overdue').length;
+
+  const selectedIsToday = sameDay(selected, today);
+  const selectedLabel = selected.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  const Group = ({ title, hint, items }) => (
+    <div className="mb-4 last:mb-0">
+      <div className="mb-2 flex items-baseline justify-between gap-2">
+        <h4 className="text-sm font-semibold">{title} <span className="font-num text-mute">({items.length})</span></h4>
+      </div>
+      {items.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-line px-3 py-3 text-center text-xs text-mute">{hint}</p>
+      ) : (
+        <ul className="stagger space-y-2">
+          {items.map((ev, i) => {
+            const b = ev.b;
+            const k = CAL_KINDS[ev.kind];
+            return (
+              <li key={ev.id} style={{ '--i': i }}>
+                <button onClick={() => openDetail(b.id)} className={`calendar-selected-booking w-full border-l-4 text-left ${k.bar}`}>
+                  <div className="flex min-w-0 items-center justify-between gap-2">
+                    <p className="truncate text-sm font-semibold">{b.customer_name}</p>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${k.chip}`}>{k.label}</span>
+                  </div>
+                  <p className="calendar-selected-equipment">{equipmentTitle(b)}</p>
+                  <p className="calendar-selected-time">เวลา {fmtTime(ev.date)} น. · เลขที่ {b.booking_no}</p>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
 
   return (
     <>
       <PageHeader
-        eyebrow="Schedule"
-        title="ปฏิทินการจอง"
-        description="ดูวันรับและวันคืนกล้องทั้งเดือน เลือกวันเพื่อดูรายละเอียด"
+        eyebrow="นัดหมาย"
+        title="ปฏิทินนัดรับ–คืนกล้อง"
+        description="ดูว่าวันไหนมีลูกค้ามารับกล้อง และวันไหนต้องนำกล้องมาคืน แตะที่วันเพื่อดูรายชื่อ"
         actions={
           <button onClick={() => openBooking([])} className="btn btn-primary"><Plus size={17} /> สร้างการจอง</button>
         }
       />
 
-      <div className="calendar-layout grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="mb-4 grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="card px-3 py-3 sm:px-4">
+          <p className="text-[11px] text-mute sm:text-xs">วันนี้ต้องให้รับกล้อง</p>
+          <p className="font-num text-2xl font-semibold text-accent sm:text-3xl">{todayPickWait}<span className="ml-1 text-xs font-normal text-mute">ราย</span></p>
+        </div>
+        <div className="card px-3 py-3 sm:px-4">
+          <p className="text-[11px] text-mute sm:text-xs">วันนี้ต้องรับกล้องคืน</p>
+          <p className="font-num text-2xl font-semibold text-warn sm:text-3xl">{todayRetWait}<span className="ml-1 text-xs font-normal text-mute">ราย</span></p>
+        </div>
+        <div className="card px-3 py-3 sm:px-4">
+          <p className="text-[11px] text-mute sm:text-xs">เลยกำหนดคืน (ทั้งหมด)</p>
+          <p className={`font-num text-2xl font-semibold sm:text-3xl ${lateCount ? 'text-bad' : 'text-ok'}`}>{lateCount}<span className="ml-1 text-xs font-normal text-mute">ราย</span></p>
+        </div>
+      </div>
+
+      <div className="calendar-layout grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
         <section className="calendar-month-card card min-w-0 overflow-hidden">
           <header className="calendar-month-header flex items-center justify-between gap-3 border-b border-line px-4 py-4 sm:px-6">
             <h2 key={cursor.toISOString()} className="page-in font-serif text-xl font-semibold">
               {MONTHS_TH[cursor.getMonth()]} <span className="font-num text-2xl text-accent">{cursor.getFullYear() + 543}</span>
             </h2>
             <div className="flex items-center gap-1">
-              <button onClick={() => { setCursor(new Date(today.getFullYear(), today.getMonth(), 1)); setSelected(startOfDay(today)); }} className="btn btn-ghost btn-sm">วันนี้</button>
-              <button onClick={() => move(-1)} className="icon-btn" aria-label="เดือนก่อน"><ChevronLeft size={19} /></button>
+              <button onClick={() => { setCursor(new Date(today.getFullYear(), today.getMonth(), 1)); setSelected(startOfDay(today)); }} className="btn btn-ghost btn-sm">กลับมาวันนี้</button>
+              <button onClick={() => move(-1)} className="icon-btn" aria-label="เดือนก่อนหน้า"><ChevronLeft size={19} /></button>
               <button onClick={() => move(1)} className="icon-btn" aria-label="เดือนถัดไป"><ChevronRight size={19} /></button>
             </div>
           </header>
 
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b border-line px-4 py-3 text-[11px] text-mute sm:px-6" aria-label="คำอธิบายสี">
-            {Object.values(CAL_KINDS).map((k) => (
-              <span key={k.label} className="inline-flex items-center gap-1.5"><i className={`h-2.5 w-2.5 rounded-full ${k.dot}`} />{k.label}</span>
-            ))}
+          <div className="border-b border-line px-4 py-3 sm:px-6">
+            <button type="button" onClick={() => setHelp((v) => !v)} className="flex w-full items-center justify-between gap-2 text-left text-sm font-medium" aria-expanded={help}>
+              <span>วิธีอ่านปฏิทิน <span className="text-xs font-normal text-mute">(แตะเพื่อ{help ? 'ซ่อน' : 'ดู'})</span></span>
+              <ChevronRight size={16} className={`transition-transform ${help ? 'rotate-90' : ''}`} />
+            </button>
+            {help && (
+              <div className="page-in mt-3 space-y-3 text-xs text-mute">
+                <p>ในช่องวันที่จะมีป้ายเล็ก ๆ ว่า <b className="text-ink">รับ</b> = ลูกค้ามารับกล้องวันนั้น และ <b className="text-ink">คืน</b> = ลูกค้านำกล้องมาคืนวันนั้น วันที่กล้องอยู่กับลูกค้าระหว่างทางจะไม่แสดง</p>
+                <div className="grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
+                  {Object.values(CAL_KINDS).map((k) => (
+                    <span key={k.label} className="inline-flex items-center gap-2">
+                      <span className={`inline-flex w-9 justify-center rounded px-1.5 py-0.5 text-[10px] font-semibold ${k.chip}`}>{k.short}</span>
+                      <span className="text-ink">{k.label}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {!help && (
+              <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1.5 text-[11px] text-mute">
+                {Object.values(CAL_KINDS).map((k) => (
+                  <span key={k.label} className="inline-flex items-center gap-1.5"><i className={`h-2.5 w-2.5 rounded-full ${k.dot}`} />{k.short}: {k.label}</span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="calendar-weekdays grid grid-cols-7 border-b border-line bg-surface2/50 text-center text-[11px] font-semibold text-mute">
@@ -6749,10 +6834,15 @@ function CalendarPage() {
               const list = byDay.get(d.toDateString()) || [];
               const isToday = sameDay(d, today);
               const isSel = sameDay(d, selected);
+              const pk = calGroupKind(list, 'pickup');
+              const rk = calGroupKind(list, 'return');
+              const pn = list.filter((ev) => ev.type === 'รับ').length;
+              const rn = list.filter((ev) => ev.type === 'คืน').length;
               return (
                 <button
                   key={i}
                   onClick={() => setSelected(startOfDay(d))}
+                  aria-label={`${d.getDate()} ${MONTHS_TH[d.getMonth()]} รับ ${pn} คืน ${rn}`}
                   className={`calendar-day relative flex min-w-0 flex-col items-stretch gap-1 overflow-hidden border-b border-r border-line/70 p-1.5 text-left transition-colors ${
                     inMonth ? '' : 'bg-surface2/40 text-mute/50'
                   } ${isSel ? '!bg-accent/10 ring-2 ring-inset ring-accent' : 'hover:bg-surface2/60'}`}
@@ -6762,16 +6852,16 @@ function CalendarPage() {
                   </span>
                   <span className="hidden min-h-0 min-w-0 flex-col gap-0.5 overflow-hidden sm:flex">
                     {list.slice(0, 3).map((ev) => (
-                      <span key={ev.id} className={`block max-w-full truncate rounded px-1.5 py-0.5 text-[10px] font-medium ${CAL_KINDS[ev.kind].chip}`}>
-                        <b className="font-semibold">{ev.type}</b> {ev.b.customer_name}
+                      <span key={ev.id} className={`flex max-w-full items-center gap-1 truncate rounded px-1 py-0.5 text-[10px] font-medium ${CAL_KINDS[ev.kind].chip}`}>
+                        <b className="shrink-0 rounded-sm bg-surface/70 px-1 font-semibold">{ev.type}</b>
+                        <span className="truncate">{ev.b.customer_name}</span>
                       </span>
                     ))}
-                    {list.length > 3 && <span className="px-1 text-[10px] text-mute">+{list.length - 3} รายการ</span>}
+                    {list.length > 3 && <span className="px-1 text-[10px] text-mute">และอีก {list.length - 3} รายการ</span>}
                   </span>
-                  <span className="flex flex-wrap gap-0.5 sm:hidden">
-                    {list.slice(0, 4).map((ev) => (
-                      <i key={ev.id} className={`h-1.5 w-1.5 rounded-full ${CAL_KINDS[ev.kind].dot}`} />
-                    ))}
+                  <span className="flex flex-col gap-0.5 sm:hidden">
+                    {pk && <span className={`rounded px-1 text-center text-[10px] font-semibold leading-4 ${CAL_KINDS[pk].chip}`}>รับ {pn}</span>}
+                    {rk && <span className={`rounded px-1 text-center text-[10px] font-semibold leading-4 ${CAL_KINDS[rk].chip}`}>คืน {rn}</span>}
                   </span>
                 </button>
               );
@@ -6782,47 +6872,29 @@ function CalendarPage() {
         <aside className="calendar-day-panel card">
           <div className="calendar-panel-inner">
             <header className="calendar-selected-header">
-              <div className="calendar-selected-icon" aria-hidden="true">▦</div>
               <div className="min-w-0 flex-1">
-                <p className="eyebrow">วันที่เลือก</p>
-                <h3 className="calendar-selected-title">
-                  {selected.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long' })}
-                </h3>
-                <p className="calendar-selected-subtitle">{selected.getFullYear() + 543} · รายการรับ–คืนอุปกรณ์</p>
+                <p className="eyebrow">{selectedIsToday ? 'วันนี้' : 'วันที่คุณเลือก'}</p>
+                <h3 className="calendar-selected-title">{selectedLabel}</h3>
+                <p className="calendar-selected-subtitle">
+                  {dayList.length === 0 ? 'ไม่มีนัดรับหรือนัดคืน' : `รับ ${dayPickups.length} · คืน ${dayReturns.length}`}
+                </p>
               </div>
-              <span className="calendar-selected-count" aria-label={`${dayList.length} รายการ`}>{dayList.length}</span>
             </header>
 
             <div className="calendar-selected-content">
               {dayList.length === 0 ? (
-                <div className="calendar-empty-day"><EmptyState title="ไม่มีรับ–คืนกล้อง" description="วันนี้ไม่มีนัดรับหรือนัดคืนกล้อง" /></div>
+                <div className="calendar-empty-day">
+                  <EmptyState title="วันนี้ว่าง" description="ไม่มีลูกค้ามารับหรือคืนกล้องในวันนี้" />
+                </div>
               ) : (
-                <ul key={selected.toISOString()} className="calendar-selected-list stagger">
-                  {dayList.map((ev, i) => {
-                    const b = ev.b;
-                    const k = CAL_KINDS[ev.kind];
-                    return (
-                      <li key={ev.id} style={{ '--i': i }}>
-                        <button onClick={() => openDetail(b.id)} className={`calendar-selected-booking w-full border-l-4 text-left ${k.bar}`}>
-                          <div className="flex min-w-0 items-center justify-between gap-2">
-                            <p className="truncate text-sm font-semibold">{b.customer_name}</p>
-                            <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${k.chip}`}>{k.label}</span>
-                          </div>
-                          <p className="calendar-selected-equipment">{equipmentTitle(b)}</p>
-                          <p className="calendar-selected-time">{ev.type} {fmtTime(ev.date)} · {b.booking_no}</p>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
+                <div key={selected.toISOString()} className="page-in">
+                  <Group title="นัดรับกล้อง" hint="ไม่มีลูกค้ามารับกล้องวันนี้" items={dayPickups} />
+                  <Group title="นัดคืนกล้อง" hint="ไม่มีลูกค้านำกล้องมาคืนวันนี้" items={dayReturns} />
+                </div>
               )}
             </div>
 
-            {dayList.length > 3 && (
-              <footer className="calendar-selected-footer">
-                เลื่อนเพื่อดูอีก {dayList.length} รายการ · คลิกการจองเพื่อดูรายละเอียด
-              </footer>
-            )}
+            <footer className="calendar-selected-footer">แตะที่ชื่อลูกค้าเพื่อดูรายละเอียดการจอง</footer>
           </div>
         </aside>
       </div>
