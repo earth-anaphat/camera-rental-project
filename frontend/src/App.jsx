@@ -753,9 +753,9 @@ select.input {
 }
 .dock-item:hover { color: rgb(var(--accent)); background: rgb(var(--accent) / 0.1); transform: translateY(-3px); }
 .dock-item[data-on='true'], .dock-item[data-on='true']:hover { background: transparent; color: rgb(var(--accent-fg)); }
+@media (max-width: 900px) { .dock { gap: 0.35rem; padding: 0.6rem 0.8rem; } .dock-item, .dock-pill { width: 44px; } .dock-item { height: 44px; } .dock-pill { height: 44px; margin-top: -22px; } .dock-sep { margin: 0 0.15rem; } }
 .dock-item svg { animation: dockPop 0.6s var(--ease) backwards; animation-delay: calc(var(--i, 0) * 45ms + 350ms); }
 @keyframes dockPop { from { opacity: 0; transform: translateY(14px) scale(0.5); } to { opacity: 1; transform: none; } }
-@media (hover: hover) { .dock-item:hover svg { animation: ldWiggle 0.55s ease; } }
 .dock-item::after {
   content: attr(data-label);
   position: absolute;
@@ -5467,7 +5467,7 @@ function TopTabs() {
 
 /* dock ลอยแบบขยายตามเมาส์ */
 function Dock() {
-  const { page, navigate } = useApp();
+  const { page, navigate, leave } = useApp();
   const ref = useRef(null);
   const { wrap, box } = useSlider(page);
   const setRefs = (el) => { ref.current = el; wrap.current = el; };
@@ -5501,6 +5501,10 @@ function Dock() {
           </button>
         )
       )}
+      <span className="dock-sep" />
+      <button type="button" title="กลับหน้าแนะนำระบบ" data-label="หน้าแนะนำระบบ" aria-label="กลับหน้าแนะนำระบบ" className="dock-item" style={{ '--i': items.length }} onClick={leave}>
+        <Home size={19} strokeWidth={1.6} />
+      </button>
     </nav>
   );
 }
