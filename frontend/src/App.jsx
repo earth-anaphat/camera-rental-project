@@ -1234,9 +1234,9 @@ select.input {
 .sf-vis[data-on='true'] { opacity: 1; transform: none; filter: none; pointer-events: auto; }
 
 .lamp { position: relative; isolation: isolate; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
-.lamp-cone { position: absolute; top: 0; width: 16rem; height: 15rem; opacity: 0.55; transition: width 1.2s var(--ease), opacity 1.2s; -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 92%); mask-image: linear-gradient(to bottom, #000 0%, transparent 92%); }
-.lamp-cone.l { right: 50%; background: conic-gradient(from 180deg at right top, rgb(var(--wa-color-purple-50) / 0.8), transparent 23%); }
-.lamp-cone.r { left: 50%; background: conic-gradient(from 90deg at left top, transparent 2%, rgb(var(--wa-color-purple-50) / 0.8) 25%, transparent 25.4%); }
+.lamp-cone { position: absolute; top: 0; width: 16rem; height: 15rem; opacity: 0.55; transition: width 1.2s var(--ease), opacity 1.2s; -webkit-mask-image: radial-gradient(ellipse 100% 100% at var(--ax, 50%) 0%, #000 0%, transparent 88%); mask-image: radial-gradient(ellipse 100% 100% at var(--ax, 50%) 0%, #000 0%, transparent 88%); }
+.lamp-cone.l { --ax: 100%; right: 50%; background: conic-gradient(from 180deg at right top, rgb(var(--wa-color-purple-50) / 0.8), transparent 23%); }
+.lamp-cone.r { --ax: 0%; left: 50%; background: conic-gradient(from 90deg at left top, transparent 2%, rgb(var(--wa-color-purple-50) / 0.8) 25%, transparent 25.4%); }
 .lamp.on .lamp-cone { width: min(34rem, 48vw); opacity: 1; }
 .lamp-line { position: absolute; top: 0; left: 50%; height: 2px; width: 14rem; transform: translateX(-50%); background: rgb(var(--wa-color-purple-30)); box-shadow: none; transition: width 1.2s var(--ease); }
 .lamp.on .lamp-line { width: min(34rem, 60vw); }
@@ -1777,6 +1777,7 @@ html[data-motion='off'] .ld-bell-ring { animation: none; }
    ===================================================== */
 .ld-nav { width: max-content; max-width: calc(100vw - 20px); }
 .ld-nav button { white-space: nowrap; }
+@media (max-width: 640px) { .ld-nav { width: calc(100vw - 20px); justify-content: space-between; } }
 .ld-nav-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: clamp(1.02rem, 4.6vw, 1.3rem); line-height: 1.2; }
 @media (max-width: 380px) { .ld-nav { padding-left: .7rem; } .ld-nav button:not(.l) { padding-left: .8rem; padding-right: .8rem; } }
 
@@ -1787,7 +1788,7 @@ html[data-motion='off'] .ld-bell-ring { animation: none; }
   .dock { backdrop-filter: none; -webkit-backdrop-filter: none; }
   .overlay { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(6 5 3 / 0.7); }
   .swal2-container { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
-  .ld-nav { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(255 255 255 / 0.94); }
+  .ld-nav { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(var(--wa-color-purple-05) / 0.97); }
   .ld-leave { backdrop-filter: none; -webkit-backdrop-filter: none; }
   .lgp-card { backdrop-filter: none; -webkit-backdrop-filter: none; background: linear-gradient(160deg, rgb(255 255 255 / .12), rgb(255 255 255 / .06)); }
 
@@ -1820,7 +1821,7 @@ html[data-engine="safari"]:has(.ld) body::after, html[data-engine="safari"]:has(
 html[data-engine="safari"] .ld *, html[data-engine="safari"] .ld *::before, html[data-engine="safari"] .ld *::after,
 html[data-engine="safari"] .lgp *, html[data-engine="safari"] .lgp *::before, html[data-engine="safari"] .lgp *::after,
 html[data-engine="safari"] .ld-nav, html[data-engine="safari"] .ld-leave { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
-html[data-engine="safari"] .ld-nav { background: rgb(255 255 255 / .96); }
+html[data-engine="safari"] .ld-nav { background: rgb(var(--wa-color-purple-05) / .97); }
 html[data-engine="safari"] .lgp-card { background: linear-gradient(160deg, rgb(255 255 255 / .14), rgb(255 255 255 / .07)); }
 html[data-engine="safari"] .lgp-orb { animation: none; filter: none; opacity: .28; }
 html[data-engine="safari"] .lgp-beams .beam-r { display: none; }
@@ -1829,7 +1830,6 @@ html[data-engine="safari"] .bokeh, html[data-engine="safari"] .vf::before, html[
 html[data-engine="safari"] .ld .tilt { transform: none !important; will-change: auto; }
 html[data-engine="safari"] .ld .tilt .glare, html[data-engine="safari"] .ld .spot::before, html[data-engine="safari"] .ld .spot::after { display: none; }
 html[data-engine="safari"] .ld .rv[data-a='blur'], html[data-engine="safari"] .ld .sf-vis { filter: none; }
-html[data-engine="safari"] .ld .lamp-cone, html[data-engine="safari"] .ld .beam-b { -webkit-mask-image: none; mask-image: none; }
 @keyframes exifIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes ldTitle { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 @keyframes lgpCard { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
