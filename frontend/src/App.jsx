@@ -1795,27 +1795,31 @@ html[data-motion='off'] .ld-bell-ring { animation: none; }
 }
 
 `;
-/* โหมดเบาสำหรับ WebKit: ใช้ชุดกฎเดียวกับอุปกรณ์สัมผัส + ปิดของที่ Safari วาดช้าเป็นพิเศษ */
-const __SAFARI_CSS = (() => {
-  const m = __CSS.match(/@media \(max-width: 1180px\), \(hover: none\), \(pointer: coarse\) \{([\s\S]*)\}\s*$/);
-  const scoped = m
-    ? m[1].replace(/^([ \t]*)([^@\s/*][^{\n]*)\{/gm, (all, sp, sel) =>
-        `${sp}${sel.split(',').map((x) => `html[data-engine="safari"] ${x.trim()}`).join(', ')} {`)
-    : '';
-  return `${scoped}
-html[data-engine="safari"] body::after { display: none; }
-html[data-engine="safari"] *, html[data-engine="safari"] *::before, html[data-engine="safari"] *::after { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
-html[data-engine="safari"] .rv[data-a='blur'], html[data-engine="safari"] .sf-vis { filter: none; }
-html[data-engine="safari"] .btn-primary.ld-breath, html[data-engine="safari"] .card.border-dashed > div:first-child, html[data-engine="safari"] .card.border-dashed > div:first-child::after { animation: none; }
-html[data-engine="safari"] .app-beams, html[data-engine="safari"] .lgp-beams { -webkit-mask-image: none; mask-image: none; contain: none; }
-html[data-engine="safari"] .app-beams .beam-r, html[data-engine="safari"] .lgp-beams .beam-r { display: none; }
-html[data-engine="safari"] .card, html[data-engine="safari"] .btn { transition-property: transform, background-color, border-color, color, opacity; }
+/* โหมดเบาสำหรับ WebKit (Safari/iPhone/iPad) เฉพาะ "หน้าแนะนำระบบ" และ "หน้าเข้าสู่ระบบ" — หน้าในระบบยังเหมือนเดิม */
+const __SAFARI_CSS = `
+html[data-engine="safari"]:has(.ld) body::after, html[data-engine="safari"]:has(.lgp) body::after { display: none; }
+html[data-engine="safari"] .ld *, html[data-engine="safari"] .ld *::before, html[data-engine="safari"] .ld *::after,
+html[data-engine="safari"] .lgp *, html[data-engine="safari"] .lgp *::before, html[data-engine="safari"] .lgp *::after,
+html[data-engine="safari"] .ld-nav, html[data-engine="safari"] .ld-leave { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+html[data-engine="safari"] .ld-nav { background: rgb(255 255 255 / .96); }
+html[data-engine="safari"] .lgp-card { background: linear-gradient(160deg, rgb(255 255 255 / .14), rgb(255 255 255 / .07)); }
+html[data-engine="safari"] .lgp-orb { animation: none; filter: none; opacity: .28; }
+html[data-engine="safari"] .lgp-beams .beam-r { display: none; }
+html[data-engine="safari"] .lgp-beams { contain: none; }
+html[data-engine="safari"] .bokeh, html[data-engine="safari"] .vf::before, html[data-engine="safari"] .vf::after { animation: none !important; }
+html[data-engine="safari"] .ld .tilt { transform: none !important; will-change: auto; }
+html[data-engine="safari"] .ld .tilt .glare, html[data-engine="safari"] .ld .spot::before, html[data-engine="safari"] .ld .spot::after { display: none; }
+html[data-engine="safari"] .ld .rv[data-a='blur'], html[data-engine="safari"] .ld .sf-vis { filter: none; }
+html[data-engine="safari"] .ld .lamp-cone, html[data-engine="safari"] .ld .beam-b { -webkit-mask-image: none; mask-image: none; }
+@keyframes exifIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes ldTitle { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes lgpCard { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
+@keyframes lgpCardOut { to { opacity: 0; transform: translateY(16px); } }
 `;
-})();
 if (typeof document !== 'undefined' && !document.getElementById('lensdesk-css')) {
   const el = document.createElement('style');
   el.id = 'lensdesk-css';
-  el.textContent = __CSS + __SAFARI_CSS;
+  el.textContent = IS_WEBKIT ? __CSS + __SAFARI_CSS : __CSS;
   document.head.prepend(el);
 }
 
@@ -2675,7 +2679,7 @@ function AppProvider({ children }) {
    ===================================================== */
 
 const hasFine = () =>
-  !IS_WEBKIT && typeof window !== 'undefined' && !!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
+  typeof window !== 'undefined' && !!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
 const isCalm = () =>
   typeof document !== 'undefined' &&
   (document.documentElement.dataset.motion === 'off' ||
@@ -2732,7 +2736,6 @@ function useScrollLoop(cb) {
 /* ---------- Spotlight card ---------- */
 function useSpot() {
   return useCallback((e) => {
-    if (IS_WEBKIT) return;
     const el = e.currentTarget;
     const r = el.getBoundingClientRect();
     el.style.setProperty('--mx', `${e.clientX - r.left}px`);
@@ -2863,7 +2866,7 @@ function ExifTicker({ className = '' }) {
 }
 
 /* ---------- Backgrounds ---------- */
-function Beams({ className = '', count = 16, still = false }) {
+const Beams = React.memo(function Beams({ className = '', count = 16, still = false }) {
   const paths = useMemo(
     () =>
       Array.from({ length: count }, (_, i) => {
@@ -2893,7 +2896,7 @@ function Beams({ className = '', count = 16, still = false }) {
       ))}
     </svg>
   );
-}
+});
 
 function SpotlightBeam() {
   return (
@@ -5553,7 +5556,7 @@ function Shell({ children }) {
         }}
       >
         <div className="app-beams" aria-hidden="true">
-          <Beams count={bp === 'desktop' ? 12 : 7} still={isCalm() || IS_WEBKIT} />
+          <Beams count={bp === 'desktop' ? 12 : 7} still={isCalm()} />
         </div>
         <header className="glass-header sticky top-0 z-40 safe-t">
           <div className="flex h-[68px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
