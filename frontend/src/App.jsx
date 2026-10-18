@@ -6456,7 +6456,8 @@ function useTodayTasks() {
       if (b.status === 'cancelled' || b.status === 'returned') return;
       const s = parseDate(b.start_date);
       const e = parseDate(b.end_date);
-      if (s && ['pending', 'confirmed'].includes(b.status) && sameDay(s, now)) {
+      // นัดส่งกล้องของวันนี้ + ของวันก่อนที่ยังไม่ได้ส่งมอบ (ค้างอยู่ ต้องแสดงต่อจนกว่าจะจัดการ)
+      if (s && ['pending', 'confirmed'].includes(b.status) && (sameDay(s, now) || s < startOfDay(now))) {
         items.push({ id: `${b.id}-p`, kind: 'pickup', b, at: s, over: s < now });
       }
       if (e && b.status === 'picked_up') {
@@ -6480,7 +6481,7 @@ function useTodayTasks() {
 
 const taskWhen = (it, now) => {
   if (it.kind === 'late') return `เลยมา ${fmtSpan(now - it.at)}`;
-  if (it.at < now) return `เลยเวลานัด ${fmtSpan(now - it.at)}`;
+  if (it.at < now) return `เลยนัดมา ${fmtSpan(now - it.at)}`;
   return `อีก ${fmtSpan(it.at - now)}`;
 };
 
@@ -6505,7 +6506,7 @@ function TaskRow({ it, now, onOpen, compact = false, index = 0 }) {
             {it.kind === 'late' && <i className="live-dot h-2 w-2 shrink-0 rounded-full bg-bad" aria-hidden="true" />}
           </span>
           <span className="mt-0.5 block truncate text-xs text-mute">
-            <b className={`font-semibold ${k.text}`}>{k.short}</b> · {equipmentTitle(it.b)} · นัด {fmtTime(it.at)} น.
+            <b className={`font-semibold ${k.text}`}>{k.short}</b> · {equipmentTitle(it.b)} · นัด {sameDay(it.at, now) ? '' : `${fmtDate(it.at, { noYear: true })} `}{fmtTime(it.at)} น.
           </span>
         </span>
         <span className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11.5px] font-bold leading-none ${hot && it.kind !== 'late' ? 'bg-bad/15 text-bad' : k.pill}`}>
@@ -6724,6 +6725,7 @@ function Dashboard() {
     };
   }, [dashboard.statusCounts, equipments]);
 
+  const { items: todayItems, counts: todayCounts, now: taskNow } = useTodayTasks();
   const now = new Date();
   // นับจากรายการจองจริง (ตรงกับกระดานงานวันนี้) เลยมานานสุดขึ้นก่อน
   const overdue = useMemo(
@@ -6732,18 +6734,6 @@ function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [bookings],
   );
-
-  const today = useMemo(() => {
-    const rows = [];
-    bookings.forEach((b) => {
-      const s = parseDate(b.start_date);
-      const e = parseDate(b.end_date);
-      if (s && sameDay(s, now) && ['pending', 'confirmed'].includes(b.status)) rows.push({ kind: 'pickup', at: s, b });
-      if (e && sameDay(e, now) && b.status === 'picked_up') rows.push({ kind: 'return', at: e, b });
-    });
-    return rows.sort((a, b) => a.at - b.at);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bookings]);
 
   const months = useMemo(() => {
     const map = new Map((report?.monthly || []).map((m) => [m.month, m]));
@@ -6797,7 +6787,7 @@ function Dashboard() {
               <br />
               วันนี้มี{' '}
               <span className="font-num text-[1.3em] font-medium text-[rgb(var(--wa-color-purple-50))]">
-                <CountUp value={today.length + overdue.length} />
+                <CountUp value={todayCounts.all} />
               </span>{' '}
               งานที่ต้องดูแล
             </h1>
@@ -6929,26 +6919,12 @@ function Dashboard() {
 
       <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
         <Panel index={4} no="№ 03 · วันนี้" title="กำหนดการวันนี้" caption="รับ–คืนอุปกรณ์ที่ถึงเวลา">
-          {today.length === 0 ? (
+          {todayItems.length === 0 ? (
             <EmptyState icon={CalendarClock} title="วันนี้ยังไม่มีรายการ" description="รายการรับ–คืนที่ถึงกำหนดจะแสดงที่นี่" />
           ) : (
-            <ul className="stagger divide-y divide-line/70">
-              {today.map(({ kind, at, b }, i) => (
-                <li key={`${b.id}-${kind}`} style={{ '--i': i }}>
-                  <button onClick={() => openDetail(b.id)} className="group flex w-full items-center gap-3.5 py-3 text-left">
-                    <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition-transform duration-300 group-hover:scale-110 ${kind === 'pickup' ? 'border-warn/40 text-warn' : 'border-info/40 text-info'}`}>
-                      {kind === 'pickup' ? <LogOut size={17} /> : <LogIn size={17} />}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium">{b.customer_name}</span>
-                      <span className="block truncate text-xs text-mute">{equipmentTitle(b)}</span>
-                    </span>
-                    <span className="text-right">
-                      <span className="font-num block text-xl leading-none">{fmtTime(at)}</span>
-                      <span className="mono mt-1 block !text-[9px] text-mute">{kind === 'pickup' ? 'มารับ' : 'มาคืน'}</span>
-                    </span>
-                  </button>
-                </li>
+            <ul className="stagger space-y-1.5">
+              {todayItems.map((it, i) => (
+                <TaskRow key={it.id} it={it} now={taskNow} onOpen={openDetail} index={i} compact />
               ))}
             </ul>
           )}
