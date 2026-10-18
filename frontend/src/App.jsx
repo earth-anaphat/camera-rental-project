@@ -717,14 +717,28 @@ select.input {
   margin-inline: auto;
   padding: 0.7rem 1.1rem;
   border-radius: 28px;
-  background: rgb(var(--side) / 0.9);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-  box-shadow: 0 28px 60px -18px rgb(0 0 0 / 0.65), inset 0 0 0 1px rgb(255 255 255 / 0.07);
+  background: rgb(var(--surface) / 0.84);
+  backdrop-filter: blur(22px) saturate(1.5);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  border: 1px solid rgb(var(--wa-color-purple-20) / 0.9);
+  box-shadow: 0 26px 50px -22px rgb(var(--accent) / 0.45), 0 4px 14px -6px rgb(0 0 0 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.7);
   animation: rise 0.9s var(--ease) both;
+}
+.dock-pill {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 50px;
+  margin-top: -25px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgb(var(--wa-color-purple-60)), rgb(var(--wa-color-purple-80)));
+  box-shadow: 0 10px 22px -10px rgb(var(--accent) / 0.95), inset 0 1px 0 rgb(255 255 255 / 0.3);
+  transition: transform 0.55s var(--ease), width 0.55s var(--ease), opacity 0.3s;
+  pointer-events: none;
 }
 .dock-item {
   position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -732,14 +746,18 @@ select.input {
   width: 50px;
   height: 50px;
   border-radius: 16px;
-  color: rgb(var(--side-mute));
-  background: rgb(255 255 255 / 0.06);
+  color: rgb(var(--wa-color-purple-70));
+  background: transparent;
   transform-origin: bottom center;
-  transform: translateY(calc((var(--s, 1) - 1) * -16px)) scale(var(--s, 1));
-  transition: background-color 0.3s, color 0.3s;
+  transform: translateX(var(--x, 0px)) translateY(calc((var(--s, 1) - 1) * -22px)) scale(var(--s, 1));
+  transition: background-color 0.25s, color 0.25s;
 }
-.dock-item:hover { color: rgb(var(--side-ink)); }
-.dock-item[data-on='true'] { background: rgb(var(--accent)); color: rgb(var(--accent-fg)); box-shadow: 0 8px 18px -8px rgb(var(--accent) / 0.9); }
+.dock[data-hover='false'] .dock-item { transition: transform 0.4s var(--ease), background-color 0.25s, color 0.25s; }
+.dock-item:hover { color: rgb(var(--accent)); background: rgb(var(--accent) / 0.1); }
+.dock-item[data-on='true'], .dock-item[data-on='true']:hover { background: transparent; color: rgb(var(--accent-fg)); }
+.dock-item svg { animation: dockPop 0.6s var(--ease) backwards; animation-delay: calc(var(--i, 0) * 45ms + 350ms); }
+@keyframes dockPop { from { opacity: 0; transform: translateY(14px) scale(0.5); } to { opacity: 1; transform: none; } }
+@media (hover: hover) { .dock-item:hover svg { animation: ldWiggle 0.55s ease; } }
 .dock-item::after {
   content: attr(data-label);
   position: absolute;
@@ -758,7 +776,7 @@ select.input {
   transition: opacity 0.2s, transform 0.25s var(--ease);
 }
 @media (hover: hover) { .dock-item:hover::after { opacity: 1; transform: translate(-50%, 0); } }
-.dock-sep { width: 1px; height: 28px; flex-shrink: 0; margin: 0 0.35rem; background: rgb(255 255 255 / 0.14); }
+.dock-sep { width: 1px; height: 28px; flex-shrink: 0; margin: 0 0.35rem; background: rgb(var(--wa-color-purple-30) / 0.55); }
 
 .glass-header {
   background: rgb(var(--bg) / 0.72);
@@ -1768,7 +1786,7 @@ html[data-motion='off'] .ld-bell-ring { animation: none; }
   /* blur ด้านหลังแถบที่ลอยตลอด/ฉากหลังเต็มจอ เป็นตัวการหลักของอาการกระตุกบน iOS → ใช้สีทึบแทน */
   .glass-header { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(var(--bg) / 0.97); }
   .bottom-bar { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(var(--surface) / 0.98); }
-  .dock { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(var(--side) / 0.97); }
+  .dock { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(var(--surface) / 0.98); }
   .overlay { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(6 5 3 / 0.7); }
   .swal2-container { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
   .ld-nav { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(255 255 255 / 0.94); }
@@ -5453,18 +5471,39 @@ function TopTabs() {
 function Dock() {
   const { page, navigate } = useApp();
   const ref = useRef(null);
+  const { wrap, box } = useSlider(page);
+  const setRefs = (el) => { ref.current = el; wrap.current = el; };
 
+  // ขยายไอคอนใกล้เมาส์ แล้วผลักไอคอนข้างเคียงออกด้านข้าง เพื่อไม่ให้ซ้อนกัน
   const onMove = (e) => {
-    if (e.pointerType === 'touch') return;
-    [...(ref.current?.children || [])].forEach((el) => {
-      if (!el.classList.contains('dock-item')) return;
-      const r = el.getBoundingClientRect();
+    if (e.pointerType === 'touch' || isCalm()) return;
+    const root = ref.current;
+    if (!root) return;
+    root.dataset.hover = 'true';
+    const els = [...root.children].filter((el) => el.classList.contains('dock-item'));
+    const rects = els.map((el) => el.getBoundingClientRect());
+    const extra = rects.map((r) => {
       const d = Math.abs(e.clientX - (r.left + r.width / 2));
-      el.style.setProperty('--s', (1 + 0.62 * Math.pow(Math.max(0, 1 - d / 140), 2)).toFixed(3));
+      return 0.4 * Math.pow(Math.max(0, 1 - d / 130), 2);
+    });
+    const total = extra.reduce((a, v) => a + v * 50, 0);
+    let before = 0;
+    els.forEach((el, i) => {
+      const e50 = extra[i] * 50;
+      el.style.setProperty('--s', (1 + extra[i]).toFixed(3));
+      el.style.setProperty('--x', `${(before + e50 / 2 - total / 2).toFixed(1)}px`);
+      before += e50;
     });
   };
-  const onLeave = () =>
-    [...(ref.current?.children || [])].forEach((el) => el.style?.setProperty('--s', '1'));
+  const onLeave = () => {
+    const root = ref.current;
+    if (!root) return;
+    root.dataset.hover = 'false';
+    [...root.children].forEach((el) => {
+      el.style?.setProperty('--s', '1');
+      el.style?.setProperty('--x', '0px');
+    });
+  };
 
   const items = [];
   let lastGroup = null;
@@ -5475,8 +5514,9 @@ function Dock() {
   });
 
   return (
-    <nav ref={ref} className="dock no-scrollbar" aria-label="เมนูหลัก" onPointerMove={onMove} onPointerLeave={onLeave}>
-      {items.map((n) =>
+    <nav ref={setRefs} className="dock no-scrollbar" aria-label="เมนูหลัก" onPointerMove={onMove} onPointerLeave={onLeave}>
+      <span className="dock-pill" aria-hidden="true" style={{ width: box.w, transform: `translateX(${box.x}px)`, opacity: box.ok ? 1 : 0 }} />
+      {items.map((n, idx) =>
         n.sep ? (
           <span key={`s-${n.sep}`} className="dock-sep" />
         ) : (
@@ -5486,6 +5526,7 @@ function Dock() {
             data-label={n.label}
             data-on={page === n.id}
             className="dock-item"
+            style={{ '--i': idx }}
             onClick={() => navigate(n.id)}
           >
             <n.icon size={19} strokeWidth={1.6} />
