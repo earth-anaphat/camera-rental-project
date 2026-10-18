@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AlertTriangle, Aperture, ArrowDown, ArrowRight, Ban, Bell, CalendarClock, CalendarDays, CalendarPlus, CalendarRange, Camera, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, ClipboardCheck, Clock3, Download, History as HistoryIcon, Home, ImagePlus, Landmark, LayoutDashboard, LayoutGrid, List, LogIn, LogOut, Menu, Monitor, Package, Pencil, Phone, Plus, Printer, RefreshCw, Replace, RotateCcw, Search, ShieldCheck, SlidersHorizontal, Smartphone, StickyNote, Tablet, Trash2, TrendingDown, TrendingUp, UploadCloud, Users, Wallet, WifiOff, Wrench, X, Zap } from 'lucide-react';
+import { AlertTriangle, Aperture, User, ArrowDown, ArrowRight, Ban, Bell, CalendarClock, CalendarDays, CalendarPlus, CalendarRange, Camera, Check, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, ClipboardCheck, Clock3, Download, History as HistoryIcon, Home, ImagePlus, Landmark, LayoutDashboard, LayoutGrid, List, LogIn, LogOut, Menu, Monitor, Package, Pencil, Phone, Plus, Printer, RefreshCw, Replace, RotateCcw, Search, ShieldCheck, SlidersHorizontal, Smartphone, StickyNote, Tablet, Trash2, TrendingDown, TrendingUp, UploadCloud, Users, Wallet, WifiOff, Wrench, X, Zap } from 'lucide-react';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
@@ -5441,10 +5441,11 @@ function Shell({ children }) {
               <BellMenu />
               <button
                 onClick={() => navigate('settings')}
-                className="ml-1 flex h-9 w-9 items-center justify-center rounded-full bg-ink font-display text-lg font-semibold text-bg transition-transform hover:scale-110"
-                title="ตั้งค่า"
+                className="ml-1 flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-accent text-accent-fg ring-2 ring-line transition-transform hover:scale-110"
+                title={settings.shopName ? `${settings.shopName} · ตั้งค่า` : 'ตั้งค่า'}
+                aria-label="ตั้งค่า"
               >
-                {(settings.shopName || 'L').trim().slice(0, 1).toUpperCase()}
+                <ShopMark size={18} />
               </button>
             </div>
           </div>
@@ -6028,7 +6029,7 @@ function Landing({ onEnter }) {
   };
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  const heroLines = [['ทุกการเช่า'], ['ควรเรียบง่าย'], ['เหมือนกด', 'ชัตเตอร์']];
+  const heroLines = [['เรื่องจอง', 'รับ', 'คืน'], ['และรายรับรายจ่าย'], ['ดูได้ที่เดียว']];
   let idx = 0;
 
   return (
@@ -6940,10 +6941,12 @@ function Operations() {
   const [tab, setTab] = useState('out');
 
   const { waiting, out, overdue } = useMemo(() => {
-    // เรียงตามลำดับที่สร้างการจอง: รายการเก่าก่อน รายการใหม่ทีหลัง
-    const byBookingOrder = (a, b) => Number(a.id || 0) - Number(b.id || 0);
-    const waiting = bookings.filter((b) => ['pending', 'confirmed'].includes(b.status)).sort(byBookingOrder);
-    const out = bookings.filter((b) => b.status === 'picked_up').sort(byBookingOrder);
+    // เรียงตามใกล้กำหนดที่สุดไว้บนสุด: รอส่งมอบ = วันนัดรับ, รอรับคืน = วันครบกำหนดคืน (วัดระยะจากเวลาปัจจุบัน ทั้งที่ยังไม่ถึงและเลยมาแล้ว)
+    const nowMs = Date.now();
+    const t = (v) => { const d = parseDate(v); return d ? Math.abs(d.getTime() - nowMs) : Infinity; };
+    const byField = (f) => (a, b) => t(a[f]) - t(b[f]) || Number(a.id || 0) - Number(b.id || 0);
+    const waiting = bookings.filter((b) => ['pending', 'confirmed'].includes(b.status)).sort(byField('start_date'));
+    const out = bookings.filter((b) => b.status === 'picked_up').sort(byField('end_date'));
     return { waiting, out, overdue: out.filter((b) => effectiveStatus(b) === 'overdue') };
   }, [bookings]);
 
@@ -7635,7 +7638,6 @@ function Maintenance() {
 }
 
 /* ═════ pages/Customers.jsx ═════ */
-const initials = (name) => (name || '?').trim().slice(0, 1);
 
 function Customers() {
   const { customers, bookings, openDetail, refresh } = useApp();
@@ -7669,7 +7671,7 @@ function Customers() {
               <li key={c.id} style={{ '--i': Math.min(i, 10) }} className="card overflow-hidden">
                 <button onClick={() => setOpen(isOpen ? null : c.id)} className="flex w-full items-center gap-4 p-4 text-left sm:p-5">
                   <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent/12 font-serif text-lg font-semibold text-accent">
-                    {initials(c.fullname)}
+                    <User size={22} strokeWidth={1.8} />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium">{c.fullname}</span>
