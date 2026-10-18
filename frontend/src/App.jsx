@@ -1691,6 +1691,13 @@ html[data-scrolled='true'] .glass-header { box-shadow: 0 14px 34px -22px rgb(var
 .lgp-bg { position: fixed; inset: 0; z-index: -1; background: radial-gradient(120% 90% at 50% 0%, rgb(var(--wa-color-purple-80)) 0%, rgb(var(--wa-color-purple-95)) 62%); animation: lgpReveal .75s cubic-bezier(.65, 0, .2, 1) both; }
 .lgp[data-out='true'] .lgp-bg { animation: lgpHide .5s cubic-bezier(.65, 0, .2, 1) both; }
 .lgp-orb { position: fixed; z-index: -1; border-radius: 50%; filter: blur(60px); opacity: .55; animation: lgpOrb 11s ease-in-out infinite; pointer-events: none; }
+.app-beams { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 1; -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 35%, transparent 95%); mask-image: linear-gradient(180deg, #000 0%, #000 35%, transparent 95%); contain: strict; }
+.app-beams .beam-b { stroke: rgb(var(--accent) / .22); }
+.app-beams .beam-r { stroke: rgb(var(--accent)); stroke-width: 1.6; opacity: .85; }
+.app-beams ~ main, .app-beams ~ section { position: relative; z-index: 1; }
+.lgp-beams { position: fixed; inset: 0; z-index: -1; pointer-events: none; contain: strict; }
+.lgp-beams .beam-b { stroke: rgb(255 255 255 / .09); }
+.lgp-beams .beam-r { stroke: rgb(var(--wa-color-purple-30)); opacity: .9; }
 .lgp-orb.a { width: 46vmax; height: 46vmax; left: -14vmax; top: -12vmax; background: rgb(var(--wa-color-purple-60) / .55); }
 .lgp-orb.b { width: 38vmax; height: 38vmax; right: -12vmax; bottom: -12vmax; background: rgb(var(--wa-color-purple-40) / .38); animation-delay: -5s; }
 .lgp-card { position: relative; width: min(100%, 430px); margin: auto; padding: 2rem 1.6rem 1.5rem; border-radius: 28px; border: 1px solid rgb(255 255 255 / .12); background: linear-gradient(160deg, rgb(255 255 255 / .09), rgb(255 255 255 / .03)); backdrop-filter: blur(22px) saturate(1.3); -webkit-backdrop-filter: blur(22px) saturate(1.3); box-shadow: 0 50px 100px -40px rgb(0 0 0 / .8), inset 0 1px 0 rgb(255 255 255 / .18); color: rgb(var(--wa-color-purple-10)); animation: lgpCard .8s .35s cubic-bezier(.2, .7, .2, 1) both; }
@@ -2828,14 +2835,14 @@ function ExifTicker({ className = '' }) {
 }
 
 /* ---------- Backgrounds ---------- */
-function Beams({ className = '' }) {
+function Beams({ className = '', count = 16, still = false }) {
   const paths = useMemo(
     () =>
-      Array.from({ length: 16 }, (_, i) => {
+      Array.from({ length: count }, (_, i) => {
         const a = -420 + i * 26;
         return `M${a} ${-220 + i * 9} C ${a + 160} 40, ${60 + i * 24} 260, ${620 + i * 26} ${620 + i * 8}`;
       }),
-    []
+    [count]
   );
   return (
     <svg
@@ -2848,12 +2855,12 @@ function Beams({ className = '' }) {
       {paths.map((d, i) => (
         <g key={i}>
           <path d={d} className="beam-b" />
-          <path
+          {!still && <path
             d={d}
             pathLength="1000"
             className="beam-r"
             style={{ '--d': `${8 + (i % 5) * 1.6}s`, '--dl': `${-(i * 0.9)}s` }}
-          />
+          />}
         </g>
       ))}
     </svg>
@@ -5517,6 +5524,9 @@ function Shell({ children }) {
           paddingRight: settings.side === 'right' ? sideW : 0,
         }}
       >
+        <div className="app-beams" aria-hidden="true">
+          <Beams count={bp === 'desktop' ? 12 : 7} still={isCalm()} />
+        </div>
         <header className="glass-header sticky top-0 z-40 safe-t">
           <div className="flex h-[68px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
             <div className="flex min-w-0 items-center gap-4">
@@ -8715,6 +8725,7 @@ function LoginPortal({ origin, onClose, onDone }) {
       <div className="lgp-bg" />
       <span className="lgp-orb a" />
       <span className="lgp-orb b" />
+      <div className="lgp-beams" aria-hidden="true"><Beams count={14} still={isCalm()} /></div>
       <div className="lgp-card">
         {step !== 'done' && (
           <button type="button" className="lgp-x" onClick={close} aria-label="ปิด"><X size={18} /></button>
