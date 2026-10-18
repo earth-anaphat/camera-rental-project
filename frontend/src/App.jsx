@@ -717,12 +717,13 @@ select.input {
   margin-inline: auto;
   padding: 0.7rem 1.1rem;
   border-radius: 28px;
-  background: rgb(var(--surface) / 0.84);
-  backdrop-filter: blur(22px) saturate(1.5);
-  -webkit-backdrop-filter: blur(22px) saturate(1.5);
-  border: 1px solid rgb(var(--wa-color-purple-20) / 0.9);
-  box-shadow: 0 26px 50px -22px rgb(var(--accent) / 0.45), 0 4px 14px -6px rgb(0 0 0 / 0.12), inset 0 1px 0 rgb(255 255 255 / 0.7);
-  animation: rise 0.9s var(--ease) both;
+  /* กรอบไล่สี (gradient) วิ่งรอบ dock */
+  border: 2px solid transparent;
+  background:
+    linear-gradient(rgb(var(--surface)), rgb(var(--surface))) padding-box,
+    conic-gradient(from var(--ang), rgb(var(--wa-color-purple-20)) 0%, rgb(var(--wa-color-purple-20)) 38%, rgb(var(--wa-color-purple-40)) 55%, rgb(var(--wa-color-purple-60)) 72%, rgb(var(--wa-color-purple-30)) 86%, rgb(var(--wa-color-purple-20)) 100%) border-box;
+  box-shadow: 0 24px 46px -24px rgb(var(--accent) / 0.5), 0 4px 14px -6px rgb(0 0 0 / 0.12);
+  animation: rise 0.9s var(--ease) both, ang 5s linear infinite;
 }
 .dock-pill {
   position: absolute;
@@ -748,12 +749,9 @@ select.input {
   border-radius: 16px;
   color: rgb(var(--wa-color-purple-70));
   background: transparent;
-  transform-origin: bottom center;
-  transform: translateX(var(--x, 0px)) translateY(calc((var(--s, 1) - 1) * -22px)) scale(var(--s, 1));
-  transition: background-color 0.25s, color 0.25s;
+  transition: background-color 0.25s, color 0.25s, transform 0.3s var(--ease);
 }
-.dock[data-hover='false'] .dock-item { transition: transform 0.4s var(--ease), background-color 0.25s, color 0.25s; }
-.dock-item:hover { color: rgb(var(--accent)); background: rgb(var(--accent) / 0.1); }
+.dock-item:hover { color: rgb(var(--accent)); background: rgb(var(--accent) / 0.1); transform: translateY(-3px); }
 .dock-item[data-on='true'], .dock-item[data-on='true']:hover { background: transparent; color: rgb(var(--accent-fg)); }
 .dock-item svg { animation: dockPop 0.6s var(--ease) backwards; animation-delay: calc(var(--i, 0) * 45ms + 350ms); }
 @keyframes dockPop { from { opacity: 0; transform: translateY(14px) scale(0.5); } to { opacity: 1; transform: none; } }
@@ -1786,7 +1784,7 @@ html[data-motion='off'] .ld-bell-ring { animation: none; }
   /* blur ด้านหลังแถบที่ลอยตลอด/ฉากหลังเต็มจอ เป็นตัวการหลักของอาการกระตุกบน iOS → ใช้สีทึบแทน */
   .glass-header { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(var(--bg) / 0.97); }
   .bottom-bar { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(var(--surface) / 0.98); }
-  .dock { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(var(--surface) / 0.98); }
+  .dock { backdrop-filter: none; -webkit-backdrop-filter: none; }
   .overlay { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(6 5 3 / 0.7); }
   .swal2-container { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
   .ld-nav { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(255 255 255 / 0.94); }
@@ -5474,36 +5472,6 @@ function Dock() {
   const { wrap, box } = useSlider(page);
   const setRefs = (el) => { ref.current = el; wrap.current = el; };
 
-  // ขยายไอคอนใกล้เมาส์ แล้วผลักไอคอนข้างเคียงออกด้านข้าง เพื่อไม่ให้ซ้อนกัน
-  const onMove = (e) => {
-    if (e.pointerType === 'touch' || isCalm()) return;
-    const root = ref.current;
-    if (!root) return;
-    root.dataset.hover = 'true';
-    const els = [...root.children].filter((el) => el.classList.contains('dock-item'));
-    const rects = els.map((el) => el.getBoundingClientRect());
-    const extra = rects.map((r) => {
-      const d = Math.abs(e.clientX - (r.left + r.width / 2));
-      return 0.4 * Math.pow(Math.max(0, 1 - d / 130), 2);
-    });
-    const total = extra.reduce((a, v) => a + v * 50, 0);
-    let before = 0;
-    els.forEach((el, i) => {
-      const e50 = extra[i] * 50;
-      el.style.setProperty('--s', (1 + extra[i]).toFixed(3));
-      el.style.setProperty('--x', `${(before + e50 / 2 - total / 2).toFixed(1)}px`);
-      before += e50;
-    });
-  };
-  const onLeave = () => {
-    const root = ref.current;
-    if (!root) return;
-    root.dataset.hover = 'false';
-    [...root.children].forEach((el) => {
-      el.style?.setProperty('--s', '1');
-      el.style?.setProperty('--x', '0px');
-    });
-  };
 
   const items = [];
   let lastGroup = null;
@@ -5514,7 +5482,7 @@ function Dock() {
   });
 
   return (
-    <nav ref={setRefs} className="dock no-scrollbar" aria-label="เมนูหลัก" onPointerMove={onMove} onPointerLeave={onLeave}>
+    <nav ref={setRefs} className="dock no-scrollbar" aria-label="เมนูหลัก">
       <span className="dock-pill" aria-hidden="true" style={{ width: box.w, transform: `translateX(${box.x}px)`, opacity: box.ok ? 1 : 0 }} />
       {items.map((n, idx) =>
         n.sep ? (
