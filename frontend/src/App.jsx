@@ -5,6 +5,16 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 
 /* LensDesk — frontend ไฟล์เดียว: ธีม, ระบบ, ทุกหน้า */
+/* Safari / ทุกเบราว์เซอร์บน iPhone-iPad ใช้เอนจิน WebKit ซึ่งวาดเอฟเฟกต์หนัก ๆ ช้ากว่า Chrome มาก → เปิดโหมดเบา */
+const IS_WEBKIT = (() => {
+  try {
+    const ua = navigator.userAgent || '';
+    const ios = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    const safari = /Safari\//.test(ua) && !/Chrome|Chromium|Edg|OPR|Android|Firefox/.test(ua);
+    return ios || safari;
+  } catch { return false; }
+})();
+if (IS_WEBKIT) document.documentElement.dataset.engine = 'safari';
 const __CSS = `@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 /* =====================================================
@@ -1785,10 +1795,31 @@ html[data-motion='off'] .ld-bell-ring { animation: none; }
 }
 
 `;
+/* โหมดเบาสำหรับ WebKit (Safari/iPhone/iPad) เฉพาะ "หน้าแนะนำระบบ" และ "หน้าเข้าสู่ระบบ" — หน้าในระบบยังเหมือนเดิม */
+const __SAFARI_CSS = `
+html[data-engine="safari"]:has(.ld) body::after, html[data-engine="safari"]:has(.lgp) body::after { display: none; }
+html[data-engine="safari"] .ld *, html[data-engine="safari"] .ld *::before, html[data-engine="safari"] .ld *::after,
+html[data-engine="safari"] .lgp *, html[data-engine="safari"] .lgp *::before, html[data-engine="safari"] .lgp *::after,
+html[data-engine="safari"] .ld-nav, html[data-engine="safari"] .ld-leave { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+html[data-engine="safari"] .ld-nav { background: rgb(255 255 255 / .96); }
+html[data-engine="safari"] .lgp-card { background: linear-gradient(160deg, rgb(255 255 255 / .14), rgb(255 255 255 / .07)); }
+html[data-engine="safari"] .lgp-orb { animation: none; filter: none; opacity: .28; }
+html[data-engine="safari"] .lgp-beams .beam-r { display: none; }
+html[data-engine="safari"] .lgp-beams { contain: none; }
+html[data-engine="safari"] .bokeh, html[data-engine="safari"] .vf::before, html[data-engine="safari"] .vf::after { animation: none !important; }
+html[data-engine="safari"] .ld .tilt { transform: none !important; will-change: auto; }
+html[data-engine="safari"] .ld .tilt .glare, html[data-engine="safari"] .ld .spot::before, html[data-engine="safari"] .ld .spot::after { display: none; }
+html[data-engine="safari"] .ld .rv[data-a='blur'], html[data-engine="safari"] .ld .sf-vis { filter: none; }
+html[data-engine="safari"] .ld .lamp-cone, html[data-engine="safari"] .ld .beam-b { -webkit-mask-image: none; mask-image: none; }
+@keyframes exifIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes ldTitle { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes lgpCard { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
+@keyframes lgpCardOut { to { opacity: 0; transform: translateY(16px); } }
+`;
 if (typeof document !== 'undefined' && !document.getElementById('lensdesk-css')) {
   const el = document.createElement('style');
   el.id = 'lensdesk-css';
-  el.textContent = __CSS;
+  el.textContent = IS_WEBKIT ? __CSS + __SAFARI_CSS : __CSS;
   document.head.prepend(el);
 }
 
@@ -2835,7 +2866,7 @@ function ExifTicker({ className = '' }) {
 }
 
 /* ---------- Backgrounds ---------- */
-function Beams({ className = '', count = 16, still = false }) {
+const Beams = React.memo(function Beams({ className = '', count = 16, still = false }) {
   const paths = useMemo(
     () =>
       Array.from({ length: count }, (_, i) => {
@@ -2865,7 +2896,7 @@ function Beams({ className = '', count = 16, still = false }) {
       ))}
     </svg>
   );
-}
+});
 
 function SpotlightBeam() {
   return (
@@ -3965,7 +3996,7 @@ const dayLabel = (d) => {
 function BookingList({ rows, showActions = true }) {
   const { openDetail, refresh } = useApp();
   const [view, setViewState] = useState(() => {
-    try { return localStorage.getItem(BOOK_VIEW_KEY) || 'day'; } catch { return 'day'; }
+    try { return localStorage.getItem(BOOK_VIEW_KEY) || 'table'; } catch { return 'table'; }
   });
   const setView = (v) => {
     setViewState(v);
@@ -6171,7 +6202,7 @@ function Landing({ onEnter }) {
       <section ref={heroRef} onPointerMove={onHeroMove} className="ld-grain relative flex min-h-dvh items-center overflow-hidden">
         <SpotlightBeam />
         <div className="dotgrid" />
-        <Beams className="opacity-60" />
+        <Beams className="opacity-60" count={IS_WEBKIT ? 6 : 16} />
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(520px circle at var(--px,70%) var(--py,30%), rgb(157 115 250 / 0.1), transparent 60%)' }} />
 
         <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 px-5 pb-20 pt-32 sm:px-8 lg:grid-cols-[1.12fr_0.88fr] lg:gap-8">
@@ -6335,7 +6366,7 @@ function Landing({ onEnter }) {
 
       {/* CTA — Lamp */}
       <section className="relative overflow-hidden px-5 pb-28 pt-12 sm:px-8 md:pb-40">
-        <Beams className="opacity-40" />
+        <Beams className="opacity-40" count={IS_WEBKIT ? 6 : 16} />
         <Lamp className="min-h-[560px] pt-28">
           <div className="mx-auto max-w-4xl text-center">
             <h2 className="ld-title text-[clamp(2.4rem,8vw,6rem)]">
@@ -8725,7 +8756,7 @@ function LoginPortal({ origin, onClose, onDone }) {
       <div className="lgp-bg" />
       <span className="lgp-orb a" />
       <span className="lgp-orb b" />
-      <div className="lgp-beams" aria-hidden="true"><Beams count={14} still={isCalm()} /></div>
+      <div className="lgp-beams" aria-hidden="true"><Beams count={14} still={isCalm() || IS_WEBKIT} /></div>
       <div className="lgp-card">
         {step !== 'done' && (
           <button type="button" className="lgp-x" onClick={close} aria-label="ปิด"><X size={18} /></button>
