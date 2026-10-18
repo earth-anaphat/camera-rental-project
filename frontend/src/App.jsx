@@ -15,7 +15,14 @@ const IS_WEBKIT = (() => {
   } catch { return false; }
 })();
 if (IS_WEBKIT) document.documentElement.dataset.engine = 'safari';
-const __CSS = `@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+const __CSS = `@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap');
+
+/* LINE Seed Sans TH (ไทย + อังกฤษ) · ตัวอักษรที่ฟอนต์ไม่มี จะตกไปใช้ Prompt / Noto Sans Thai ต่อทันที */
+@font-face { font-family: 'LINE Seed Sans TH'; font-style: normal; font-weight: 100 250; font-display: swap; src: local('LINE Seed Sans TH Th'), url('https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_Th.ttf') format('truetype'); }
+@font-face { font-family: 'LINE Seed Sans TH'; font-style: normal; font-weight: 251 550; font-display: swap; src: local('LINE Seed Sans TH Rg'), url('https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_Rg.ttf') format('truetype'); }
+@font-face { font-family: 'LINE Seed Sans TH'; font-style: normal; font-weight: 551 749; font-display: swap; src: local('LINE Seed Sans TH Bd'), url('https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_Bd.ttf') format('truetype'); }
+@font-face { font-family: 'LINE Seed Sans TH'; font-style: normal; font-weight: 750 850; font-display: swap; src: local('LINE Seed Sans TH XBd'), url('https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_XBd.ttf') format('truetype'); }
+@font-face { font-family: 'LINE Seed Sans TH'; font-style: normal; font-weight: 851 900; font-display: swap; src: local('LINE Seed Sans TH He'), url('https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_He.ttf') format('truetype'); }
 
 /* =====================================================
    LENS DESK — PURPLE DESIGN SYSTEM
@@ -100,7 +107,7 @@ html, body, #root, #root *, #root *::before, #root *::after,
 .modal-panel, .modal-panel *, .modal-panel *::before, .modal-panel *::after,
 .drawer-panel, .drawer-panel *, .drawer-panel *::before, .drawer-panel *::after,
 .ld-notice-stack, .ld-notice-stack *, .ld-notice-stack *::before, .ld-notice-stack *::after {
-  font-family: 'Prompt', sans-serif !important;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif !important;
 }
 
 
@@ -108,7 +115,7 @@ body {
   margin: 0;
   background: rgb(var(--bg));
   color: rgb(var(--ink));
-  font-family: 'IBM Plex Sans Thai', system-ui, sans-serif;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
@@ -152,16 +159,16 @@ input, select, textarea { font-size: 16px; }
 .safe-t { padding-top: env(safe-area-inset-top); }
 
 .font-num {
-  font-family: 'Cormorant Garamond', 'IBM Plex Sans Thai', serif;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif;
   font-variant-numeric: lining-nums;
   letter-spacing: -0.015em;
 }
 .font-mono, .mono {
-  font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif;
 }
 .mono { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; }
 .mono-l {
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif;
   font-size: 0.66rem;
   font-weight: 500;
   letter-spacing: 0.16em;
@@ -263,7 +270,7 @@ input, select, textarea { font-size: 16px; }
   display: inline-flex;
   align-items: center;
   gap: 0.7rem;
-  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif;
   font-size: 0.68rem;
   font-weight: 500;
   letter-spacing: 0.2em;
@@ -451,7 +458,7 @@ select.input {
   padding: 0 0.35rem;
   border-radius: 99px;
   background: rgb(var(--surface2));
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif;
   font-size: 0.64rem;
   line-height: 1.35rem;
   text-align: center;
@@ -622,7 +629,7 @@ select.input {
   animation: growY 0.45s var(--ease) both;
 }
 .nav-item[data-on='true'] svg { color: rgb(var(--accent)); }
-.nav-idx { margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; letter-spacing: 0.1em; opacity: 0.4; }
+.nav-idx { margin-left: auto; font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif; font-size: 0.62rem; letter-spacing: 0.1em; opacity: 0.4; }
 .rail .nav-item { justify-content: center; padding: 0; }
 .rail .nav-item:hover { transform: none; }
 .rail .nav-item[data-on='true']::before { left: -0.65rem; }
@@ -786,7 +793,7 @@ select.input {
 .tbl { width: 100%; text-align: left; font-size: 0.875rem; border-collapse: separate; border-spacing: 0; }
 .tbl th {
   padding: 0.85rem 1.1rem;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif;
   font-size: 0.66rem;
   font-weight: 500;
   letter-spacing: 0.14em;
@@ -831,7 +838,7 @@ select.input {
   color: rgb(var(--ink)) !important;
   border: 1px solid rgb(var(--wa-color-purple-30) / .9) !important;
   box-shadow: 0 35px 100px -38px rgb(var(--wa-color-purple-95) / .68), 0 0 0 1px rgb(255 255 255 / .65) inset !important;
-  font-family: 'Prompt', sans-serif !important;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif !important;
 }
 .sw-popup::before {
   content: '';
@@ -858,7 +865,7 @@ select.input {
   pointer-events: none;
 }
 .sw-title {
-  font-family: 'Prompt', sans-serif !important;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif !important;
   font-size: 1.28rem !important;
   line-height: 1.45 !important;
   font-weight: 700 !important;
@@ -868,7 +875,7 @@ select.input {
   animation: swTitleReveal .42s .06s var(--ease) both;
 }
 .sw-html {
-  font-family: 'Prompt', sans-serif !important;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif !important;
   color: rgb(var(--mute)) !important;
   font-size: .91rem !important;
   line-height: 1.75 !important;
@@ -885,7 +892,7 @@ select.input {
 .sw-popup select,
 .sw-popup textarea,
 .sw-popup button {
-  font-family: 'Prompt', sans-serif !important;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif !important;
 }
 .sw-actions { gap: .65rem; margin-top: 1.4rem !important; width: 100%; }
 .sw-actions .btn {
@@ -924,11 +931,11 @@ select.input {
   border: 1px solid rgb(var(--wa-color-purple-30)) !important;
   border-radius: var(--radius) !important;
   box-shadow: 0 24px 55px -25px rgb(var(--wa-color-purple-95) / .55), 0 0 0 1px rgb(255 255 255 / .7) inset !important;
-  font-family: 'Prompt', sans-serif !important;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif !important;
   animation: swPopupEnter .42s cubic-bezier(.16, 1, .3, 1) both;
 }
 .sw-toast .swal2-title {
-  font-family: 'Prompt', sans-serif !important;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif !important;
   font-size: .9rem !important;
   line-height: 1.5 !important;
   font-weight: 600 !important;
@@ -938,7 +945,7 @@ select.input {
 .swal2-timer-progress-bar { background: linear-gradient(90deg, rgb(var(--wa-color-purple-40)), rgb(var(--accent))) !important; }
 .swal2-loader { border-color: rgb(var(--accent)) transparent rgb(var(--accent)) transparent !important; }
 .swal2-validation-message {
-  font-family: 'Prompt', sans-serif !important;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif !important;
   background: rgb(var(--wa-color-purple-10)) !important;
   color: rgb(var(--wa-color-purple-80)) !important;
   border: 1px solid rgb(var(--wa-color-purple-30)) !important;
@@ -1093,7 +1100,7 @@ select.input {
   border-radius: 6px;
   background: rgb(var(--ink));
   color: rgb(var(--bg));
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif;
   font-size: 0.66rem;
   white-space: nowrap;
   opacity: 0;
@@ -1110,7 +1117,7 @@ select.input {
    ===================================================== */
 .ld { background: linear-gradient(180deg, rgb(var(--wa-color-purple-05)) 0%, rgb(var(--wa-color-purple-05)) 48%, rgb(var(--wa-color-purple-10)) 100%); color: rgb(var(--wa-color-purple-95)); }
 .ld-purple { color: rgb(var(--wa-color-purple-50)); }
-.ld-title { font-family: 'Noto Serif Thai', serif; font-weight: 500; letter-spacing: -0.012em; line-height: 1.16; }
+.ld-title { font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif; font-weight: 500; letter-spacing: -0.012em; line-height: 1.16; }
 .ld-mask { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.14em; }
 .ld-mask > span { display: inline-block; transform: translateY(112%); }
 .ld-ready .ld-mask > span { animation: maskRise 1.2s var(--ease) forwards; animation-delay: calc(var(--i, 0) * 110ms + 150ms); }
@@ -1217,7 +1224,7 @@ select.input {
   background: linear-gradient(160deg, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0.012));
 }
 .hz-no {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif;
   font-size: clamp(6rem, 18vw, 11rem);
   line-height: 0.8;
   color: transparent;
@@ -1271,7 +1278,7 @@ select.input {
   border-radius: 50%;
   pointer-events: none;
   opacity: 0;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif;
   font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -1484,9 +1491,9 @@ select.input {
   color: rgb(var(--ink)); background: linear-gradient(145deg, var(--notice-bg, rgb(var(--wa-color-purple-10))), rgb(var(--wa-color-purple-05)));
   border: 1px solid rgb(var(--wa-color-purple-30));
   box-shadow: 0 16px 42px rgb(var(--wa-color-purple-95) / .2), 0 0 0 1px rgb(255 255 255 / .7) inset;
-  font-family: 'Prompt', sans-serif !important; pointer-events: auto; animation: swPopupEnter .42s cubic-bezier(.16, 1, .3, 1) both;
+  font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif !important; pointer-events: auto; animation: swPopupEnter .42s cubic-bezier(.16, 1, .3, 1) both;
 }
-.ld-notice, .ld-notice * { font-family: 'Prompt', sans-serif !important; }
+.ld-notice, .ld-notice * { font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif !important; }
 .ld-notice-out { animation: swPopupExit .18s ease-in both; }
 .ld-notice-mark { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 11px; background: rgb(255 255 255 / .88); color: var(--notice-color); box-shadow: 0 3px 9px rgb(var(--wa-color-purple-95) / .09); font-size: 17px; font-weight: 800; }
 .ld-notice-copy { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 2px; line-height: 1.45; }
@@ -1521,9 +1528,9 @@ select.input {
 .ld #features .sf-vis [class*="text-sm"] { text-shadow: none !important; }
 
 /* UX5 responsive refinements: detail drawer and image-led cards */
-.drawer-panel { width: min(100vw, 480px); max-width: 100%; font-family: 'Prompt', sans-serif !important; }
-.modal-panel { font-family: 'Prompt', sans-serif !important; }
-.drawer-panel .font-serif, .modal-panel .font-serif { font-family: 'Prompt', sans-serif !important; }
+.drawer-panel { width: min(100vw, 480px); max-width: 100%; font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif !important; }
+.modal-panel { font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif !important; }
+.drawer-panel .font-serif, .modal-panel .font-serif { font-family: 'LINE Seed Sans TH', 'Prompt', 'Noto Sans Thai', 'Sarabun', system-ui, sans-serif !important; }
 @media (max-width: 767px) {
   .drawer-panel { width: 100vw; border-left: 0; border-radius: 18px 18px 0 0; top: auto; height: min(92dvh, 900px); bottom: 0; animation: sheetUp 0.35s var(--ease) both; }
   .drawer-panel > header { padding-top: max(1rem, env(safe-area-inset-top)); }
@@ -4759,8 +4766,9 @@ function openPrintDoc({ title, size = 'A5', body }) {
     + '<meta name="viewport" content="width=device-width,initial-scale=1">'
     + '<title>' + esc(title) + '</title>'
     + '<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">'
+    + '<style>@font-face{font-family:"LINE Seed Sans TH";font-weight:100 550;src:local("LINE Seed Sans TH Regular"),url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_Rg.ttf") format("truetype")}@font-face{font-family:"LINE Seed Sans TH";font-weight:551 900;src:local("LINE Seed Sans TH Bold"),url("https://cdn.jsdelivr.net/npm/@fontpkg/line-seed-sans-th@1.0.1/LINESeedSansTH_Bd.ttf") format("truetype")}</style>'
     + '<style>@page{size:' + size + ';margin:12mm}*{box-sizing:border-box}'
-    + 'body{margin:0;background:#eee9f7;color:#1d1530;font-family:Prompt,"Noto Sans Thai",Tahoma,sans-serif;font-size:13px;line-height:1.55;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    + 'body{margin:0;background:#eee9f7;color:#1d1530;font-family:"LINE Seed Sans TH",Prompt,"Noto Sans Thai",Tahoma,sans-serif;font-size:13px;line-height:1.55;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
     + '.bar{position:sticky;top:0;z-index:5;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 14px;background:#2a1a4d;color:#fff;font-size:12px}'
     + '.bar button{font:inherit;font-weight:500;border:0;border-radius:10px;padding:9px 14px;background:' + themeHex() + ';color:#fff;cursor:pointer}.bar button.g{background:transparent;border:1px solid #ffffff55}'
     + '.sheet{background:#fff;margin:14px auto;max-width:' + sheetW + ';padding:18px 16px;box-shadow:0 10px 30px -12px #2a1a4d66;overflow-wrap:anywhere}'
