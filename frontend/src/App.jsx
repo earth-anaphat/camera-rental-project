@@ -6028,7 +6028,7 @@ function Landing({ onEnter }) {
   };
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  const heroLines = [['เรื่องจอง', 'รับ', 'คืน'], ['และรายรับรายจ่าย'], ['ดูได้ที่เดียว']];
+  const heroLines = [['ทุกการเช่า'], ['ควรเรียบง่าย'], ['เหมือนกด', 'ชัตเตอร์']];
   let idx = 0;
 
   return (
