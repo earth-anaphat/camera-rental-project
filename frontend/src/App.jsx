@@ -320,6 +320,8 @@ input, select, textarea { font-size: 16px; }
 .btn-ink:hover:not(:disabled) { opacity: 0.88; }
 .btn-ghost { background: transparent; color: rgb(var(--ink)); border-color: rgb(var(--line)); }
 .btn-ghost:hover:not(:disabled) { background: rgb(var(--surface2)); border-color: rgb(var(--ink) / 0.28); }
+.btn-bad { background: rgb(var(--bad)); color: #fff; }
+.btn-bad:hover:not(:disabled) { filter: brightness(0.92); }
 .btn-danger { background: rgb(var(--bad) / 0.1); color: rgb(var(--bad)); border-color: rgb(var(--bad) / 0.28); }
 .btn-danger:hover:not(:disabled) { background: rgb(var(--bad) / 0.18); }
 .btn-sm { min-height: 34px; padding: 0 0.8rem; font-size: 0.8rem; }
@@ -3918,22 +3920,22 @@ function Actions({ b, refresh, block = false }) {
   return (
     <div className={block ? 'grid grid-cols-3 gap-2' : 'grid gap-1.5'} style={block ? undefined : { gridTemplateColumns: 'repeat(3, 5.25rem)' }}>
       {canEdit && (
-        <button onClick={(e) => { e.stopPropagation(); openBooking([], b); }} title="แก้ไขการจอง" className={`${base} btn-ghost`}>
+        <button onClick={(e) => { e.stopPropagation(); openBooking([], b); }} title="แก้ไขการจอง" className={`${base} btn-ink`}>
           <Pencil size={14} /> <span>แก้ไข</span>
         </button>
       )}
       {waiting && (
         <>
-          <button onClick={stop(checkoutFlow)} title="ส่งมอบอุปกรณ์" className={`${base} border border-info/30 bg-info/10 text-info hover:bg-info/20`}>
+          <button onClick={stop(checkoutFlow)} title="ส่งมอบอุปกรณ์" className={`${base} btn-primary`}>
             <LogOut size={14} /> <span>ส่งมอบ</span>
           </button>
-          <button onClick={stop(cancelFlow)} title="ยกเลิกการจอง" className={`${base} border border-bad/25 bg-bad/5 text-bad hover:bg-bad/10`}>
+          <button onClick={stop(cancelFlow)} title="ยกเลิกการจอง" className={`${base} btn-bad`}>
             <Ban size={14} /> <span>ยกเลิก</span>
           </button>
         </>
       )}
       {b.status === 'picked_up' && (
-        <button onClick={stop(returnFlow)} title="รับคืนอุปกรณ์" className={`${base} border border-ok/30 bg-ok/10 text-ok hover:bg-ok/20 ${block ? 'col-span-2' : ''}`}>
+        <button onClick={stop(returnFlow)} title="รับคืนอุปกรณ์" className={`${base} btn-primary ${block ? 'col-span-2' : ''}`}>
           <LogIn size={14} /> <span>รับคืน</span>
         </button>
       )}
@@ -3941,12 +3943,108 @@ function Actions({ b, refresh, block = false }) {
   );
 }
 
+const BOOK_VIEW_KEY = 'lensdesk.bookview';
+// วันที่ที่ต้องสนใจของแต่ละใบจอง: รอส่งมอบ = วันรับ, อยู่กับลูกค้า = วันคืน
+const bookingKeyDate = (b) => parseDate(b.status === 'picked_up' ? b.end_date : b.start_date) || new Date(0);
+const dayLabel = (d) => {
+  const t = new Date();
+  const diff = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - new Date(t.getFullYear(), t.getMonth(), t.getDate())) / 86400000);
+  if (diff === 0) return 'วันนี้';
+  if (diff === 1) return 'พรุ่งนี้';
+  if (diff === -1) return 'เมื่อวาน';
+  return fmtLongDate(d);
+};
+
 function BookingList({ rows, showActions = true }) {
   const { openDetail, refresh } = useApp();
+  const [view, setViewState] = useState(() => {
+    try { return localStorage.getItem(BOOK_VIEW_KEY) || 'day'; } catch { return 'day'; }
+  });
+  const setView = (v) => {
+    setViewState(v);
+    try { localStorage.setItem(BOOK_VIEW_KEY, v); } catch {}
+  };
+
+  const groups = useMemo(() => {
+    const map = new Map();
+    [...rows]
+      .sort((x, y) => (showActions ? 1 : -1) * (bookingKeyDate(x) - bookingKeyDate(y)))
+      .forEach((b) => {
+        const d = bookingKeyDate(b);
+        const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+        if (!map.has(k)) map.set(k, { key: k, date: d, items: [] });
+        map.get(k).items.push(b);
+      });
+    return [...map.values()];
+  }, [rows, showActions]);
+
+  const switcher = (
+    <div className="mb-3 flex justify-end">
+      <div className="inline-flex rounded-xl border border-line bg-surface p-0.5 text-sm" role="group" aria-label="รูปแบบการแสดงรายการ">
+        {[
+          ['day', 'ตามวัน', ''],
+          ['card', 'การ์ด', ''],
+          ['table', 'ตาราง', 'hidden xl:inline-flex'],
+        ].map(([id, label, cls]) => (
+          <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}
+            className={`min-h-9 items-center rounded-[10px] px-3.5 font-medium transition-colors ${cls || 'inline-flex'} ${view === id ? 'bg-ink text-bg' : 'text-mute hover:text-ink'}`}>
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <>
-      {/* จอใหญ่: ตาราง */}
+      {switcher}
+
+      {view === 'day' && (
+        <div className="space-y-6">
+          {groups.map((g) => (
+            <section key={g.key} aria-label={dayLabel(g.date)}>
+              <h3 className="mb-2 flex items-baseline gap-2 px-1">
+                <span className="text-[15px] font-semibold">{dayLabel(g.date)}</span>
+                <span className="text-xs text-mute">{g.items.length} รายการ</span>
+              </h3>
+              <ul className="card divide-y divide-line/70 overflow-hidden">
+                {g.items.map((b) => {
+                  const out = b.status === 'picked_up';
+                  return (
+                    <li key={b.id} className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3.5 sm:px-5">
+                      <button type="button" onClick={() => openDetail(b.id)} className="flex min-w-0 flex-1 basis-64 items-center gap-4 text-left">
+                        <span className="w-14 shrink-0 text-center leading-tight">
+                          <span className="block text-[11px] text-mute">{out ? 'คืน' : 'รับ'}</span>
+                          <span className="font-num text-lg font-semibold">{fmtTime(parseDate(out ? b.end_date : b.start_date))}</span>
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-center gap-2">
+                            <span className="truncate font-medium">{b.customer_name}</span>
+                            <span className="hidden shrink-0 font-mono text-[11px] text-mute sm:inline">{b.booking_no}</span>
+                          </span>
+                          <span className="block truncate text-xs text-mute">{equipmentTitle(b)}</span>
+                        </span>
+                      </button>
+                      <span className="flex items-center gap-3">
+                        <StatusBadge status={effectiveStatus(b)} />
+                        <span className="font-num w-20 text-right text-base font-semibold">{baht(b.net_total)}</span>
+                      </span>
+                      {showActions && (
+                        <>
+                          <div className="hidden md:block"><Actions b={b} refresh={refresh} /></div>
+                          <div className="w-full md:hidden"><Actions b={b} refresh={refresh} block /></div>
+                        </>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))}
+        </div>
+      )}
+
+      {view === 'table' && (
       <div className="card hidden overflow-hidden xl:block">
         <div className="booking-table-scroll scroll-thin">
           <table className="tbl min-w-[960px]">
@@ -3989,8 +4087,11 @@ function BookingList({ rows, showActions = true }) {
         </div>
       </div>
 
-      {/* มือถือ: การ์ด */}
-      <ul className="stagger grid gap-3 md:grid-cols-2 xl:hidden">
+      )}
+
+      {(view === 'card' || view === 'table') && (
+        <div className={view === 'table' ? 'xl:hidden' : ''}>
+      <ul className="stagger grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {rows.map((b, i) => (
           <li key={b.id} style={{ '--i': Math.min(i, 8) }} className="min-w-0">
             <div
@@ -4022,6 +4123,8 @@ function BookingList({ rows, showActions = true }) {
           </li>
         ))}
       </ul>
+        </div>
+      )}
     </>
   );
 }
@@ -6029,7 +6132,7 @@ function Landing({ onEnter }) {
   };
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  const heroLines = [['ทุกการเช่า'], ['ควรเรียบง่าย'], ['เหมือนกด', 'ชัตเตอร์']];
+  const heroLines = [['เรื่องจอง', 'รับ', 'คืน'], ['และรายรับรายจ่าย'], ['ดูได้ที่เดียว']];
   let idx = 0;
 
   return (
@@ -7458,57 +7561,26 @@ function Equipments() {
         </div>
       ) : (
         <>
-        <ul className="space-y-2.5 md:hidden">
+        <ul className="card divide-y divide-line/70 overflow-hidden">
           {list.map((item) => (
-            <li key={item.id} className="card flex items-center gap-3 p-2.5">
+            <li key={item.id} className="flex items-center gap-3 px-3 py-2.5 sm:px-4">
               <EquipmentPhoto item={item} className="h-14 w-14 shrink-0 rounded-xl" iconSize={18} />
-              <div className="min-w-0 flex-1" onClick={() => setSelectedEquipment(item)}>
-                <p className="truncate text-sm font-medium">{item.name}</p>
-                <p className="truncate font-mono text-[11px] text-mute">{item.code}</p>
-                <div className="mt-1 flex items-center gap-2"><StatusBadge status={item.status} /><span className="text-xs text-mute">{baht(item.rental_rate_per_day)}/วัน</span></div>
+              <button type="button" className="min-w-0 flex-1 text-left" onClick={() => setSelectedEquipment(item)}>
+                <span className="block truncate text-sm font-medium">{item.name}</span>
+                <span className="block truncate text-xs text-mute"><span className="font-mono">{item.code}</span> · {categoryOf(item.category).label}</span>
+                <span className="mt-1 flex items-center gap-2 sm:hidden"><StatusBadge status={item.status} /><span className="text-xs text-mute">{baht(item.rental_rate_per_day)}/วัน</span></span>
+              </button>
+              <span className="hidden shrink-0 sm:block"><StatusBadge status={item.status} /></span>
+              <span className="font-num hidden w-24 shrink-0 text-right text-base font-semibold sm:block">{baht(item.rental_rate_per_day)}<span className="text-xs font-normal text-mute">/วัน</span></span>
+              <div className="flex shrink-0 gap-1">
+                <button onClick={() => openBooking([item.id])} disabled={item.status === 'maintenance'} className="icon-btn !h-10 !w-10" title="จอง" aria-label="จอง"><CalendarPlus size={17} /></button>
+                <button onClick={() => toggleMaintenance(item)} className="icon-btn hidden !h-10 !w-10 md:inline-flex" title={maintLabel(item.status)} aria-label={maintLabel(item.status)}><Wrench size={16} /></button>
+                <button onClick={() => openEquipment(item)} className="icon-btn hidden !h-10 !w-10 text-info md:inline-flex" title="แก้ไข" aria-label="แก้ไขอุปกรณ์"><Pencil size={16} /></button>
+                <button onClick={() => deleteEquipmentFlow(item, refresh)} className="icon-btn hidden !h-10 !w-10 text-bad md:inline-flex" title="ลบ" aria-label="ลบอุปกรณ์"><Trash2 size={16} /></button>
               </div>
-              <button onClick={() => openBooking([item.id])} disabled={item.status === 'maintenance'} className="icon-btn !h-10 !w-10" aria-label="จอง"><CalendarPlus size={17} /></button>
             </li>
           ))}
         </ul>
-        <div className="card hidden overflow-hidden md:block">
-          <div className="scroll-thin overflow-x-auto">
-            <table className="tbl min-w-[780px]">
-              <thead>
-                <tr><th>อุปกรณ์</th><th>รหัส / Serial</th><th className="text-right">ค่าเช่า/วัน</th><th>สถานะ</th><th /></tr>
-              </thead>
-              <tbody>
-                {list.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      <div className="flex items-center gap-3">
-                        <EquipmentPhoto item={item} className="h-12 w-12 shrink-0 rounded-xl" iconSize={18} />
-                        <div className="min-w-0">
-                          <p className="truncate font-medium">{item.name}</p>
-                          <p className="text-xs text-mute">{categoryOf(item.category).label} · {item.brand}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <p className="font-mono text-xs font-semibold">{item.code}</p>
-                      <p className="font-mono text-[11px] text-mute">{item.serial_number || '-'}</p>
-                    </td>
-                    <td className="text-right font-medium">{baht(item.rental_rate_per_day)}</td>
-                    <td><StatusBadge status={item.status} /></td>
-                    <td>
-                      <div className="flex justify-end gap-1">
-                        <button onClick={() => openBooking([item.id])} disabled={item.status === 'maintenance'} className="icon-btn !h-9 !w-9" title="จอง"><CalendarPlus size={16} /></button>
-                        <button onClick={() => toggleMaintenance(item)} className="icon-btn !h-9 !w-9" title={maintLabel(item.status)}><Wrench size={16} /></button>
-                        <button onClick={() => openEquipment(item)} className="icon-btn !h-9 !w-9 text-info" title="แก้ไข"><Pencil size={16} /></button>
-                        <button onClick={() => deleteEquipmentFlow(item, refresh)} className="icon-btn !h-9 !w-9 text-bad" title="ลบ"><Trash2 size={16} /></button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
         </>
       )}
       <p className="mt-4 text-xs text-mute">แสดง {list.length} จาก {equipments.length} รายการ</p>
@@ -7901,42 +7973,30 @@ function Finance() {
           })}
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm sm:min-w-[560px]">
-            <thead>
-              <tr className="text-left text-xs text-mute">
-                <th className="pb-2 font-medium">เดือน</th>
-                <th className="pb-2 text-right font-medium">รายรับ</th>
-                <th className="pb-2 text-right font-medium">รายจ่าย</th>
-                <th className="pb-2 text-right font-medium">กำไร</th>
-                <th className="hidden pb-2 text-right font-medium sm:table-cell">เทียบเดือนก่อน</th>
-                <th className="hidden w-32 pb-2 sm:table-cell" />
-              </tr>
-            </thead>
-            <tbody>
-              {months.map((m, i) => {
-                const prev = i > 0 ? months[i - 1] : null;
-                const p = prev ? pct(m.income, prev.income) : 0;
-                return (
-                  <tr key={m.full} className="border-t border-line/60">
-                    <td className="py-2.5 font-medium">{m.full}</td>
-                    <td className="py-2.5 text-right">{baht(m.income)}</td>
-                    <td className="py-2.5 text-right text-mute">{baht(m.expense)}</td>
-                    <td className={`py-2.5 text-right ${m.income - m.expense < 0 ? 'text-bad' : ''}`}>{baht(m.income - m.expense)}</td>
-                    <td className={`hidden py-2.5 text-right text-xs sm:table-cell ${!prev || p === 0 ? 'text-mute' : p === null || p > 0 ? 'text-ok' : 'text-bad'}`}>
-                      {!prev ? '—' : p === null ? 'ใหม่' : p === 0 ? '—' : `${p > 0 ? '▲ +' : '▼ '}${p}%`}
-                    </td>
-                    <td className="hidden py-2.5 pl-3 sm:table-cell">
-                      <div className="h-2 rounded-full bg-line/50">
-                        <div className="h-2 rounded-full bg-accent" style={{ width: `${(m.income / maxIncome) * 100}%` }} />
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <ul className="divide-y divide-line/60">
+          {months.map((m, i) => {
+            const prev = i > 0 ? months[i - 1] : null;
+            const p = prev ? pct(m.income, prev.income) : 0;
+            const profit = m.income - m.expense;
+            return (
+              <li key={m.full} className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1.5 py-3 sm:grid-cols-[7.5rem_1fr_auto]">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">{m.full}</p>
+                  <p className="text-xs text-mute">รับ {baht(m.income)} · จ่าย {baht(m.expense)}</p>
+                </div>
+                <div className="order-3 col-span-2 h-2 rounded-full bg-line/50 sm:order-none sm:col-span-1">
+                  <div className="h-2 rounded-full bg-accent" style={{ width: `${(m.income / maxIncome) * 100}%` }} />
+                </div>
+                <div className="text-right">
+                  <p className={`font-num text-base font-semibold ${profit < 0 ? 'text-bad' : ''}`}>{baht(profit)}</p>
+                  <p className={`text-xs ${!prev || p === 0 ? 'text-mute' : p === null || p > 0 ? 'text-ok' : 'text-bad'}`}>
+                    {!prev ? 'กำไร' : p === null ? 'ใหม่' : p === 0 ? 'กำไร' : `${p > 0 ? '▲ +' : '▼ '}${p}%`}
+                  </p>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       </section>
 
       <Segmented
