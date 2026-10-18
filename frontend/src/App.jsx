@@ -5,6 +5,16 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 
 /* LensDesk — frontend ไฟล์เดียว: ธีม, ระบบ, ทุกหน้า */
+/* Safari / ทุกเบราว์เซอร์บน iPhone-iPad ใช้เอนจิน WebKit ซึ่งวาดเอฟเฟกต์หนัก ๆ ช้ากว่า Chrome มาก → เปิดโหมดเบา */
+const IS_WEBKIT = (() => {
+  try {
+    const ua = navigator.userAgent || '';
+    const ios = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+    const safari = /Safari\//.test(ua) && !/Chrome|Chromium|Edg|OPR|Android|Firefox/.test(ua);
+    return ios || safari;
+  } catch { return false; }
+})();
+if (IS_WEBKIT) document.documentElement.dataset.engine = 'safari';
 const __CSS = `@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 /* =====================================================
@@ -1785,10 +1795,27 @@ html[data-motion='off'] .ld-bell-ring { animation: none; }
 }
 
 `;
+/* โหมดเบาสำหรับ WebKit: ใช้ชุดกฎเดียวกับอุปกรณ์สัมผัส + ปิดของที่ Safari วาดช้าเป็นพิเศษ */
+const __SAFARI_CSS = (() => {
+  const m = __CSS.match(/@media \(max-width: 1180px\), \(hover: none\), \(pointer: coarse\) \{([\s\S]*)\}\s*$/);
+  const scoped = m
+    ? m[1].replace(/^([ \t]*)([^@\s/*][^{\n]*)\{/gm, (all, sp, sel) =>
+        `${sp}${sel.split(',').map((x) => `html[data-engine="safari"] ${x.trim()}`).join(', ')} {`)
+    : '';
+  return `${scoped}
+html[data-engine="safari"] body::after { display: none; }
+html[data-engine="safari"] *, html[data-engine="safari"] *::before, html[data-engine="safari"] *::after { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+html[data-engine="safari"] .rv[data-a='blur'], html[data-engine="safari"] .sf-vis { filter: none; }
+html[data-engine="safari"] .btn-primary.ld-breath, html[data-engine="safari"] .card.border-dashed > div:first-child, html[data-engine="safari"] .card.border-dashed > div:first-child::after { animation: none; }
+html[data-engine="safari"] .app-beams, html[data-engine="safari"] .lgp-beams { -webkit-mask-image: none; mask-image: none; contain: none; }
+html[data-engine="safari"] .app-beams .beam-r, html[data-engine="safari"] .lgp-beams .beam-r { display: none; }
+html[data-engine="safari"] .card, html[data-engine="safari"] .btn { transition-property: transform, background-color, border-color, color, opacity; }
+`;
+})();
 if (typeof document !== 'undefined' && !document.getElementById('lensdesk-css')) {
   const el = document.createElement('style');
   el.id = 'lensdesk-css';
-  el.textContent = __CSS;
+  el.textContent = __CSS + __SAFARI_CSS;
   document.head.prepend(el);
 }
 
@@ -2648,7 +2675,7 @@ function AppProvider({ children }) {
    ===================================================== */
 
 const hasFine = () =>
-  typeof window !== 'undefined' && !!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
+  !IS_WEBKIT && typeof window !== 'undefined' && !!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
 const isCalm = () =>
   typeof document !== 'undefined' &&
   (document.documentElement.dataset.motion === 'off' ||
@@ -2705,6 +2732,7 @@ function useScrollLoop(cb) {
 /* ---------- Spotlight card ---------- */
 function useSpot() {
   return useCallback((e) => {
+    if (IS_WEBKIT) return;
     const el = e.currentTarget;
     const r = el.getBoundingClientRect();
     el.style.setProperty('--mx', `${e.clientX - r.left}px`);
@@ -3965,7 +3993,7 @@ const dayLabel = (d) => {
 function BookingList({ rows, showActions = true }) {
   const { openDetail, refresh } = useApp();
   const [view, setViewState] = useState(() => {
-    try { return localStorage.getItem(BOOK_VIEW_KEY) || 'day'; } catch { return 'day'; }
+    try { return localStorage.getItem(BOOK_VIEW_KEY) || 'table'; } catch { return 'table'; }
   });
   const setView = (v) => {
     setViewState(v);
@@ -5525,7 +5553,7 @@ function Shell({ children }) {
         }}
       >
         <div className="app-beams" aria-hidden="true">
-          <Beams count={bp === 'desktop' ? 12 : 7} still={isCalm()} />
+          <Beams count={bp === 'desktop' ? 12 : 7} still={isCalm() || IS_WEBKIT} />
         </div>
         <header className="glass-header sticky top-0 z-40 safe-t">
           <div className="flex h-[68px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
@@ -6171,7 +6199,7 @@ function Landing({ onEnter }) {
       <section ref={heroRef} onPointerMove={onHeroMove} className="ld-grain relative flex min-h-dvh items-center overflow-hidden">
         <SpotlightBeam />
         <div className="dotgrid" />
-        <Beams className="opacity-60" />
+        <Beams className="opacity-60" count={IS_WEBKIT ? 6 : 16} />
         <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(520px circle at var(--px,70%) var(--py,30%), rgb(157 115 250 / 0.1), transparent 60%)' }} />
 
         <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 px-5 pb-20 pt-32 sm:px-8 lg:grid-cols-[1.12fr_0.88fr] lg:gap-8">
@@ -6335,7 +6363,7 @@ function Landing({ onEnter }) {
 
       {/* CTA — Lamp */}
       <section className="relative overflow-hidden px-5 pb-28 pt-12 sm:px-8 md:pb-40">
-        <Beams className="opacity-40" />
+        <Beams className="opacity-40" count={IS_WEBKIT ? 6 : 16} />
         <Lamp className="min-h-[560px] pt-28">
           <div className="mx-auto max-w-4xl text-center">
             <h2 className="ld-title text-[clamp(2.4rem,8vw,6rem)]">
@@ -8725,7 +8753,7 @@ function LoginPortal({ origin, onClose, onDone }) {
       <div className="lgp-bg" />
       <span className="lgp-orb a" />
       <span className="lgp-orb b" />
-      <div className="lgp-beams" aria-hidden="true"><Beams count={14} still={isCalm()} /></div>
+      <div className="lgp-beams" aria-hidden="true"><Beams count={14} still={isCalm() || IS_WEBKIT} /></div>
       <div className="lgp-card">
         {step !== 'done' && (
           <button type="button" className="lgp-x" onClick={close} aria-label="ปิด"><X size={18} /></button>
