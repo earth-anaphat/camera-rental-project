@@ -704,17 +704,20 @@ select.input {
 /* dock ลอยแบบขยายตามเมาส์ */
 .dock {
   position: fixed;
-  left: 50%;
-  bottom: 1.1rem;
+  left: 0;
+  right: 0;
+  bottom: max(1.25rem, env(safe-area-inset-bottom));
   z-index: 60;
   display: flex;
-  align-items: flex-end;
-  gap: 0.3rem;
-  max-width: calc(100vw - 1.5rem);
-  padding: 0.5rem 0.6rem;
-  transform: translateX(-50%);
-  border-radius: 24px;
-  background: rgb(var(--side) / 0.88);
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  margin-inline: auto;
+  padding: 0.7rem 1.1rem;
+  border-radius: 28px;
+  background: rgb(var(--side) / 0.9);
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
   box-shadow: 0 28px 60px -18px rgb(0 0 0 / 0.65), inset 0 0 0 1px rgb(255 255 255 / 0.07);
@@ -726,17 +729,17 @@ select.input {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 46px;
-  height: 46px;
-  border-radius: 15px;
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
   color: rgb(var(--side-mute));
-  background: rgb(255 255 255 / 0.04);
+  background: rgb(255 255 255 / 0.06);
   transform-origin: bottom center;
   transform: translateY(calc((var(--s, 1) - 1) * -16px)) scale(var(--s, 1));
   transition: background-color 0.3s, color 0.3s;
 }
 .dock-item:hover { color: rgb(var(--side-ink)); }
-.dock-item[data-on='true'] { background: rgb(var(--accent)); color: rgb(var(--accent-fg)); }
+.dock-item[data-on='true'] { background: rgb(var(--accent)); color: rgb(var(--accent-fg)); box-shadow: 0 8px 18px -8px rgb(var(--accent) / 0.9); }
 .dock-item::after {
   content: attr(data-label);
   position: absolute;
@@ -755,7 +758,7 @@ select.input {
   transition: opacity 0.2s, transform 0.25s var(--ease);
 }
 @media (hover: hover) { .dock-item:hover::after { opacity: 1; transform: translate(-50%, 0); } }
-.dock-sep { width: 1px; align-self: stretch; margin: 6px 3px; background: rgb(255 255 255 / 0.1); }
+.dock-sep { width: 1px; height: 28px; flex-shrink: 0; margin: 0 0.35rem; background: rgb(255 255 255 / 0.14); }
 
 .glass-header {
   background: rgb(var(--bg) / 0.72);
