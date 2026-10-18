@@ -37,10 +37,11 @@ const __CSS = `@import url('https://fonts.googleapis.com/css2?family=Prompt:wght
   --mute: var(--wa-color-purple-80);
 
   --accent: var(--wa-color-purple-60);
+  --accent-ink: var(--wa-color-purple-70);
   --accent-fg: 255 255 255;
 
   --ok: 48 112 80;
-  --warn: 160 104 20;
+  --warn: 120 74 4;
   --bad: 176 56 40;
   --info: 52 92 138;
 
@@ -59,15 +60,17 @@ const __CSS = `@import url('https://fonts.googleapis.com/css2?family=Prompt:wght
 
 
 
+main .text-accent { color: rgb(var(--accent-ink)); }
+html body .text-accent-fg, html body .bg-accent.text-accent-fg { color: #fff !important; }
 /* ธีมสี — สลับชุดสเกลสีหลักทั้งระบบด้วย data-color บน <html> (ค่าเริ่มต้นคือม่วงตามด้านบน) */
-[data-color='green'] { --wa-color-purple-05: 244 251 245; --wa-color-purple-10: 230 245 233; --wa-color-purple-20: 203 235 210; --wa-color-purple-30: 159 219 174; --wa-color-purple-40: 101 199 131; --wa-color-purple-50: 0 175 89; --wa-color-purple-60: 0 143 71; --wa-color-purple-70: 0 117 57; --wa-color-purple-80: 0 91 43; --wa-color-purple-90: 0 62 27; --wa-color-purple-95: 0 40 15; }
+[data-color='green'] { --wa-color-purple-05: 244 251 245; --wa-color-purple-10: 230 245 233; --wa-color-purple-20: 203 235 210; --wa-color-purple-30: 159 219 174; --wa-color-purple-40: 101 199 131; --wa-color-purple-50: 0 175 89; --wa-color-purple-60: 0 127 63; --wa-color-purple-70: 0 117 57; --wa-color-purple-80: 0 91 43; --wa-color-purple-90: 0 62 27; --wa-color-purple-95: 0 40 15; }
 [data-color='red'] { --wa-color-purple-05: 255 246 246; --wa-color-purple-10: 255 235 234; --wa-color-purple-20: 255 214 212; --wa-color-purple-30: 255 179 175; --wa-color-purple-40: 253 134 132; --wa-color-purple-50: 241 83 90; --wa-color-purple-60: 213 40 59; --wa-color-purple-70: 182 9 41; --wa-color-purple-80: 145 0 29; --wa-color-purple-90: 100 0 16; --wa-color-purple-95: 67 0 8; }
-[data-color='orange'] { --wa-color-purple-05: 255 247 242; --wa-color-purple-10: 254 237 226; --wa-color-purple-20: 253 217 196; --wa-color-purple-30: 250 186 147; --wa-color-purple-40: 243 147 85; --wa-color-purple-50: 244 126 24; --wa-color-purple-60: 216 94 6; --wa-color-purple-70: 151 71 0; --wa-color-purple-80: 119 55 0; --wa-color-purple-90: 82 35 0; --wa-color-purple-95: 55 20 0; }
-[data-color='blue'] { --wa-color-purple-05: 245 249 255; --wa-color-purple-10: 231 241 255; --wa-color-purple-20: 207 227 255; --wa-color-purple-30: 167 204 255; --wa-color-purple-40: 118 177 255; --wa-color-purple-50: 57 145 255; --wa-color-purple-60: 0 115 230; --wa-color-purple-70: 0 94 190; --wa-color-purple-80: 0 72 150; --wa-color-purple-90: 0 48 105; --wa-color-purple-95: 0 30 71; }
+[data-color='orange'] { --wa-color-purple-05: 255 247 242; --wa-color-purple-10: 254 237 226; --wa-color-purple-20: 253 217 196; --wa-color-purple-30: 250 186 147; --wa-color-purple-40: 243 147 85; --wa-color-purple-50: 244 126 24; --wa-color-purple-60: 184 80 5; --wa-color-purple-70: 151 71 0; --wa-color-purple-80: 119 55 0; --wa-color-purple-90: 82 35 0; --wa-color-purple-95: 55 20 0; }
+[data-color='blue'] { --wa-color-purple-05: 245 249 255; --wa-color-purple-10: 231 241 255; --wa-color-purple-20: 207 227 255; --wa-color-purple-30: 167 204 255; --wa-color-purple-40: 118 177 255; --wa-color-purple-50: 57 145 255; --wa-color-purple-60: 0 109 218; --wa-color-purple-70: 0 94 190; --wa-color-purple-80: 0 72 150; --wa-color-purple-90: 0 48 105; --wa-color-purple-95: 0 30 71; }
 [data-color='pink'] { --wa-color-purple-05: 255 246 250; --wa-color-purple-10: 254 234 243; --wa-color-purple-20: 252 213 230; --wa-color-purple-30: 248 178 210; --wa-color-purple-40: 239 136 187; --wa-color-purple-50: 224 89 162; --wa-color-purple-60: 196 52 135; --wa-color-purple-70: 167 30 112; --wa-color-purple-80: 133 15 87; --wa-color-purple-90: 92 6 59; --wa-color-purple-95: 60 4 37; }
-[data-color='teal'] { --wa-color-purple-05: 242 251 250; --wa-color-purple-10: 226 245 243; --wa-color-purple-20: 195 235 231; --wa-color-purple-30: 142 218 213; --wa-color-purple-40: 56 198 191; --wa-color-purple-50: 0 168 162; --wa-color-purple-60: 0 137 132; --wa-color-purple-70: 0 112 108; --wa-color-purple-80: 0 88 84; --wa-color-purple-90: 0 59 56; --wa-color-purple-95: 0 38 36; }
-[data-color='gold'] { --wa-color-purple-05: 252 248 242; --wa-color-purple-10: 247 240 225; --wa-color-purple-20: 239 224 193; --wa-color-purple-30: 226 198 141; --wa-color-purple-40: 210 168 71; --wa-color-purple-50: 184 138 0; --wa-color-purple-60: 150 112 0; --wa-color-purple-70: 123 91 0; --wa-color-purple-80: 97 71 0; --wa-color-purple-90: 66 47 0; --wa-color-purple-95: 43 29 0; }
-[data-color='slate'] { --wa-color-purple-05: 247 249 250; --wa-color-purple-10: 238 241 244; --wa-color-purple-20: 220 226 233; --wa-color-purple-30: 193 203 216; --wa-color-purple-40: 161 176 195; --wa-color-purple-50: 129 148 172; --wa-color-purple-60: 101 121 146; --wa-color-purple-70: 81 99 122; --wa-color-purple-80: 62 77 96; --wa-color-purple-90: 40 51 65; --wa-color-purple-95: 25 32 42; }
+[data-color='teal'] { --wa-color-purple-05: 242 251 250; --wa-color-purple-10: 226 245 243; --wa-color-purple-20: 195 235 231; --wa-color-purple-30: 142 218 213; --wa-color-purple-40: 56 198 191; --wa-color-purple-50: 0 168 162; --wa-color-purple-60: 0 123 119; --wa-color-purple-70: 0 112 108; --wa-color-purple-80: 0 88 84; --wa-color-purple-90: 0 59 56; --wa-color-purple-95: 0 38 36; }
+[data-color='gold'] { --wa-color-purple-05: 252 248 242; --wa-color-purple-10: 247 240 225; --wa-color-purple-20: 239 224 193; --wa-color-purple-30: 226 198 141; --wa-color-purple-40: 210 168 71; --wa-color-purple-50: 184 138 0; --wa-color-purple-60: 141 105 0; --wa-color-purple-70: 123 91 0; --wa-color-purple-80: 97 71 0; --wa-color-purple-90: 66 47 0; --wa-color-purple-95: 43 29 0; }
+[data-color='slate'] { --wa-color-purple-05: 247 249 250; --wa-color-purple-10: 238 241 244; --wa-color-purple-20: 220 226 233; --wa-color-purple-30: 193 203 216; --wa-color-purple-40: 161 176 195; --wa-color-purple-50: 129 148 172; --wa-color-purple-60: 94 113 136; --wa-color-purple-70: 81 99 122; --wa-color-purple-80: 62 77 96; --wa-color-purple-90: 40 51 65; --wa-color-purple-95: 25 32 42; }
 
 [data-radius='sharp'] { --radius: 4px; --radius-sm: 3px; }
 [data-radius='soft'] { --radius: 14px; --radius-sm: 9px; }
@@ -255,7 +258,7 @@ input, select, textarea { font-size: 16px; }
   font-weight: 500;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgb(var(--accent));
+  color: rgb(var(--accent-ink));
 }
 .eyebrow::before {
   content: '';
@@ -298,7 +301,7 @@ input, select, textarea { font-size: 16px; }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
 .btn-primary {
-  background: linear-gradient(135deg, rgb(var(--wa-color-purple-60)), rgb(var(--wa-color-purple-80)));
+  background: linear-gradient(135deg, rgb(var(--wa-color-purple-70)), rgb(var(--wa-color-purple-80)));
   color: rgb(var(--accent-fg));
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.28), 0 12px 26px -14px rgb(var(--accent) / 0.95);
 }
@@ -668,7 +671,7 @@ select.input {
   transition: color 0.25s, transform 0.25s var(--ease);
 }
 .bb-item:active { transform: scale(0.9); }
-.bb-item[data-on='true'] { color: rgb(var(--accent)); }
+.bb-item[data-on='true'] { color: rgb(var(--accent-ink)); }
 .bb-item svg { transition: transform 0.3s var(--ease); }
 .bb-item[data-on='true'] svg { transform: translateY(-2px); }
 .bb-fab {
@@ -1008,7 +1011,7 @@ select.input {
 .lg-popup .swal2-validation-message { margin: .9rem 0 0 !important; border: 1px solid rgb(248 113 113 / .45) !important; background: rgb(248 113 113 / .12) !important; color: #fecaca !important; font-size: .82rem !important; }
 .lg-popup .sw-actions { display: grid !important; grid-template-columns: 1fr; gap: .55rem !important; width: 100%; margin: 1.15rem 0 0 !important; }
 .lg-popup .sw-actions .btn { width: 100%; min-height: 48px; border-radius: 14px !important; }
-.lg-popup .sw-actions .btn-primary { background: linear-gradient(135deg, rgb(var(--wa-color-purple-40)), rgb(var(--wa-color-purple-60))) !important; color: rgb(var(--wa-color-purple-05)) !important; box-shadow: 0 16px 34px -14px rgb(var(--wa-color-purple-40) / .95) !important; }
+.lg-popup .sw-actions .btn-primary { background: linear-gradient(135deg, rgb(var(--wa-color-purple-60)), rgb(var(--wa-color-purple-70))) !important; color: rgb(var(--wa-color-purple-05)) !important; box-shadow: 0 16px 34px -14px rgb(var(--wa-color-purple-40) / .95) !important; }
 .lg-popup .sw-actions .btn-ghost { border-color: transparent !important; background: transparent !important; color: rgb(var(--wa-color-purple-10) / .7) !important; }
 .lg-popup .sw-actions .btn-ghost:hover { background: rgb(255 255 255 / .08) !important; }
 .lg-popup .swal2-loader { border-color: rgb(var(--wa-color-purple-05)) transparent rgb(var(--wa-color-purple-05)) transparent !important; }
@@ -1279,7 +1282,7 @@ select.input {
 .ld-system .card { background-color: rgb(var(--wa-color-purple-05)); color: rgb(var(--wa-color-purple-95)); border-color: rgb(var(--wa-color-purple-30) / 0.9); box-shadow: 0 18px 50px -34px rgb(var(--wa-color-purple-95) / 0.75); }
 .ld-system .input, .ld-system select, .ld-system textarea { background-color: rgb(255 255 255); color: rgb(var(--wa-color-purple-95)); border-color: rgb(var(--wa-color-purple-30)); }
 .ld-system .input::placeholder, .ld-system textarea::placeholder { color: rgb(var(--wa-color-purple-80) / 0.72); }
-.ld-system .btn-primary { background: linear-gradient(135deg, rgb(var(--wa-color-purple-50)), rgb(var(--wa-color-purple-70))); color: white; border-color: transparent; }
+.ld-system .btn-primary { background: linear-gradient(135deg, rgb(var(--wa-color-purple-60)), rgb(var(--wa-color-purple-80))); color: white; border-color: transparent; }
 .ld-system .nav-item[data-on='true'], .ld-system .nav-item[aria-current='page'] { background: linear-gradient(135deg, rgb(var(--wa-color-purple-70) / 0.55), rgb(var(--wa-color-purple-60) / 0.32)); color: rgb(var(--wa-color-purple-05)); border-color: rgb(var(--wa-color-purple-50) / 0.65); }
 .ld-system .icon-btn:hover, .ld-system .btn-ghost:hover { background: rgb(var(--wa-color-purple-60) / 0.2); border-color: rgb(var(--wa-color-purple-50) / 0.65); }
 .ld-system .table-wrap, .ld-system .tbl-wrap { background: rgb(var(--wa-color-purple-05)); border-color: rgb(var(--wa-color-purple-30)); }
@@ -1506,7 +1509,7 @@ select.input {
 .calendar-selected-header { display:flex; align-items:flex-start; gap:.75rem; padding:1rem; border-bottom:1px solid rgba(139,92,246,.18); background:linear-gradient(120deg,rgba(139,92,246,.11),rgba(255,255,255,.45)); }
 .calendar-selected-icon { display:grid; place-items:center; flex:0 0 2.5rem; width:2.5rem; height:2.5rem; border-radius:.85rem; color:rgb(var(--wa-color-purple-05)); font-size:1.3rem; background:linear-gradient(145deg,rgb(var(--wa-color-purple-40)),rgb(var(--wa-color-purple-70))); box-shadow:0 6px 16px rgba(109,40,217,.24); }
 .calendar-selected-title { margin-top:.35rem; font-family:inherit!important; font-size:1.05rem; line-height:1.4; font-weight:750; color:rgb(var(--wa-color-purple-95)); overflow-wrap:anywhere; }
-.calendar-selected-subtitle { margin-top:.2rem; font-size:.72rem; color:#7c65a3; }
+.calendar-selected-subtitle { margin-top:.2rem; font-size:.72rem; color:rgb(var(--wa-color-purple-70)); }
 .calendar-selected-count { display:grid; place-items:center; flex:0 0 auto; min-width:2rem; height:2rem; padding:0 .45rem; border-radius:999px; color:rgb(var(--wa-color-purple-05)); font-size:.8rem; font-weight:700; background:rgb(var(--wa-color-purple-60)); box-shadow:0 4px 12px rgba(124,58,237,.2); }
 .calendar-selected-content { min-height:0; padding:.75rem; }
 .calendar-selected-list { display:flex; flex-direction:column; gap:.6rem; max-height:min(52dvh,510px); overflow-y:auto; overscroll-behavior:contain; padding:.1rem .2rem .2rem .1rem; }
@@ -1515,7 +1518,7 @@ select.input {
 .calendar-selected-booking:hover { transform:translateY(-2px); border-color:rgba(124,58,237,.55); background:rgb(var(--wa-color-purple-05)); box-shadow:0 8px 18px rgba(76,29,149,.09); }
 .calendar-selected-equipment { margin-top:.35rem; font-size:.75rem; color:#725a98; overflow-wrap:anywhere; }
 .calendar-selected-time { margin-top:.45rem; font-size:.72rem; font-weight:650; color:rgb(var(--wa-color-purple-60)); }
-.calendar-selected-footer { padding:.65rem .9rem; border-top:1px solid rgba(139,92,246,.16); color:#806b9e; font-size:.7rem; }
+.calendar-selected-footer { padding:.65rem .9rem; border-top:1px solid rgba(139,92,246,.16); color:rgb(var(--wa-color-purple-70)); font-size:.7rem; }
 .calendar-empty-day { padding:.75rem .25rem; }
 @media (min-width:1280px) { .calendar-day-panel { max-height:calc(100dvh - 190px); } .calendar-selected-content { overflow:hidden; } .calendar-selected-list { max-height:calc(100dvh - 370px); } }
 @media (max-width:1279px) { .calendar-selected-list { max-height:360px; } }
@@ -1911,7 +1914,7 @@ const NAV_ITEMS = [
   { id: 'customers', label: 'ลูกค้า', icon: Users, group: 'business' },
   { id: 'finance', label: 'รายรับ–รายจ่าย', short: 'การเงิน', icon: Wallet, group: 'business' },
   { id: 'history', label: 'ประวัติการเช่า', short: 'ประวัติ', icon: HistoryIcon, group: 'business' },
-  { id: 'settings', label: 'ตั้งค่าการแสดงผล', short: 'ตั้งค่า', icon: SlidersHorizontal, group: 'system' },
+  { id: 'settings', label: 'ตั้งค่า', short: 'ตั้งค่า', icon: SlidersHorizontal, group: 'system' },
 ];
 
 const NAV_GROUPS = {
@@ -2331,6 +2334,14 @@ const KEY = 'lensdesk.settings.v2';
 const SettingsCtx = createContext(null);
 const useSettings = () => useContext(SettingsCtx);
 
+/* ใช้สีที่เลือกไว้ตั้งแต่ก่อนวาดหน้าแรก — ไม่ให้เห็นสีม่วงแวบหนึ่งก่อนเปลี่ยน */
+try {
+  const early = JSON.parse(localStorage.getItem('lensdesk.settings.v2') || '{}');
+  if (early.color) document.documentElement.dataset.color = early.color;
+} catch {
+  /* ไม่มีค่าเดิม ใช้ธีมมาตรฐาน */
+}
+
 const load = () => {
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
@@ -2341,8 +2352,13 @@ const load = () => {
   }
 };
 
+const REMOTE_KEYS = ['color', 'navStyle', 'side', 'radius', 'density', 'motion'];
+const pickRemote = (o) => REMOTE_KEYS.reduce((m, k) => (o[k] === undefined ? m : { ...m, [k]: o[k] }), {});
+
 function SettingsProvider({ children }) {
   const [settings, setSettings] = useState(load);
+  const pushTimer = useRef(0);
+  const skipPush = useRef(true);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -2358,12 +2374,44 @@ function SettingsProvider({ children }) {
     } catch {
       /* โหมดส่วนตัวอาจเขียน localStorage ไม่ได้ */
     }
+    // บันทึกขึ้นเซิร์ฟเวอร์เมื่อเจ้าของร้านเปลี่ยนค่าเอง (ครั้งแรกที่โหลดข้าม) เพื่อให้เปิดเครื่องไหนก็ได้สีเดิม
+    if (skipPush.current) {
+      skipPush.current = false;
+      return undefined;
+    }
+    if (!sessionStorage.getItem(AUTH_TOKEN_KEY)) return undefined;
+    clearTimeout(pushTimer.current);
+    pushTimer.current = setTimeout(() => {
+      api.put('/appearance', pickRemote(settings)).catch(() => {});
+    }, 700);
+    return () => clearTimeout(pushTimer.current);
   }, [settings]);
+
+  // ดึงค่าที่เจ้าของร้านเคยเลือกไว้จากเซิร์ฟเวอร์ (เรียกหลังเข้าสู่ระบบ และตอนเปิดแอปที่ล็อกอินค้างอยู่)
+  const pullRemote = useCallback(async () => {
+    try {
+      const { data } = await api.get('/appearance');
+      const remote = pickRemote(data?.value || {});
+      if (!Object.keys(remote).length) {
+        // ยังไม่เคยบันทึกบนเซิร์ฟเวอร์ → ส่งค่าในเครื่องนี้ขึ้นไปเป็นค่าเริ่มต้น
+        api.put('/appearance', pickRemote(load())).catch(() => {});
+        return;
+      }
+      skipPush.current = true;
+      setSettings((s) => ({ ...s, ...remote }));
+    } catch {
+      /* ออฟไลน์/ตารางยังไม่พร้อม — ใช้ค่าในเครื่องต่อ */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (sessionStorage.getItem(AUTH_TOKEN_KEY)) pullRemote();
+  }, [pullRemote]);
 
   const update = useCallback((patch) => setSettings((s) => ({ ...s, ...patch })), []);
   const reset = useCallback(() => setSettings({ ...DEFAULT_SETTINGS }), []);
 
-  const value = useMemo(() => ({ settings, update, reset }), [settings, update, reset]);
+  const value = useMemo(() => ({ settings, update, reset, pullRemote }), [settings, update, reset, pullRemote]);
   return <SettingsCtx.Provider value={value}>{children}</SettingsCtx.Provider>;
 }
 
@@ -5481,18 +5529,18 @@ function Shell({ children }) {
    เนื้อหา
    ===================================================== */
 const STATEMENT = [
-  'เลิกจดสมุด', 'เลิกไล่เช็กแชต', 'เลิกกลัวจองซ้อน', '—', 'เรื่องของกล้องทั้งหมด',
-  'อยู่ในหน้าจอเดียว', 'ตั้งแต่รูปอุปกรณ์', 'ไปจนถึงเงินในกระเป๋า',
+  'ไม่ต้องจดสมุด', 'ไม่ต้องไล่ดูแชตเก่า', 'ไม่ต้องกลัวจองกล้องซ้ำ', '—', 'การจอง', 'การรับ–คืน',
+  'และรายรับรายจ่าย', 'อยู่ในระบบเดียวกัน',
 ];
 
 const MARQUEE = ['อุปกรณ์', 'การจอง', 'รับ–คืน', 'ปฏิทิน', 'ลูกค้า', 'การเงิน', 'ซ่อมบำรุง'];
 
 
 const STEPS = [
-  { no: '01', title: 'เพิ่มอุปกรณ์', text: 'เลือกรูปจากเครื่อง ใส่ราคาเช่าต่อวัน เท่านี้คลังของคุณก็พร้อมรับจอง' },
-  { no: '02', title: 'สร้างการจอง', text: 'กรอกชื่อ เบอร์โทร เลือกช่วงเวลา แล้วติ๊กอุปกรณ์ ระบบบอกทันทีว่าชิ้นไหนว่าง' },
-  { no: '03', title: 'ส่งมอบอุปกรณ์', text: 'เช็กลิสต์ของที่ให้ลูกค้าไป บันทึกสภาพก่อนส่ง สถานะอุปกรณ์เปลี่ยนให้เอง' },
-  { no: '04', title: 'รับคืนและสรุปยอด', text: 'ตรวจของ คิดค่าปรับถ้าคืนช้า สรุปยอด คืนมัดจำ แล้วลงบัญชีรายรับให้เอง' },
+  { no: '01', title: 'เพิ่มอุปกรณ์', text: 'ใส่ชื่อ รูป และราคาเช่าต่อวัน เท่านี้ก็เปิดให้จองได้' },
+  { no: '02', title: 'สร้างการจอง', text: 'กรอกชื่อลูกค้า เลือกวันรับ–คืน แล้วติ๊กอุปกรณ์ ระบบบอกว่าชิ้นไหนว่างอยู่' },
+  { no: '03', title: 'ส่งมอบ', text: 'ติ๊กเช็กลิสต์ของที่ให้ลูกค้าไป สถานะอุปกรณ์เปลี่ยนให้เอง' },
+  { no: '04', title: 'รับคืนและสรุปยอด', text: 'ตรวจของ คิดค่าปรับถ้าคืนช้า คืนเงินประกัน แล้วยอดเข้าบัญชีรายรับ' },
 ];
 
 function Reveal({ as: Tag = 'div', a = 'up', delay = 0, className = '', children, ...rest }) {
@@ -5653,11 +5701,11 @@ function VisFinance() {
 }
 
 const FEATURES = [
-  { title: 'คลังอุปกรณ์ พร้อมรูปจากเครื่อง', text: 'เพิ่มกล้อง เลนส์ แฟลช และอุปกรณ์เสริม แล้วเลือกรูปจากเครื่องหรือถ่ายจากมือถือได้เลย ระบบย่อรูปให้ก่อนอัปโหลด ไม่ต้องหาลิงก์', Vis: VisInventory },
-  { title: 'จองหลายชิ้น แต่ไม่ชนกัน', text: 'ติ๊กอุปกรณ์หลายชิ้นในใบจองเดียว ระบบตรวจช่วงเวลาซ้อนทับ แล้วคำนวณค่าเช่า ส่วนลด และมัดจำให้ทันที', Vis: VisGantt },
-  { title: 'ส่งมอบและรับคืน มีเช็กลิสต์', text: 'ติ๊กของที่ส่งมอบและรับคืนทีละชิ้น ถ้าคืนช้าระบบเสนอค่าปรับให้ แล้วสรุปยอดสุทธิในหน้าต่างเดียว', Vis: VisChecklist },
-  { title: 'ปฏิทินที่เห็นทั้งเดือน', text: 'รู้ทันทีว่าวันไหนมีคนมารับ วันไหนรอคืน และช่วงไหนอุปกรณ์ว่างพอจะรับงานเพิ่ม', Vis: VisCalendar },
-  { title: 'การเงินลงบัญชีให้เอง', text: 'รับคืนเสร็จ รายรับเข้าบัญชีทันที เพิ่มรายจ่ายและค่าซ่อมได้เอง ดูกำไรสุทธิและแนวโน้มรายเดือนได้ในหน้าเดียว', Vis: VisFinance },
+  { title: 'คลังกล้องพร้อมรูป', text: 'เพิ่มกล้อง เลนส์ แฟลช หรืออุปกรณ์เสริม ใส่ราคาเช่า แล้วเลือกรูปจากเครื่องหรือถ่ายจากมือถือได้เลย รูปจะถูกย่อให้ก่อนอัปโหลด', Vis: VisInventory },
+  { title: 'จองหลายชิ้นในใบเดียว', text: 'ติ๊กเลือกอุปกรณ์หลายชิ้นในใบจองเดียว ถ้าชิ้นไหนถูกจองช่วงเวลานั้นแล้ว ระบบจะบอกทันที ค่าเช่า ส่วนลด และเงินประกันคิดให้เอง', Vis: VisGantt },
+  { title: 'ส่งมอบ–รับคืน มีเช็กลิสต์', text: 'ติ๊กของที่ให้ไปและที่ได้คืนทีละชิ้น ถ้าคืนช้าจะแนะนำค่าปรับให้ แก้ตัวเลขได้ แล้วสรุปยอดในหน้าต่างเดียว', Vis: VisChecklist },
+  { title: 'ปฏิทินรับ–คืน', text: 'ดูทั้งเดือนว่าวันไหนมีคนมารับ วันไหนต้องคืน และช่วงไหนกล้องยังว่าง', Vis: VisCalendar },
+  { title: 'รายรับรายจ่าย', text: 'พอรับคืนเสร็จ ยอดค่าเช่าเข้าบัญชีรายรับให้เอง เพิ่มรายจ่ายและค่าซ่อมได้ แล้วดูกำไรสุทธิรายเดือน', Vis: VisFinance },
 ];
 
 /* =====================================================
@@ -5745,23 +5793,23 @@ function BentoLayouts() {
 function Bento() {
   return (
     <section className="relative mx-auto max-w-7xl px-5 py-24 sm:px-8 lg:py-36">
-      <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">รายละเอียดที่ใส่ใจ</span></Reveal>
+      <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">รายละเอียดอื่นๆ</span></Reveal>
       <h2 className="ld-title mt-5 max-w-3xl text-[clamp(1.9rem,4.6vw,3.4rem)]">
-        <GenerateText words={['เรื่องเล็กๆ', 'ที่ทำให้', 'ใช้งานจริง', 'ได้ทุกวัน']} />
+        <GenerateText words={['ที่ช่วยให้', 'ทำงานหน้าร้าน', 'ง่ายขึ้น']} />
       </h2>
 
       <div className="mt-14 grid gap-4 md:grid-cols-6">
         <Reveal a="up" className="md:col-span-4">
           <Spot className="bn p-7 sm:p-9 min-h-[300px]">
-            <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-70))]">ตรวจเวลาซ้อน</p>
-            <h3 className="ld-title mt-3 max-w-md text-2xl sm:text-3xl">เลือกวันก่อน แล้วค่อยเห็นว่าชิ้นไหนว่าง</h3>
-            <p className="mt-3 max-w-md text-sm leading-[1.9] text-[rgb(var(--wa-color-purple-95)/0.7)]">ตอนเปลี่ยนวันรับ–คืน ระบบเช็กใหม่ให้ทันที ชิ้นที่ไม่ว่างจะกดเลือกไม่ได้ พร้อมบอกเลขใบจองที่ใช้อยู่</p>
+            <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-70))]">กันจองซ้ำ</p>
+            <h3 className="ld-title mt-3 max-w-md text-2xl sm:text-3xl">เลือกวันก่อน แล้วดูว่าชิ้นไหนว่าง</h3>
+            <p className="mt-3 max-w-md text-sm leading-[1.9] text-[rgb(var(--wa-color-purple-95)/0.7)]">เปลี่ยนวันรับ–คืนเมื่อไร ระบบเช็กใหม่ให้ทันที ชิ้นที่ไม่ว่างจะเลือกไม่ได้ และบอกด้วยว่าติดใบจองเลขอะไร</p>
             <div className="mt-7 space-y-2.5">
               <div className="relative h-8 rounded-md bg-white/[0.05]">
                 <span className="mono absolute left-[4%] top-1 flex h-6 w-[46%] items-center justify-center rounded bg-[rgb(var(--wa-color-purple-50))] !text-[9px] text-[rgb(var(--wa-color-purple-95))]">BK-2610</span>
               </div>
               <div className="relative h-8 rounded-md bg-white/[0.05]">
-                <span className="mono absolute left-[38%] top-1 flex h-6 w-[40%] items-center justify-center rounded border border-dashed border-[#ee705e] bg-[#ee705e]/15 !text-[9px] text-[#f3a99d]">ซ้อนกัน — เลือกไม่ได้</span>
+                <span className="mono absolute left-[38%] top-1 flex h-6 w-[40%] items-center justify-center rounded border border-dashed border-[#ee705e] bg-[#ee705e]/15 !text-[9px] text-[#f3a99d]">ซ้ำกัน — เลือกไม่ได้</span>
               </div>
             </div>
           </Spot>
@@ -5770,19 +5818,19 @@ function Bento() {
         <Reveal a="up" delay={80} className="md:col-span-2">
           <Spot className="bn flex h-full min-h-[300px] flex-col justify-between p-7">
             <div>
-              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-70))]">ค่าปรับคืนช้า</p>
-              <h3 className="ld-title mt-3 text-xl">คำนวณเองตามจำนวนวัน</h3>
+              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-70))]">ค่าปรับ</p>
+              <h3 className="ld-title mt-3 text-xl">คิดตามจำนวนวันที่คืนช้า</h3>
             </div>
             <p className="font-num text-[5.4rem] leading-none text-[rgb(var(--wa-color-purple-70))]"><Counter to={300} prefix="฿" /></p>
-            <p className="text-xs text-[rgb(var(--wa-color-purple-95)/0.7)]">แก้ตัวเลขได้ก่อนยืนยันเสมอ</p>
+            <p className="text-xs text-[rgb(var(--wa-color-purple-95)/0.7)]">แก้ตัวเลขได้ก่อนกดยืนยัน</p>
           </Spot>
         </Reveal>
 
         <Reveal a="up" delay={0} className="md:col-span-2">
           <Spot className="bn flex h-full min-h-[260px] flex-col justify-between p-7">
             <div>
-              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-70))]">จัดวางได้</p>
-              <h3 className="ld-title mt-3 text-xl">เมนูซ้าย ขวา บน หรือ dock</h3>
+              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-70))]">เมนู</p>
+              <h3 className="ld-title mt-3 text-xl">เลือกที่วางเมนูได้ ซ้าย ขวา หรือด้านบน</h3>
             </div>
             <BentoLayouts />
           </Spot>
@@ -5791,8 +5839,8 @@ function Bento() {
         <Reveal a="up" delay={80} className="md:col-span-2">
           <Spot className="bn flex h-full min-h-[260px] flex-col justify-between p-7">
             <div>
-              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-70))]">ทุกหน้าจอ</p>
-              <h3 className="ld-title mt-3 text-xl">มือถือ แท็บเล็ต คอมพิวเตอร์</h3>
+              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-70))]">ทุกอุปกรณ์</p>
+              <h3 className="ld-title mt-3 text-xl">ใช้ได้ทั้งมือถือ แท็บเล็ต และคอมพิวเตอร์</h3>
             </div>
             <div className="flex items-end gap-4 text-[rgb(var(--wa-color-purple-95)/0.85)]">
               <Smartphone size={34} strokeWidth={1} /><Tablet size={52} strokeWidth={1} /><Monitor size={78} strokeWidth={1} />
@@ -5803,8 +5851,8 @@ function Bento() {
         <Reveal a="up" delay={160} className="md:col-span-2">
           <Spot className="bn flex h-full min-h-[260px] flex-col justify-between p-7">
             <div>
-              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-70))]">ส่งออก</p>
-              <h3 className="ld-title mt-3 text-xl">ประวัติและบัญชีเป็นไฟล์ CSV</h3>
+              <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-70))]">เก็บข้อมูล</p>
+              <h3 className="ld-title mt-3 text-xl">ดาวน์โหลดประวัติและบัญชีเป็นไฟล์ CSV</h3>
             </div>
             <div className="flex items-center justify-between">
               <div className="space-y-1.5">{[70, 52, 84, 40].map((w) => <i key={w} className="block h-1.5 rounded bg-white/15" style={{ width: w }} />)}</div>
@@ -5980,7 +6028,7 @@ function Landing({ onEnter }) {
   };
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  const heroLines = [['ทุกการเช่า'], ['ควรเรียบง่าย'], ['เหมือนกด', 'ชัตเตอร์']];
+  const heroLines = [['เรื่องจอง', 'รับ', 'คืน'], ['และรายรับรายจ่าย'], ['ดูได้ที่เดียว']];
   let idx = 0;
 
   return (
@@ -6030,8 +6078,8 @@ function Landing({ onEnter }) {
               ))}
             </h1>
             <p className="ld-fade mt-8 max-w-xl text-base leading-[1.95] text-[rgb(var(--wa-color-purple-95)/0.7)] sm:text-lg" style={{ '--i': 6 }}>
-              เก็บเรื่องอุปกรณ์ ใบจอง นัดรับ–คืน และรายรับรายจ่ายไว้ที่เดียว
-              ทำมาให้ร้านที่มีคนดูแลคนเดียว เปิดจากมือถือหน้างานก็ได้
+              ดูว่ากล้องตัวไหนว่าง ใครมารับวันไหน ใครต้องคืน และเงินเข้าออกเท่าไร
+              ใช้คนเดียวก็ไหว เปิดจากมือถือตอนอยู่หน้างานได้
             </p>
             <div className="ld-fade mt-10 flex flex-wrap items-center gap-4" style={{ '--i': 8 }}>
               <Magnetic>
@@ -6078,7 +6126,7 @@ function Landing({ onEnter }) {
       <section id="statement" ref={stmtRef} className="relative h-[240vh]">
         <div className="sticky top-0 flex h-dvh items-center">
           <div className="mx-auto max-w-5xl px-5 sm:px-8">
-            <span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">แนวคิด</span>
+            <span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">ระบบนี้ช่วยอะไร</span>
             <p className="ld-title mt-8 text-[clamp(1.9rem,5.4vw,4rem)] leading-[1.3]">
               {STATEMENT.map((w, i) => <span key={i} className="ld-word mr-[0.28em] inline-block" data-on="false">{w}</span>)}
             </p>
@@ -6088,9 +6136,9 @@ function Landing({ onEnter }) {
 
       {/* FEATURES — sticky scroll reveal */}
       <section id="features" className="relative mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:py-32">
-        <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">ฟีเจอร์</span></Reveal>
+        <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">สิ่งที่ใช้ได้</span></Reveal>
         <h2 className="ld-title mt-5 max-w-2xl text-[clamp(1.9rem,4.6vw,3.4rem)] lg:ml-16">
-          <GenerateText words={['ครบทุกงาน', 'ของร้านเช่า', 'ในหน้าจอเดียว']} />
+          <GenerateText words={['งานประจำวัน', 'ของร้านเช่า', 'ทำได้ในนี้']} />
         </h2>
         <div className="mt-8 grid gap-6 lg:mt-16 lg:grid-cols-2 lg:gap-20">
           <div>
@@ -6121,9 +6169,9 @@ function Landing({ onEnter }) {
       <section id="flow" ref={hzRef} className="relative h-[330vh]">
         <div className="sticky top-0 flex h-dvh flex-col justify-center overflow-hidden">
           <div className="mx-auto mb-10 w-full max-w-7xl px-5 sm:px-8">
-            <span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">ขั้นตอน</span>
+            <span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">วิธีใช้</span>
             <h2 className="ld-title mt-5 max-w-2xl text-[clamp(1.9rem,4.6vw,3.4rem)]">
-              จากอุปกรณ์หนึ่งชิ้น <span className="ld-purple">ถึงรายรับหนึ่งรายการ</span>
+              ตั้งแต่เพิ่มกล้อง <span className="ld-purple">จนถึงรับเงินค่าเช่า</span>
             </h2>
           </div>
           <div ref={trackRef} className="hz-track pl-5 sm:pl-[max(2rem,calc((100vw-80rem)/2+2rem))]">
@@ -6147,8 +6195,8 @@ function Landing({ onEnter }) {
       {/* DEVICES */}
       <section id="devices" className="relative overflow-hidden border-t border-[rgb(var(--wa-color-purple-05)/0.1)] px-5 py-24 sm:px-8 md:py-36">
         <div className="mx-auto max-w-5xl">
-          <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">ใช้ได้ทุกจอ</span></Reveal>
-          <Reveal a="zoom"><h2 className="ld-title mt-5 max-w-3xl text-[clamp(1.9rem,4.6vw,3.4rem)]">ที่ร้าน ระหว่างทาง หรือบนโซฟา<br /><span className="ld-purple">ก็จัดการได้เหมือนกัน</span></h2></Reveal>
+          <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">ใช้ได้ทุกอุปกรณ์</span></Reveal>
+          <Reveal a="zoom"><h2 className="ld-title mt-5 max-w-3xl text-[clamp(1.9rem,4.6vw,3.4rem)]">ที่ร้านหรือนอกร้าน<br /><span className="ld-purple">ใช้ได้เหมือนกัน</span></h2></Reveal>
           <Reveal a="rotate" delay={200}><DeviceShowcase /></Reveal>
         </div>
       </section>
@@ -6157,8 +6205,8 @@ function Landing({ onEnter }) {
       <section className="border-y border-[rgb(var(--wa-color-purple-05)/0.1)] px-5 py-16 sm:px-8 md:py-24">
         <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)] md:gap-16">
           <div>
-            <span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">กติกาการเช่า</span>
-            <h2 className="ld-title mt-5 text-[clamp(1.7rem,3.8vw,2.7rem)]">สิ่งที่ระบบเช็กให้<br />ทุกครั้งที่จอง</h2>
+            <span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">กติกาของร้าน</span>
+            <h2 className="ld-title mt-5 text-[clamp(1.7rem,3.8vw,2.7rem)]">กติกาที่ระบบใช้<br />ตอนรับจอง</h2>
           </div>
           <dl className="divide-y divide-[rgb(var(--wa-color-purple-05)/0.1)] border-y border-[rgb(var(--wa-color-purple-05)/0.1)]">
             {RULES.map(([k, v]) => (
@@ -6177,9 +6225,9 @@ function Landing({ onEnter }) {
         <Lamp className="min-h-[560px] pt-28">
           <div className="mx-auto max-w-4xl text-center">
             <h2 className="ld-title text-[clamp(2.4rem,8vw,6rem)]">
-              <GenerateText words={['พร้อมเปิด', 'ชัตเตอร์', 'แล้วหรือยัง']} step={140} />
+              <GenerateText words={['เริ่มใช้', 'งานได้', 'เลย']} step={140} />
             </h2>
-            <p className="mx-auto mt-6 max-w-md text-[rgb(var(--wa-color-purple-95)/0.7)]">เข้าระบบแล้วเพิ่มกล้องตัวแรกได้เลย</p>
+            <p className="mx-auto mt-6 max-w-md text-[rgb(var(--wa-color-purple-95)/0.7)]">เข้าสู่ระบบ แล้วเพิ่มกล้องตัวแรกได้เลย</p>
             <div className="mt-12">
               <Magnetic>
                 <span className="mb">
@@ -6203,7 +6251,7 @@ function Landing({ onEnter }) {
 /* ═════ pages/Dashboard.jsx ═════ */
 const greeting = () => {
   const h = new Date().getHours();
-  if (h < 12) return 'อรุณสวัสดิ์';
+  if (h < 12) return 'สวัสดีตอนเช้า';
   if (h < 17) return 'สวัสดีตอนบ่าย';
   return 'สวัสดีตอนเย็น';
 };
@@ -6284,11 +6332,11 @@ function TaskRow({ it, now, onOpen, compact = false, index = 0 }) {
       <button
         type="button"
         onClick={() => onOpen(it.b.id)}
-        className={`group relative flex w-full items-center gap-3 overflow-hidden rounded-xl border py-2.5 pl-4 pr-3 text-left transition-colors hover:brightness-[0.98] ${k.row} ${compact ? 'min-h-[60px]' : 'min-h-[64px]'}`}
+        className={`group relative flex w-full items-center gap-3 overflow-hidden rounded-xl border pl-4 pr-3 text-left transition-colors hover:brightness-[0.98] ${k.row} ${compact ? 'min-h-[52px] py-2' : 'min-h-[64px] py-2.5'}`}
       >
         <span className={`absolute inset-y-0 left-0 w-1.5 ${k.bar}`} aria-hidden="true" />
-        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${k.tile}`} aria-hidden="true">
-          <Icon size={19} />
+        <span className={`flex shrink-0 items-center justify-center rounded-xl ${compact ? 'h-8 w-8' : 'h-10 w-10'} ${k.tile}`} aria-hidden="true">
+          <Icon size={compact ? 16 : 19} />
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-1.5">
@@ -6325,23 +6373,20 @@ function TodayBoard({ className = '' }) {
   ];
 
   return (
-    <section className={`today-board card px-4 py-4 sm:px-5 sm:py-5 ${counts.late ? 'ring-1 ring-bad/35' : ''} ${className}`} aria-label="งานวันนี้">
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-x-3 gap-y-0.5">
-        <div className="min-w-0">
-          <p className="mono-l">งานวันนี้</p>
-          <h2 className="font-serif text-[1.1rem] font-medium sm:text-[1.2rem]">{fmtLongDate()}</h2>
-        </div>
-        <span className="whitespace-nowrap text-[11px] text-mute">เวลา · {fmtTime(now)} น.</span>
+    <section className={`today-board card px-4 py-3.5 sm:px-5 ${counts.late ? 'ring-1 ring-bad/35' : ''} ${className}`} aria-label="งานวันนี้">
+      <div className="mb-2.5 flex items-baseline justify-between gap-3">
+        <h2 className="text-[15px] font-semibold">งานวันนี้ <span className="font-normal text-mute">· {fmtLongDate()}</span></h2>
+        <span className="whitespace-nowrap text-[11px] text-mute">{fmtTime(now)} น.</span>
       </div>
 
       {counts.late > 0 && (
-        <div role="alert" className="mb-3 flex items-center gap-2.5 rounded-xl bg-bad px-3.5 py-2.5 text-white">
+        <div role="alert" className="mb-2.5 flex items-center gap-2 rounded-lg bg-bad px-3 py-2 text-white">
           <AlertTriangle size={18} className="shrink-0" />
           <p className="text-sm font-semibold leading-snug">มี {counts.late} รายการเลยกำหนดคืนแล้ว — ควรติดต่อลูกค้าทันที</p>
         </div>
       )}
 
-      <div className="-mx-1 mb-3 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]" role="tablist" aria-label="กรองประเภทงาน">
+      <div className="-mx-1 mb-2.5 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]" role="tablist" aria-label="กรองประเภทงาน">
         {chips.map((c) => (
           <button
             key={c.id}
@@ -6349,7 +6394,7 @@ function TodayBoard({ className = '' }) {
             role="tab"
             aria-selected={filter === c.id}
             onClick={() => { setFilter(c.id); setAll(false); }}
-            className="chip shrink-0 !min-h-10 gap-2 !px-3.5"
+            className="chip shrink-0 !min-h-9 gap-1.5 !px-3 text-[13px]"
             data-on={filter === c.id}
           >
             <i className={`h-2 w-2 rounded-full ${c.dot}`} />
@@ -6365,9 +6410,9 @@ function TodayBoard({ className = '' }) {
           <span>{counts.all === 0 ? 'วันนี้เรียบร้อย ไม่มีนัดรับ–คืน และไม่มีรายการเลยกำหนด' : 'ไม่มีรายการในหมวดนี้'}</span>
         </div>
       ) : (
-        <ul className="stagger space-y-2" key={filter}>
+        <ul className="stagger space-y-1.5" key={filter}>
           {visible.map((it, i) => (
-            <TaskRow key={it.id} it={it} now={now} onOpen={openDetail} index={i} />
+            <TaskRow key={it.id} it={it} now={now} onOpen={openDetail} index={i} compact />
           ))}
         </ul>
       )}
@@ -6378,6 +6423,38 @@ function TodayBoard({ className = '' }) {
           <ChevronDown size={16} className={`transition-transform ${all ? 'rotate-180' : ''}`} />
         </button>
       )}
+    </section>
+  );
+}
+
+/* แถบสรุปงานวันนี้ บรรทัดเดียว (ใช้ในหน้าปฏิทิน) */
+function TodayStrip({ className = '' }) {
+  const { navigate } = useApp();
+  const { items, counts, now } = useTodayTasks();
+  const worst = items.find((i) => i.kind === 'late');
+  const pills = [
+    { n: counts.pickup, label: 'ส่งกล้อง', cls: 'bg-accent/12 text-accent' },
+    { n: counts.return, label: 'รับคืน', cls: 'bg-warn/15 text-warn' },
+    { n: counts.late, label: 'เลยกำหนด', cls: 'bg-bad text-white' },
+  ];
+  return (
+    <section className={`today-strip flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-line bg-surface px-3.5 py-2 ${counts.late ? 'border-bad/40' : ''} ${className}`} aria-label="สรุปงานวันนี้">
+      <span className="text-sm font-semibold">วันนี้</span>
+      {counts.all === 0 ? (
+        <span className="text-sm text-mute">ไม่มีนัดรับ–คืน</span>
+      ) : (
+        <span className="flex flex-wrap items-center gap-1.5">
+          {pills.filter((p) => p.n > 0).map((p) => (
+            <span key={p.label} className={`rounded-full px-2.5 py-1 text-xs font-semibold leading-none ${p.cls}`}>
+              {p.label} <b className="font-num">{p.n}</b>
+            </span>
+          ))}
+        </span>
+      )}
+      {worst && <span className="text-xs text-bad">เลยมานานสุด {fmtSpan(now - worst.at)}</span>}
+      <button type="button" onClick={() => navigate('dashboard')} className="ml-auto whitespace-nowrap text-xs font-medium text-accent hover:underline">
+        ดูรายการ →
+      </button>
     </section>
   );
 }
@@ -6816,9 +6893,9 @@ function Bookings() {
   return (
     <>
       <PageHeader
-        eyebrow="Reservations"
+        eyebrow="การจอง"
         title="รายการจอง"
-        description="ตรวจสอบช่วงเวลา ผู้เช่า และสถานะ แตะที่รายการเพื่อดูรายละเอียดและตรวจสภาพ"
+        description="รายการจองทั้งหมด แตะที่รายการเพื่อดูรายละเอียด"
         actions={
           <button onClick={() => openBooking([])} className="btn btn-primary">
             <Plus size={17} /> สร้างการจอง
@@ -6875,9 +6952,9 @@ function Operations() {
   return (
     <>
       <PageHeader
-        eyebrow="Handover"
+        eyebrow="รับ–คืน"
         title="รับ–คืนอุปกรณ์"
-        description="บันทึกการส่งมอบพร้อมเช็กลิสต์ และรับคืนพร้อมคำนวณค่าปรับอัตโนมัติ"
+        description="ส่งมอบกล้องให้ลูกค้า และรับคืนพร้อมคิดค่าปรับถ้าคืนช้า"
       />
 
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
@@ -7088,7 +7165,7 @@ function CalendarPage() {
         }
       />
 
-      <TodayBoard className="mb-5" />
+      <TodayStrip className="mb-4" />
 
       <div className="calendar-layout grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
         <section className="calendar-month-card card min-w-0 overflow-hidden">
@@ -7110,7 +7187,7 @@ function CalendarPage() {
             </button>
             {help && (
               <div className="page-in mt-3 space-y-3 text-xs text-mute">
-                <p>ในช่องวันที่จะมีป้ายเล็ก ๆ: <b className="text-ink">รับ</b> = ลูกค้ามารับกล้องวันนั้น · <b className="text-ink">คืน</b> = ลูกค้านำกล้องมาคืนวันนั้น · <b className="text-ink">เช่า</b> = กล้องอยู่กับลูกค้าในวันนั้น</p>
+                <p>ในช่องวันที่จะมีป้ายเล็ก ๆ: <b className="text-ink">รับ</b> = ลูกค้ามารับกล้องวันนั้น · <b className="text-ink">คืน</b> = ลูกค้านำกล้องมาคืนวันนั้น · <b className="text-ink">เช่า</b> = กล้องอยู่กับลูกค้าในวันนั้น (เช่น จอง 25–28 → 25 รับ, 26–27 เช่า, 28 คืน)</p>
                 <div className="grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
                   {Object.values(CAL_KINDS).map((k) => (
                     <span key={k.label} className="inline-flex items-center gap-2">
@@ -7269,9 +7346,9 @@ function Equipments() {
   return (
     <>
       <PageHeader
-        eyebrow="Inventory"
+        eyebrow="คลังอุปกรณ์"
         title="กล้องและอุปกรณ์"
-        description="จัดการรูปภาพ ราคาเช่า และสถานะของอุปกรณ์ทุกชิ้นในร้าน"
+        description="รูป ราคาเช่า และสถานะของอุปกรณ์แต่ละชิ้น"
         actions={
           <button onClick={() => openEquipment(null)} className="btn btn-primary">
             <Plus size={17} /> เพิ่มอุปกรณ์
@@ -7497,9 +7574,9 @@ function Maintenance() {
   return (
     <>
       <PageHeader
-        eyebrow="Maintenance"
+        eyebrow="ซ่อมบำรุง"
         title="ซ่อมบำรุง"
-        description="อุปกรณ์ที่ส่งซ่อมจะถูกล็อกไม่ให้จอง จนกว่าจะปิดงาน"
+        description="ชิ้นที่ส่งซ่อมจะจองไม่ได้ จนกว่าจะปิดงานซ่อม"
         actions={
           <button onClick={() => maintenanceFlow(equipments, refresh)} className="btn btn-primary">
             <Plus size={17} /> บันทึกงานซ่อม
@@ -7575,9 +7652,9 @@ function Customers() {
   return (
     <>
       <PageHeader
-        eyebrow="Customers"
+        eyebrow="ลูกค้า"
         title="ลูกค้า"
-        description="ประวัติผู้เช่าทั้งหมด สร้างอัตโนมัติจากการจอง — พิมพ์เบอร์เดิมระบบจะจำชื่อให้"
+        description="รายชื่อลูกค้าทั้งหมด เพิ่มให้เองเมื่อมีการจองใหม่"
       />
       <SearchBox className="mb-5" value={q} onChange={setQ} placeholder="ค้นหาชื่อ เบอร์โทร หรืออีเมล..." />
 
@@ -7729,9 +7806,9 @@ function Finance() {
   return (
     <>
       <PageHeader
-        eyebrow="Finance"
+        eyebrow="บัญชี"
         title="รายรับ–รายจ่าย"
-        description="รายรับจากการรับคืนอุปกรณ์ถูกบันทึกให้อัตโนมัติ เพิ่มรายจ่ายหรือรายรับอื่นๆ ได้เอง"
+        description="ค่าเช่าเข้าบัญชีให้เองตอนรับคืน เพิ่มรายจ่ายหรือรายรับอื่นๆ ได้"
         actions={
           <>
             <button onClick={exportCsv} className="btn btn-ghost"><Download size={16} /> CSV</button>
@@ -7938,9 +8015,9 @@ function History() {
   return (
     <>
       <PageHeader
-        eyebrow="Archive"
+        eyebrow="ย้อนหลัง"
         title="ประวัติการเช่า"
-        description="รายการที่คืนแล้วหรือยกเลิก เก็บไว้ตรวจสอบย้อนหลัง"
+        description="รายการที่คืนแล้วหรือยกเลิก"
         actions={<button onClick={exportCsv} className="btn btn-ghost"><Download size={16} /> ส่งออก CSV</button>}
       />
       <div className="mb-5 space-y-3">
@@ -8027,9 +8104,9 @@ function Settings() {
   return (
     <>
       <PageHeader
-        eyebrow="Appearance"
-        title="ตั้งค่าการแสดงผล"
-        description="ปรับหน้าตาและการจัดวางได้เต็มที่ — บันทึกในเครื่องนี้อัตโนมัติ และมีผลทันที"
+        eyebrow="ตั้งค่า"
+        title="ตั้งค่า"
+        description="สี หน้าตา และเมนู — เปลี่ยนแล้วมีผลทันที และจำให้ทุกเครื่องที่ใช้งาน"
         actions={
           <button
             onClick={() => {
@@ -8484,6 +8561,7 @@ function PwField({ label, value, onChange, placeholder, autoComplete, inputRef, 
 }
 
 function LoginPortal({ origin, onClose, onDone }) {
+  const { pullRemote } = useSettings();
   const [step, setStep] = useState('login'); // login | force | done
   const [out, setOut] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -8536,6 +8614,7 @@ function LoginPortal({ origin, onClose, onDone }) {
     try {
       const { data } = await axios.post(`${API_ORIGIN}/api/auth/login`, { password: pw }, { timeout: 15000 });
       sessionStorage.setItem(AUTH_TOKEN_KEY, data.token);
+      pullRemote(); // เข้าระบบแล้ว ใช้สีและการตั้งค่าที่เลือกไว้ครั้งล่าสุด (ข้ามเครื่องได้)
       setBusy(false);
       if (data.mustChange) {
         setStep('force');

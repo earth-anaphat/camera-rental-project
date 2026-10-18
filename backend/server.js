@@ -171,6 +171,44 @@ app.post('/api/auth/change-password', rateLimit({ windowMs: 15 * 60_000, max: 10
 }));
 
 // ==========================================
+// APPEARANCE — จำสีธีมและการตั้งค่าการแสดงผลของเจ้าของร้าน (ใช้ร่วมกันทุกเครื่อง)
+// ==========================================
+const APPEARANCE_KEY = 'appearance';
+const APPEARANCE_RULES = {
+  color: ['purple', 'green', 'red', 'orange', 'blue', 'pink', 'teal', 'gold', 'slate'],
+  navStyle: ['sidebar', 'rail', 'topbar', 'dock'],
+  side: ['left', 'right'],
+  radius: ['sharp', 'soft', 'round'],
+  density: ['compact', 'comfortable', 'spacious'],
+};
+const cleanAppearance = (input = {}) => {
+  const out = {};
+  Object.entries(APPEARANCE_RULES).forEach(([k, allowed]) => {
+    if (typeof input[k] === 'string' && allowed.includes(input[k])) out[k] = input[k];
+  });
+  if (typeof input.motion === 'boolean') out.motion = input.motion;
+  return out;
+};
+
+app.get('/api/appearance', authAsync(async (req, res) => {
+  const { data, error } = await supabase.from('app_settings').select('value').eq('key', APPEARANCE_KEY).maybeSingle();
+  if (error) return res.json({ value: {} }); // ตารางยังไม่พร้อม → ใช้ค่าในเครื่องแทน ไม่ให้หน้าเว็บพัง
+  let value = {};
+  try { value = cleanAppearance(JSON.parse(data?.value || '{}')); } catch { value = {}; }
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ value });
+}));
+
+app.put('/api/appearance', authAsync(async (req, res) => {
+  const value = cleanAppearance(req.body || {});
+  const { error } = await supabase
+    .from('app_settings')
+    .upsert({ key: APPEARANCE_KEY, value: JSON.stringify(value), updated_at: new Date().toISOString() }, { onConflict: 'key' });
+  if (error) return res.status(500).json({ error: 'บันทึกการตั้งค่าไม่สำเร็จ' });
+  res.json({ ok: true, value });
+}));
+
+// ==========================================
 // FILE UPLOAD
 // ==========================================
 const UPLOAD_DIR = path.join(__dirname, '../uploads');
