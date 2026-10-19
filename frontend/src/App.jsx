@@ -1821,9 +1821,185 @@ html[data-motion='off'] .ld-bell-ring { animation: none; }
   body { overscroll-behavior-y: none; }
 }
 
+
+/* =====================================================
+   LANDING 2 — สไตล์ Apple (.l2)
+   ===================================================== */
+.l2 {
+  --l2-bg: #06040b;
+  --l2-fg: #f6f4fb;
+  --l2-mute: rgb(246 244 251 / 0.64);
+  --l2-line: rgb(255 255 255 / 0.12);
+  --l2-acc: var(--wa-color-purple-60);
+  position: relative; min-height: 100dvh; overflow-x: clip;
+  background: var(--l2-bg); color: var(--l2-fg);
+  -webkit-font-smoothing: antialiased;
+}
+.l2 button { font: inherit; cursor: pointer; }
+.l2-wrap { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 1.25rem; }
+@media (min-width: 640px) { .l2-wrap { padding: 0 2rem; } }
+.l2-progress { position: fixed; left: 0; top: 0; z-index: 90; height: 3px; width: 100%; transform-origin: left; background: rgb(var(--wa-color-purple-50)); }
+
+/* ตัวอักษร */
+.l2-eyebrow { display: inline-block; margin: 0 0 1rem; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(var(--wa-color-purple-40)); }
+.l2-light .l2-eyebrow { color: rgb(var(--wa-color-purple-70)); }
+.l2-h1, .l2-h2 { text-wrap: balance; }
+.l2-h1 { margin: 0; font-size: clamp(2.7rem, 7.6vw, 6.4rem); line-height: 1.12; font-weight: 800; letter-spacing: -0.01em; }
+.l2-h2 { margin: 0; font-size: clamp(2.1rem, 5.2vw, 4.2rem); line-height: 1.16; font-weight: 800; letter-spacing: -0.01em; }
+.l2-h2-dark { color: rgb(var(--wa-color-purple-95)); }
+.l2-lead { margin: 1.4rem 0 0; max-width: 31rem; font-size: clamp(1rem, 1.6vw, 1.22rem); line-height: 1.85; color: var(--l2-mute); }
+.l2-grad { background: linear-gradient(95deg, rgb(var(--wa-color-purple-30)), rgb(var(--wa-color-purple-50)) 55%, #ff9ad5); -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: 0.06em; }
+.l2-grad-d { background: linear-gradient(95deg, rgb(var(--wa-color-purple-60)), rgb(var(--wa-color-purple-50)) 60%, #e0559d); -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: 0.06em; }
+
+/* ปุ่ม */
+.l2-pill { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 50px; padding: 0 1.7rem; border: 0; border-radius: 999px; background: rgb(var(--wa-color-purple-60)); color: #fff; font-size: 1rem; font-weight: 600; white-space: nowrap; transition: transform 0.35s var(--ease), box-shadow 0.35s, filter 0.3s; box-shadow: 0 14px 34px -14px rgb(var(--wa-color-purple-50) / 0.9); }
+.l2-pill:hover { transform: scale(1.045); filter: brightness(1.08); }
+.l2-pill:active { transform: scale(0.97); }
+.l2-pill-sm { min-height: 34px; padding: 0 1.05rem; font-size: 0.82rem; box-shadow: none; }
+.l2-pill-lg { min-height: 64px; padding: 0 2.6rem; font-size: 1.15rem; }
+.l2-link { display: inline-flex; align-items: center; gap: 0.4rem; border: 0; background: none; color: rgb(var(--wa-color-purple-30)); font-size: 1rem; font-weight: 500; padding: 0.6rem 0.2rem; transition: color 0.25s, transform 0.3s var(--ease); }
+.l2-link:hover { color: #fff; transform: translateX(3px); }
+
+/* เมนูบนสุด */
+.l2-nav { position: fixed; inset: 0 0 auto 0; z-index: 80; transition: background-color 0.4s, border-color 0.4s, backdrop-filter 0.4s; border-bottom: 1px solid transparent; }
+.l2-nav[data-solid='true'] { background: rgb(8 5 14 / 0.72); -webkit-backdrop-filter: saturate(180%) blur(18px); backdrop-filter: saturate(180%) blur(18px); border-color: var(--l2-line); }
+.l2-nav-in { display: flex; align-items: center; justify-content: space-between; gap: 1rem; max-width: 1180px; height: 56px; margin: 0 auto; padding: 0 1.25rem; }
+@media (min-width: 640px) { .l2-nav-in { padding: 0 2rem; } }
+.l2-mark { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; overflow: hidden; border-radius: 8px; background: rgb(var(--wa-color-purple-60)); color: #fff; flex: none; }
+.l2-nav-name { font-weight: 700; font-size: 0.98rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.l2-nav-link { border: 0; background: none; color: var(--l2-mute); font-size: 0.86rem; font-weight: 500; transition: color 0.25s; }
+.l2-nav-link:hover { color: #fff; }
+
+/* ฉากกล้อง */
+.l2-stage { position: relative; height: 560vh; }
+.l2-sticky { position: sticky; top: 0; height: 100dvh; overflow: hidden; }
+.l2-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 55% at 50% 108%, rgb(var(--wa-color-purple-70) / 0.5), transparent 70%), radial-gradient(ellipse 60% 50% at 80% -8%, rgb(var(--wa-color-purple-60) / 0.28), transparent 70%); }
+.l2-dots { position: absolute; inset: 0; opacity: 0.5; background: radial-gradient(rgb(255 255 255 / 0.12) 1px, transparent 1.4px) 0 0/30px 30px; -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 50%, #000, transparent 78%); mask-image: radial-gradient(ellipse 75% 65% at 50% 50%, #000, transparent 78%); }
+.l2-camwrap { position: absolute; left: 50%; top: 50%; width: 0; height: 0; will-change: transform; }
+.l2-halo { position: absolute; left: -480px; top: -480px; width: 960px; height: 960px; border-radius: 50%; background: radial-gradient(circle, rgb(var(--wa-color-purple-60) / 0.42), rgb(var(--wa-color-purple-60) / 0.12) 38%, transparent 66%); }
+.l2-floor { position: absolute; left: -260px; top: calc(var(--s, 1) * 150px); width: 520px; height: 90px; border-radius: 50%; background: radial-gradient(ellipse, rgb(0 0 0 / 0.7), transparent 68%); transform: scaleX(calc(var(--s, 1) * 1.1)) scaleY(calc(var(--s, 1) * 1.1)); }
+.l2-camp { position: absolute; left: 0; top: 0; width: 0; height: 0; perspective: 1500px; perspective-origin: 0 0; }
+.l2-float { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; animation: l2Float 7s ease-in-out infinite; }
+.l2-rig { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; will-change: transform; }
+@keyframes l2Float { 0%, 100% { transform: translate3d(0, -6px, 0); } 50% { transform: translate3d(0, 8px, 0); } }
+
+/* ชิ้นส่วน 3D ของกล้อง */
+.c3 { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-style: preserve-3d; }
+.c3f { position: absolute; left: 50%; top: 50%; display: block; backface-visibility: hidden; -webkit-backface-visibility: hidden; font-style: normal; overflow: hidden; }
+.c3 .c3 { left: 0; top: 0; }
+.cam-engrave { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 14px; font-size: 12px; font-weight: 700; letter-spacing: 0.32em; text-transform: uppercase; color: rgb(60 58 74 / 0.75); text-shadow: 0 1px 0 rgb(255 255 255 / 0.7); }
+.cam-screen { position: absolute; inset: 28px 34px; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 12px; background: linear-gradient(135deg, rgb(var(--wa-color-purple-80)), rgb(var(--wa-color-purple-95))); box-shadow: inset 0 0 0 2px #26212f; color: #fff; }
+.cam-screen b { font-size: 13px; font-weight: 700; opacity: 0.9; }
+.cam-screen em { flex: 1; display: flex; align-items: flex-end; gap: 8px; font-style: normal; }
+.cam-screen u { flex: 1; border-radius: 4px 4px 0 0; background: rgb(var(--wa-color-purple-40)); text-decoration: none; }
+.cam-glint { position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0 20%, rgb(255 255 255 / 0.5) 26%, transparent 32% 70%, rgb(150 190 255 / 0.4) 76%, transparent 82%); animation: l2Spin 9s linear infinite; }
+@keyframes l2Spin { to { transform: rotate(360deg); } }
+
+/* ข้อความในฉาก */
+.l2-beat { position: absolute; z-index: 5; left: 1.25rem; right: 1.25rem; top: 12dvh; will-change: transform, opacity; }
+@media (min-width: 760px) and (min-aspect-ratio: 19/20) {
+  .l2-beat { top: 50%; margin-top: -9.5rem; left: max(2rem, calc((100vw - 1180px) / 2 + 2rem)); right: auto; width: min(34rem, 44vw); }
+  .l2-beat[data-side='r'] { left: auto; right: max(2rem, calc((100vw - 1180px) / 2 + 2rem)); }
+  .l2-beat[data-side='c'] { left: 50%; right: auto; top: 14dvh; margin: 0; margin-left: calc(min(34rem, 80vw) / -2); width: min(34rem, 80vw); text-align: center; }
+  .l2-beat[data-side='c'] .l2-lead { margin-left: auto; margin-right: auto; }
+  .l2-beat[data-side='hero'] { width: min(40rem, 54vw); }
+  .l2-beat[data-side='hero'] .l2-h1 { font-size: clamp(2.4rem, 5.4vw, 5.2rem); }
+}
+@media (max-width: 759px), (max-aspect-ratio: 19/20) {
+  .l2-beat[data-side='hero'] { top: 9.5dvh; }
+  .l2-beat .l2-lead { font-size: 0.95rem; line-height: 1.7; margin-top: 0.9rem; }
+  .l2-beat[data-side='hero'] .l2-lead { display: none; }
+  .l2-beat .l2-h2 { font-size: clamp(1.9rem, 8.6vw, 2.6rem); }
+  .l2-beat[data-side='hero'] .l2-h1 { font-size: clamp(2.5rem, 12vw, 3.4rem); }
+}
+.l2-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.4rem; margin-top: 2rem; }
+.l2-w { display: inline-block; overflow: hidden; padding: 0.14em 0 0.08em; margin: -0.14em 0.2em -0.08em 0; vertical-align: top; }
+.l2-w > span { display: inline-block; transform: translateY(115%); }
+.l2-ready .l2-w > span { animation: l2WordUp 1s var(--ease) both; animation-delay: calc(var(--i) * 110ms + 150ms); }
+@keyframes l2WordUp { from { transform: translateY(115%); } to { transform: none; } }
+.l2-up { opacity: 0; }
+.l2-ready .l2-up { animation: l2Fade 0.9s var(--ease) both; animation-delay: calc(var(--i) * 110ms + 200ms); }
+@keyframes l2Fade { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+.l2-cue { position: absolute; left: 50%; bottom: 1.4rem; z-index: 4; width: 1px; height: 42px; overflow: hidden; background: rgb(255 255 255 / 0.2); }
+.l2-cue span { display: block; width: 1px; height: 16px; background: rgb(var(--wa-color-purple-40)); animation: floaty 1.8s ease-in-out infinite; }
+@media (max-width: 759px), (max-aspect-ratio: 19/20) { .l2-cue { display: none; } }
+
+/* ประโยคใหญ่ */
+.l2-statement { position: relative; height: 240vh; }
+.l2-statement-in { position: sticky; top: 0; display: flex; height: 100dvh; flex-direction: column; justify-content: center; max-width: 1080px; margin: 0 auto; padding: 0 1.25rem; }
+@media (min-width: 640px) { .l2-statement-in { padding: 0 2rem; } }
+.l2-big { margin: 0.6rem 0 0; font-size: clamp(2rem, 5.6vw, 4.4rem); line-height: 1.32; font-weight: 800; }
+.l2-word { display: inline-block; margin-right: 0.28em; color: rgb(255 255 255 / 0.16); transition: color 0.5s var(--ease), transform 0.5s var(--ease); }
+.l2-word[data-on='true'] { color: #fff; }
+
+/* ส่วนพื้นสว่าง */
+.l2-light { background: #f4f2f8; color: rgb(var(--wa-color-purple-95)); --l2-mute: rgb(var(--wa-color-purple-95) / 0.66); --l2-line: rgb(var(--wa-color-purple-95) / 0.12); }
+.l2-sec { padding: 5.5rem 0; }
+@media (min-width: 900px) { .l2-sec { padding: 9rem 0; } }
+
+/* การ์ดฟีเจอร์ */
+.l2-tiles { display: grid; gap: 1.1rem; margin-top: 3rem; }
+@media (min-width: 1024px) { .l2-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; margin-top: 4.5rem; } }
+.l2-tile { position: relative; display: flex; height: 100%; flex-direction: column; overflow: hidden; border-radius: 30px; padding: 1.6rem 1.5rem 1.5rem; color: #f6f4fb; background: radial-gradient(ellipse 80% 60% at 100% 0%, rgb(var(--wa-color-purple-60) / 0.3), transparent 70%), linear-gradient(165deg, #140e22, #09060f); box-shadow: 0 40px 80px -46px rgb(20 8 50 / 0.7); }
+@media (min-width: 640px) { .l2-tile { padding: 2.2rem 2.2rem 2rem; border-radius: 36px; } }
+.l2-tile-no { margin: 0; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.2em; color: rgb(var(--wa-color-purple-40)); }
+.l2-tile-h { margin: 0.5rem 0 0; font-size: clamp(1.5rem, 2.6vw, 2.2rem); line-height: 1.25; font-weight: 800; }
+.l2-tile-p { margin: 0.9rem 0 0; max-width: 34rem; font-size: 0.98rem; line-height: 1.8; color: rgb(246 244 251 / 0.68); }
+.l2-tile-vis { height: 320px; margin-top: 1.6rem; }
+@media (min-width: 1024px) { .l2-tile-vis { margin-top: auto; padding-top: 1.8rem; box-sizing: content-box; } }
+
+/* ขั้นตอน */
+.l2-flow { position: relative; height: 330vh; background: radial-gradient(ellipse 70% 50% at 50% 0%, rgb(var(--wa-color-purple-70) / 0.28), transparent 70%), var(--l2-bg); }
+.l2-flow-sticky { position: sticky; top: 0; display: flex; height: 100dvh; flex-direction: column; justify-content: center; overflow: hidden; }
+.l2-flow-head { margin-bottom: 2.2rem; }
+.l2-track { display: flex; gap: 1.4rem; width: max-content; padding-left: 1.25rem; will-change: transform; }
+@media (min-width: 640px) { .l2-track { padding-left: max(2rem, calc((100vw - 1180px) / 2 + 2rem)); gap: 1.8rem; } }
+.l2-step { position: relative; display: flex; flex: none; flex-direction: column; justify-content: space-between; width: min(80vw, 400px); min-height: min(52dvh, 380px); padding: 1.8rem; border-radius: 32px; border: 1px solid rgb(255 255 255 / 0.12); background: linear-gradient(160deg, rgb(255 255 255 / 0.09), rgb(255 255 255 / 0.025)); box-shadow: 0 50px 90px -50px rgb(0 0 0 / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.12); will-change: transform, opacity; }
+.l2-step-ico { display: inline-flex; width: 56px; height: 56px; align-items: center; justify-content: center; border-radius: 18px; background: rgb(var(--wa-color-purple-60)); color: #fff; box-shadow: 0 16px 34px -14px rgb(var(--wa-color-purple-50)); }
+.l2-step-no { position: absolute; right: 1.6rem; top: 1rem; margin: 0; font-size: 5.2rem; line-height: 1; font-weight: 800; color: rgb(255 255 255 / 0.07); }
+.l2-step-h { margin: 0; font-size: 1.7rem; font-weight: 800; }
+.l2-step-p { margin: 0.7rem 0 0; font-size: 1rem; line-height: 1.8; color: var(--l2-mute); }
+.l2-bar { height: 2px; margin-top: 2.4rem; background: rgb(255 255 255 / 0.16); }
+.l2-bar > div { height: 100%; transform-origin: left; transform: scaleX(0); background: rgb(var(--wa-color-purple-50)); }
+
+/* ทุกอุปกรณ์ */
+.l2-devices { overflow: hidden; }
+.l2-rise { margin-top: 1rem; transform-origin: 50% 100%; transform: perspective(1400px) rotateX(calc((1 - var(--q, 1)) * 26deg)) translateY(calc((1 - var(--q, 1)) * 70px)) scale(calc(0.9 + var(--q, 1) * 0.1)); opacity: calc(0.2 + var(--q, 1) * 0.8); }
+
+/* กติกา */
+.l2-rules { background: #0b0813; }
+.l2-rules-grid { display: grid; gap: 2.6rem; }
+@media (min-width: 860px) { .l2-rules-grid { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.4fr); gap: 5rem; } }
+.l2-rules .l2-h2 { font-size: clamp(1.9rem, 4vw, 3rem); }
+.l2-dl { margin: 0; border-top: 1px solid var(--l2-line); }
+.l2-dl-row { display: grid; gap: 0.3rem; padding: 1.15rem 0; border-bottom: 1px solid var(--l2-line); }
+@media (min-width: 640px) { .l2-dl-row { grid-template-columns: 11rem 1fr; gap: 1.5rem; } }
+.l2-dl dt { font-size: 0.92rem; color: var(--l2-mute); }
+.l2-dl dd { margin: 0; color: rgb(246 244 251 / 0.9); line-height: 1.7; }
+
+/* ปิดท้าย */
+.l2-end { position: relative; overflow: hidden; padding: 8rem 0 9rem; text-align: center; background: radial-gradient(ellipse 60% 50% at 50% 55%, rgb(var(--wa-color-purple-70) / 0.4), transparent 70%), var(--l2-bg); }
+.l2-end .l2-lead { margin-left: auto; margin-right: auto; text-align: center; }
+.l2-h1-end { font-size: clamp(2.6rem, 8.4vw, 6.4rem); }
+.l2-rings { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+.l2-rings i { position: absolute; border-radius: 50%; border: 1px solid rgb(var(--wa-color-purple-40) / 0.28); transform: translate(-50%, -50%); animation: l2Ring 6s ease-in-out infinite; }
+.l2-rings i:nth-child(1) { width: 420px; height: 420px; }
+.l2-rings i:nth-child(2) { width: 700px; height: 700px; animation-delay: -2s; }
+.l2-rings i:nth-child(3) { width: 1000px; height: 1000px; animation-delay: -4s; }
+@keyframes l2Ring { 0%, 100% { transform: translate(-50%, -50%) scale(0.94); opacity: 0.5; } 50% { transform: translate(-50%, -50%) scale(1.04); opacity: 1; } }
+.l2-foot { padding: 2rem 1rem; text-align: center; border-top: 1px solid var(--l2-line); font-size: 0.78rem; color: var(--l2-mute); background: var(--l2-bg); }
+.l2-foot p { margin: 0; }
+@media (prefers-reduced-motion: reduce) { .l2-float, .cam-glint, .l2-rings i, .l2-cue span { animation: none; } }
+html[data-motion='off'] .l2-float, html[data-motion='off'] .cam-glint, html[data-motion='off'] .l2-rings i { animation: none; }
+
 `;
 /* โหมดเบาสำหรับ WebKit (Safari/iPhone/iPad) เฉพาะ "หน้าแนะนำระบบ" และ "หน้าเข้าสู่ระบบ" — หน้าในระบบยังเหมือนเดิม */
 const __SAFARI_CSS = `
+html[data-engine="safari"]:has(.l2) body::after { display: none; }
+html[data-engine="safari"] .l2-nav[data-solid='true'] { background: rgb(8 5 14 / .94); -webkit-backdrop-filter: none; backdrop-filter: none; }
+html[data-engine="safari"] .l2-glint, html[data-engine="safari"] .cam-glint { animation: none; }
+html[data-engine="safari"] .l2 .tilt { transform: none !important; }
+html[data-engine="safari"] .l2 .rv[data-a='blur'], html[data-engine="safari"] .l2 .gt { filter: none; }
 html[data-engine="safari"]:has(.ld) body::after, html[data-engine="safari"]:has(.lgp) body::after { display: none; }
 html[data-engine="safari"] .ld *, html[data-engine="safari"] .ld *::before, html[data-engine="safari"] .ld *::after,
 html[data-engine="safari"] .lgp *, html[data-engine="safari"] .lgp *::before, html[data-engine="safari"] .lgp *::after,
@@ -6091,80 +6267,377 @@ const RULES = [
   ['จองซ้ำ', 'ระบบเตือนทันทีถ้ากล้องตัวนั้นมีคนจองช่วงเวลาเดียวกันแล้ว'],
 ];
 
+/* =====================================================
+   หน้า Landing ใหม่ — สไตล์ Apple: กล้อง 3D เลื่อนแล้วหมุน/แยกชิ้น
+   ===================================================== */
+
+/* —— วัสดุโลหะ: คำนวณสีต่อหน้าของทรงกระบอกตามทิศแสง (แสงมาจากซ้ายบน) —— */
+const metalZ = (a, [r, g, b], spec = 0.9) => {
+  const rad = (a * Math.PI) / 180;
+  const d = Math.sin(rad) * -0.55 + -Math.cos(rad) * -0.83;
+  const k = Math.max(0.14, 0.44 + 0.5 * d);
+  const sp = Math.pow(Math.max(0, d), 12) * spec;
+  const c = (v) => Math.round(Math.min(255, v * k + 255 * sp));
+  return `rgb(${c(r)},${c(g)},${c(b)})`;
+};
+const metalY = (a, [r, g, b], spec = 0.9) => {
+  const rad = (a * Math.PI) / 180;
+  const d = Math.sin(rad) * -0.5 + Math.cos(rad) * 0.85;
+  const k = Math.max(0.14, 0.46 + 0.5 * d);
+  const sp = Math.pow(Math.max(0, d), 10) * spec;
+  const c = (v) => Math.round(Math.min(255, v * k + 255 * sp));
+  return `rgb(${c(r)},${c(g)},${c(b)})`;
+};
+
+/* กล่องมีมุมตัดเฉียง (bevel) — ให้ขอบรับแสงเหมือนโลหะ/หนังจริง ไม่เหลี่ยมแข็ง */
+function CamBox({ w, h, d, x = 0, y = 0, z = 0, bevel = 0, faces = {}, edge = '#d9d9e4', edgeTop = '#fbfbff', content = {}, ex = [0, 0, 0] }) {
+  const b = bevel;
+  const fw = (n) => n - 2 * b + (b > 0 ? 1.6 : 0);
+  const defs = [
+    ['front', fw(w), fw(h), `translateZ(${d / 2}px)`],
+    ['back', fw(w), fw(h), `rotateY(180deg) translateZ(${d / 2}px)`],
+    ['right', fw(d), fw(h), `rotateY(90deg) translateZ(${w / 2}px)`],
+    ['left', fw(d), fw(h), `rotateY(-90deg) translateZ(${w / 2}px)`],
+    ['top', fw(w), fw(d), `rotateX(90deg) translateZ(${h / 2}px)`],
+    ['bottom', fw(w), fw(d), `rotateX(-90deg) translateZ(${h / 2}px)`],
+  ];
+  const deg = (r) => (r * 180) / Math.PI;
+  const cham = [];
+  if (b > 0) {
+    const bw = b * Math.SQRT2 + 1.2;
+    const hx = w / 2 - b / 2;
+    const hy = h / 2 - b / 2;
+    const hz = d / 2 - b / 2;
+    // ขอบขนานแกน X (บน/ล่าง × หน้า/หลัง)
+    [[-1, 1], [-1, -1], [1, 1], [1, -1]].forEach(([ny, nz]) => {
+      cham.push({ k: `x${ny}${nz}`, w: fw(w), h: bw, tf: `translate3d(0,${ny * hy}px,${nz * hz}px) rotateX(${deg(Math.atan2(-ny, nz))}deg)`, top: ny < 0 });
+    });
+    // ขอบขนานแกน Y (ซ้าย/ขวา × หน้า/หลัง)
+    [[-1, 1], [1, 1], [-1, -1], [1, -1]].forEach(([nx, nz]) => {
+      cham.push({ k: `y${nx}${nz}`, w: bw, h: fh(h), tf: `translate3d(${nx * hx}px,0,${nz * hz}px) rotateY(${deg(Math.atan2(nx, nz))}deg)`, top: false });
+    });
+    // ขอบขนานแกน Z (ซ้าย/ขวา × บน/ล่าง)
+    [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([nx, ny]) => {
+      cham.push({ k: `z${nx}${ny}`, w: fw(d), h: bw, tf: `translate3d(${nx * hx}px,${ny * hy}px,0) rotateZ(${deg(Math.atan2(ny, nx))}deg) rotateY(90deg)`, top: ny < 0 });
+    });
+  }
+  function fh(v) { return v - 2 * b + 1.6; }
+  return (
+    <div className="c3" style={{ transform: `translate3d(calc(${x}px + var(--ex) * ${ex[0]}px), calc(${y}px + var(--ex) * ${ex[1]}px), calc(${z}px + var(--ex) * ${ex[2]}px))` }}>
+      {defs.map(([k, ww, hh, tf]) => (
+        <i key={k} className="c3f" style={{ width: ww, height: hh, margin: `${-hh / 2}px 0 0 ${-ww / 2}px`, transform: tf, ...(faces[k] || {}) }}>
+          {content[k] || null}
+        </i>
+      ))}
+      {cham.map((c) => (
+        <i key={c.k} className="c3f" style={{ width: c.w, height: c.h, margin: `${-c.h / 2}px 0 0 ${-c.w / 2}px`, transform: c.tf, background: c.top ? edgeTop : edge }} />
+      ))}
+    </div>
+  );
+}
+
+/* ทรงกระบอก: axis 'z' = แกนชี้เข้าหาผู้ชม (กระบอกเลนส์) · 'y' = แกนตั้ง (ปุ่ม/วงล้อ)
+   แต่ละแผ่นไล่สีจากขอบซ้ายไปขวาตามมุมแสง จึงเนียนเหมือนผิวโค้งจริง ไม่เป็นเหลี่ยม */
+function CamCyl({ r, len, x = 0, y = 0, z = 0, axis = 'z', segs = 20, color = [200, 200, 212], spec = 0.9, ridge = false, capA, capB, ex = [0, 0, 0] }) {
+  const n = Math.max(10, Math.round(segs * (IS_WEBKIT ? 0.9 : 1.7)));
+  const w = 2 * r * Math.tan(Math.PI / n) + 0.9;
+  const da = 360 / n;
+  const side = [];
+  for (let i = 0; i < n; i += 1) {
+    const a = da * i;
+    const f = axis === 'z' ? metalZ : metalY;
+    const grad = `linear-gradient(90deg, ${f(a - da / 2, color, spec)}, ${f(a + da / 2, color, spec)})`;
+    side.push(
+      <i
+        key={i}
+        className="c3f"
+        style={{
+          width: w, height: len, margin: `${-len / 2}px 0 0 ${-w / 2}px`,
+          transform: `rotateY(${a}deg) translateZ(${r}px)`,
+          background: ridge ? `repeating-linear-gradient(90deg, rgb(0 0 0 / .4) 0 1.6px, transparent 1.6px 3.6px), ${grad}` : grad,
+        }}
+      />,
+    );
+  }
+  const cap = (s, tf) => (s ? <i className="c3f" style={{ width: 2 * r, height: 2 * r, margin: `${-r}px 0 0 ${-r}px`, borderRadius: '50%', transform: tf, ...s }} /> : null);
+  return (
+    <div className="c3" style={{ transform: `translate3d(calc(${x}px + var(--ex) * ${ex[0]}px), calc(${y}px + var(--ex) * ${ex[1]}px), calc(${z}px + var(--ex) * ${ex[2]}px))` }}>
+      <div className="c3" style={{ transform: axis === 'z' ? 'rotateX(90deg)' : 'none' }}>
+        {side}
+        {cap(capA, `translateY(${len / 2}px) rotateX(-90deg)`)}
+        {cap(capB, `translateY(${-len / 2}px) rotateX(90deg)`)}
+      </div>
+    </div>
+  );
+}
+
+/* แผ่นแก้วเลนส์ (วงกลมแบน) */
+function CamDisc({ r, z, y = 0, ex = 0, style, children }) {
+  return (
+    <div className="c3" style={{ transform: `translate3d(0, ${y}px, calc(${z}px + var(--ex) * ${ex}px))` }}>
+      <i className="c3f" style={{ width: 2 * r, height: 2 * r, margin: `${-r}px 0 0 ${-r}px`, borderRadius: '50%', ...style }}>{children}</i>
+    </div>
+  );
+}
+
+const SILVER = 'linear-gradient(180deg,#fbfbff 0%,#d4d4de 30%,#f0f0f6 52%,#a7a7b6 78%,#8a8a9a 100%)';
+const LEATHER = 'radial-gradient(rgb(255 255 255 / .07) 1px, transparent 1.6px) 0 0/5px 5px, linear-gradient(180deg,#1f1b28 0%,#15121c 55%,#100d16 100%)';
+const WINDOW = 'linear-gradient(135deg,#2b3a63 0%,#080913 46%,#161a2e 100%)';
+
+function CameraRig({ shop }) {
+  const lensY = 16;
+  const tick = (n) => `repeating-conic-gradient(from 0deg, rgb(255 255 255 / .75) 0 .7deg, transparent .7deg ${360 / n}deg)`;
+  const annulus = 'radial-gradient(circle, transparent 0 69%, #000 70% 79%, transparent 80%)';
+  return (
+    <>
+      {/* ตัวกล้อง: ส่วนล่างหุ้มหนัง */}
+      <CamBox
+        w={380} h={168} d={148} y={29} bevel={6} edge="#3a3446" edgeTop="#5a526b"
+        faces={{
+          front: { background: `radial-gradient(circle at 50% ${lensY + 55}px, #05040a 0 76px, #a2a2b0 77px 79px, #26222f 80px 92px, transparent 93px), ${LEATHER}` },
+          back: { background: '#0f0c14' },
+          left: { background: 'linear-gradient(90deg,#0d0a12,#1b1722)' },
+          right: { background: 'linear-gradient(90deg,#1b1722,#0d0a12)' },
+          top: { background: '#0c0a10' },
+          bottom: { background: SILVER },
+        }}
+        content={{
+          back: (
+            <span className="cam-screen" aria-hidden="true">
+              <b>{shop}</b>
+              <em><u style={{ height: '38%' }} /><u style={{ height: '62%' }} /><u style={{ height: '48%' }} /><u style={{ height: '84%' }} /><u style={{ height: '58%' }} /></em>
+            </span>
+          ),
+        }}
+        ex={[0, 18, -40]}
+      />
+      {/* แผ่นด้านบนสีเงิน */}
+      <CamBox
+        w={380} h={58} d={148} y={-84} bevel={5}
+        faces={{
+          front: { background: `radial-gradient(circle at 322px 29px, #e8473c 0 7px, #ffb4ab 7.5px 8.5px, transparent 9px), ${WINDOW} 34px 15px/50px 28px no-repeat, ${WINDOW} 96px 19px/30px 20px no-repeat, ${SILVER}` },
+          back: { background: SILVER },
+          left: { background: 'linear-gradient(90deg,#a4a4b2,#dcdce5)' },
+          right: { background: 'linear-gradient(90deg,#dcdce5,#a4a4b2)' },
+          top: { background: 'repeating-linear-gradient(90deg, rgb(255 255 255 / .32) 0 1px, transparent 1px 3px), linear-gradient(135deg,#fbfbff,#c8c8d4 58%,#eeeef5)' },
+          bottom: { background: '#6a6a78' },
+        }}
+        content={{ top: <span className="cam-engrave">{shop}</span> }}
+        ex={[0, -62, 0]}
+      />
+      {/* ช่องมองภาพ */}
+      <CamBox
+        w={132} h={30} d={80} x={-104} y={-128} z={18} bevel={3}
+        faces={{
+          front: { background: `${WINDOW} 14px 7px/104px 16px no-repeat, ${SILVER}` },
+          back: { background: SILVER },
+          left: { background: 'linear-gradient(90deg,#9d9dab,#d9d9e2)' },
+          right: { background: 'linear-gradient(90deg,#d9d9e2,#9d9dab)' },
+          top: { background: 'linear-gradient(135deg,#f6f6fb,#c0c0cc)' },
+          bottom: { background: '#6a6a78' },
+        }}
+        ex={[-20, -120, 10]}
+      />
+      {/* ห่วงสายคล้อง */}
+      {[-1, 1].map((sd) => (
+        <CamBox key={sd} w={9} h={22} d={16} x={sd * 194} y={-52} faces={{ front: { background: '#c4c4d0' }, back: { background: '#c4c4d0' }, left: { background: '#8d8d9b' }, right: { background: '#8d8d9b' }, top: { background: '#e2e2ea' }, bottom: { background: '#777' } }} ex={[sd * 36, 0, 0]} />
+      ))}
+      {/* วงล้อปรับค่า + ปุ่มชัตเตอร์ */}
+      <CamCyl axis="y" r={25} len={16} x={118} y={-121} z={-8} segs={14} ridge color={[205, 205, 216]} capB={{ background: 'conic-gradient(from 0deg,#f6f6fa,#b2b2c0,#f6f6fa,#b2b2c0,#f6f6fa)' }} ex={[26, -190, -6]} />
+      <CamCyl axis="y" r={11} len={12} x={66} y={-119} z={10} segs={10} color={[225, 70, 62]} spec={0.7} capB={{ background: 'radial-gradient(circle at 40% 35%,#ffb1a8,#d2352b 70%)' }} ex={[0, -230, 14]} />
+
+      {/* เลนส์ — ซ้อนกันเป็นชั้นๆ ตอนแยกชิ้นจะไล่ห่างออกจากกัน */}
+      <CamCyl r={76} len={10} y={lensY} z={79} segs={12} color={[214, 214, 226]} ex={[0, 0, 8]} />
+      <CamCyl r={88} len={48} y={lensY} z={108} segs={14} color={[64, 61, 78]} spec={0.55} ex={[0, 0, 52]} />
+      <CamCyl r={95} len={44} y={lensY} z={154} segs={16} ridge color={[48, 45, 59]} spec={0.55} ex={[0, 0, 110]} />
+      <CamCyl r={89} len={30} y={lensY} z={191} segs={14} color={[212, 212, 224]} ex={[0, 0, 172]} />
+      <CamCyl
+        r={83} len={18} y={lensY} z={215} segs={12} color={[30, 28, 38]} spec={0.55}
+        capA={{ background: 'radial-gradient(circle, transparent 0 66%, #0b0a11 67% 76%, #c2c2d0 77% 79.5%, #0b0a11 80.5% 100%)' }}
+        ex={[0, 0, 236]}
+      />
+      <CamDisc r={83} z={224.6} y={lensY} ex={236} style={{ background: tick(72), WebkitMaskImage: annulus, maskImage: annulus, opacity: 0.8 }} />
+      {/* แก้ว */}
+      <CamDisc r={72} z={200} ex={290} y={lensY} style={{ background: 'radial-gradient(circle at 34% 30%, rgb(255 255 255 / .9) 0 3%, transparent 10%), radial-gradient(circle at 70% 74%, rgb(255 150 90 / .35) 0 6%, transparent 18%), radial-gradient(circle, #07050f 0 28%, #1d1346 44%, #3a2290 58%, #0a0818 76%, #05040a 100%)', boxShadow: '0 0 0 3px #1a1622' }} />
+      <CamDisc r={58} z={206} ex={338} y={lensY} style={{ background: 'radial-gradient(circle at 60% 66%, rgb(120 220 255 / .55) 0 8%, transparent 22%), radial-gradient(circle at 30% 70%, rgb(120 255 190 / .3) 0 5%, transparent 15%), radial-gradient(circle, #0b0820 0 35%, #2a1a6e 62%, #0b0820 100%)', opacity: 0.95 }} />
+      <CamDisc r={42} z={212} ex={386} y={lensY} style={{ background: 'radial-gradient(circle at 30% 28%, rgb(255 255 255 / .95) 0 4%, transparent 14%), radial-gradient(circle, #160d3a 0 40%, #4b2bb4 66%, #0b0820 100%)' }}>
+        <span className="cam-glint" />
+      </CamDisc>
+    </>
+  );
+}
+
+const lerp = (a, b, t) => a + (b - a) * t;
+const sstep = (a, b, v) => {
+  const t = Math.min(1, Math.max(0, (v - a) / (b - a || 1)));
+  return t * t * (3 - 2 * t);
+};
+
+/* ตำแหน่งกล้องตามความคืบหน้าการเลื่อน (p = 0..1) — x,y เป็นสัดส่วนของจอ */
+const CAM_KEYS = {
+  d: [
+    { p: 0, x: 0.23, y: 0.03, s: 1.12, rx: -10, ry: -30, ex: 0 },
+    { p: 0.12, x: 0.23, y: 0.03, s: 1.12, rx: -10, ry: -30, ex: 0 },
+    { p: 0.28, x: -0.22, y: 0, s: 1.15, rx: -8, ry: 28, ex: 0 },
+    { p: 0.48, x: 0.12, y: 0.03, s: 0.62, rx: -12, ry: 68, ex: 1 },
+    { p: 0.69, x: -0.2, y: 0.03, s: 0.9, rx: -58, ry: 24, ex: 0.3 },
+    { p: 0.9, x: 0, y: 0.21, s: 0.8, rx: -12, ry: 330, ex: 0 },
+    { p: 1, x: 0, y: 0.21, s: 0.8, rx: -12, ry: 330, ex: 0 },
+  ],
+  m: [
+    { p: 0, x: 0, y: 0.25, s: 0.9, rx: -10, ry: -30, ex: 0 },
+    { p: 0.12, x: 0, y: 0.25, s: 0.9, rx: -10, ry: -30, ex: 0 },
+    { p: 0.28, x: 0, y: 0.22, s: 1.05, rx: -8, ry: 28, ex: 0 },
+    { p: 0.48, x: -0.1, y: 0.22, s: 0.44, rx: -12, ry: 68, ex: 1 },
+    { p: 0.69, x: 0, y: 0.22, s: 0.9, rx: -58, ry: 24, ex: 0.3 },
+    { p: 0.9, x: 0, y: 0.26, s: 0.85, rx: -12, ry: 330, ex: 0 },
+    { p: 1, x: 0, y: 0.26, s: 0.85, rx: -12, ry: 330, ex: 0 },
+  ],
+};
+const BEAT_WIN = [
+  [-1, -0.5, 0.08, 0.16],
+  [0.15, 0.22, 0.33, 0.4],
+  [0.37, 0.44, 0.55, 0.62],
+  [0.6, 0.67, 0.76, 0.83],
+  [0.8, 0.87, 9, 10],
+];
+const BEATS = [
+  { eyebrow: 'อุปกรณ์', title: ['กล้องทุกตัว', 'อยู่ในมือคุณ'], text: 'เพิ่มกล้อง เลนส์ แฟลช หรืออุปกรณ์เสริม ใส่ราคาเช่าและรูป แล้วเปิดให้จองได้ในไม่กี่คลิก', side: 'r' },
+  { eyebrow: 'การจอง', title: ['ถ้าไม่ว่าง', 'ก็จองชนกันไม่ได้'], text: 'จองหลายชิ้นในใบเดียว ชิ้นไหนถูกจองช่วงเวลานั้นแล้ว ระบบบอกทันที ไม่ต้องไล่ดูแชตเก่า', side: 'l' },
+  { eyebrow: 'รับ–คืน', title: ['ส่งมอบทุกครั้ง', 'เช็กลิสต์ทุกชิ้น'], text: 'ติ๊กของที่ให้ไปและที่ได้คืนทีละชิ้น ถ้าคืนช้าระบบแนะนำค่าปรับให้ แก้ตัวเลขเองได้', side: 'r' },
+  { eyebrow: 'การเงิน', title: ['แล้วยอดเงิน', 'ก็เข้าบัญชีเอง'], text: 'พอรับคืนเสร็จ ยอดค่าเช่าเข้ารายรับ เพิ่มรายจ่ายและค่าซ่อมได้ แล้วดูกำไรสุทธิรายเดือน', side: 'c' },
+];
+const FLOW_ICONS = [Camera, CalendarClock, ClipboardCheck, Wallet];
+
 function Landing({ onEnter }) {
   const skipPre = (() => {
     try { return sessionStorage.getItem('ld.pre') === '1'; } catch { return false; }
   })();
   const [showPre, setShowPre] = useState(!skipPre);
   const [ready, setReady] = useState(skipPre);
-
   const onPre = (phase) => {
-    if (phase === true) {
-      setReady(true);
-      return;
-    }
+    if (phase === true) { setReady(true); return; }
     setReady(true);
     setShowPre(false);
     try { sessionStorage.setItem('ld.pre', '1'); } catch { /* ไม่เป็นไร */ }
   };
 
   const progressRef = useRef(null);
-  const navRef = useRef(null);
+  const stageRef = useRef(null);
+  const wrapRef = useRef(null);
+  const rigRef = useRef(null);
+  const floorRef = useRef(null);
+  const beatRefs = useRef([]);
   const stmtRef = useRef(null);
+  const wordsRef = useRef(null);
+  const wordState = useRef(-1);
   const hzRef = useRef(null);
   const trackRef = useRef(null);
   const hzBarRef = useRef(null);
-  const itemRefs = useRef([]);
-  const heroRef = useRef(null);
-  const lastY = useRef(0);
-  const [active, setActive] = useState(0);
+  const cardRefs = useRef([]);
+  const riseRefs = useRef([]);
+  const navRef = useRef(null);
+  const st = useRef({ p: 0, tp: 0, mx: 0, my: 0, tmx: 0, tmy: 0, run: false, last: 0, init: false, vw: 1200, vh: 800 });
+  const raf = useRef(0);
 
-  const wordsRef = useRef(null);
-  const wordState = useRef(-1);
+  /* วาดกล้องตามค่า p ปัจจุบัน — เขียนเฉพาะ style ของไม่กี่ element */
+  const apply = () => {
+    const s = st.current;
+    const rig = rigRef.current;
+    if (!rig) return;
+    const mobile = s.vw < 760 || s.vw / s.vh < 0.95;
+    const keys = mobile ? CAM_KEYS.m : CAM_KEYS.d;
+    const p = s.p;
+    let i = 0;
+    while (i < keys.length - 2 && p > keys[i + 1].p) i += 1;
+    const a = keys[i];
+    const b = keys[i + 1];
+    const t = sstep(a.p, b.p, p);
+    const v = (k) => lerp(a[k], b[k], t);
+    const base = mobile ? Math.min(s.vw / 500, s.vh / 850) : Math.min(s.vw / 1100, s.vh / 720);
+    const fine = !isCalm() && !mobile;
+    const px = fine ? s.mx : 0;
+    const py = fine ? s.my : 0;
+    const sc = v('s') * base;
+    rig.style.transform = `scale3d(${sc},${sc},${sc}) rotateX(${v('rx') - py * 8}deg) rotateY(${v('ry') + px * 14}deg)`;
+    rig.style.setProperty('--ex', v('ex').toFixed(3));
+    if (wrapRef.current) {
+      wrapRef.current.style.transform = `translate3d(${v('x') * s.vw}px,${v('y') * s.vh}px,0)`;
+      wrapRef.current.style.setProperty('--s', sc.toFixed(3));
+    }
+    if (floorRef.current) floorRef.current.style.opacity = String(0.55 - 0.35 * v('ex') - (v('rx') < -40 ? 0.2 : 0));
+    BEAT_WIN.forEach(([a1, b1, c1, d1], bi) => {
+      const el = beatRefs.current[bi];
+      if (!el) return;
+      const o = sstep(a1, b1, p) * (1 - sstep(c1, d1, p));
+      el.style.opacity = o.toFixed(3);
+      el.style.transform = `translate3d(0,${((1 - o) * 34).toFixed(1)}px,0)`;
+      el.style.pointerEvents = o > 0.5 ? 'auto' : 'none';
+      el.style.visibility = o < 0.01 ? 'hidden' : 'visible';
+    });
+  };
+
+  const frame = (t) => {
+    const s = st.current;
+    const dt = Math.min(0.05, (t - (s.last || t)) / 1000);
+    s.last = t;
+    const k = isCalm() ? 1 : 1 - Math.exp(-dt * 7.5);
+    s.p += (s.tp - s.p) * k;
+    s.mx += (s.tmx - s.mx) * k * 0.7;
+    s.my += (s.tmy - s.my) * k * 0.7;
+    apply();
+    const done = Math.abs(s.tp - s.p) < 0.0004 && Math.abs(s.tmx - s.mx) < 0.002 && Math.abs(s.tmy - s.my) < 0.002;
+    if (done) {
+      s.run = false;
+      s.last = 0;
+      raf.current = 0;
+    } else {
+      raf.current = requestAnimationFrame(frame);
+    }
+  };
+  const wake = () => {
+    const s = st.current;
+    if (s.run) return;
+    s.run = true;
+    raf.current = requestAnimationFrame(frame);
+  };
+  useEffect(() => () => { if (raf.current) cancelAnimationFrame(raf.current); }, []);
+
+  const onStageMove = (e) => {
+    const s = st.current;
+    if (e.pointerType === 'touch' || !hasFine()) return;
+    s.tmx = e.clientX / s.vw - 0.5;
+    s.tmy = e.clientY / s.vh - 0.5;
+    wake();
+  };
+
   useScrollLoop(() => {
-    // อ่านค่า layout ทั้งหมดก่อน แล้วค่อยเขียน style ทีเดียว (กัน layout thrashing ตอนเลื่อน)
+    const s = st.current;
     const vh = window.innerHeight;
     const vw = window.innerWidth;
+    s.vw = vw;
+    s.vh = vh;
     const sy = window.scrollY;
     const max = document.documentElement.scrollHeight - vh;
-    const clamp = (v) => Math.min(1, Math.max(0, v));
-
-    const stmtR = stmtRef.current ? stmtRef.current.getBoundingClientRect() : null;
-    const hzR = hzRef.current && trackRef.current ? hzRef.current.getBoundingClientRect() : null;
-    const hzDist = hzR ? Math.max(0, trackRef.current.scrollWidth - vw + 72) : 0;
-    let best = 0;
-    let bestD = Infinity;
-    itemRefs.current.forEach((el, i) => {
-      if (!el) return;
-      const r = el.getBoundingClientRect();
-      const d = Math.abs(r.top + r.height / 2 - vh * 0.5);
-      if (d < bestD) {
-        bestD = d;
-        best = i;
-      }
-    });
+    const clamp = (x) => Math.min(1, Math.max(0, x));
 
     if (progressRef.current) progressRef.current.style.transform = `scaleX(${max > 0 ? sy / max : 0})`;
+    if (navRef.current) navRef.current.dataset.solid = sy > 24 ? 'true' : 'false';
 
-    if (navRef.current) {
-      const down = sy > lastY.current + 4;
-      const up = sy < lastY.current - 4;
-      let next = navRef.current.dataset.hide;
-      if (sy < 140 || up) next = 'false';
-      else if (down) next = 'true';
-      if (next !== navRef.current.dataset.hide) navRef.current.dataset.hide = next;
-      lastY.current = sy;
+    if (stageRef.current) {
+      const r = stageRef.current.getBoundingClientRect();
+      s.tp = clamp(-r.top / Math.max(1, r.height - vh));
+      if (!s.init) { s.init = true; s.p = s.tp; apply(); }
+      if (r.bottom > -vh && r.top < vh * 2) wake();
     }
 
-    if (stmtR && stmtRef.current) {
-      if (!wordsRef.current) wordsRef.current = Array.from(stmtRef.current.querySelectorAll('.ld-word'));
+    if (stmtRef.current) {
+      const r = stmtRef.current.getBoundingClientRect();
+      if (!wordsRef.current) wordsRef.current = Array.from(stmtRef.current.querySelectorAll('.l2-word'));
       const words = wordsRef.current;
-      const p = clamp(-stmtR.top / Math.max(1, stmtR.height - vh));
-      // นับว่าสว่างกี่คำ แล้วเขียนเฉพาะคำที่สถานะเปลี่ยน
+      const p = clamp(-r.top / Math.max(1, r.height - vh));
       let lit = 0;
-      words.forEach((_, i) => {
-        if (p * 1.15 > (i / words.length) * 0.92 + 0.04) lit = i + 1;
-      });
+      words.forEach((_, i) => { if (p * 1.15 > (i / words.length) * 0.92 + 0.04) lit = i + 1; });
       const prev = wordState.current;
       if (lit !== prev) {
         const lo = Math.min(lit, prev < 0 ? 0 : prev);
@@ -6174,22 +6647,33 @@ function Landing({ onEnter }) {
       }
     }
 
-    if (hzR) {
-      const p = clamp(-hzR.top / Math.max(1, hzR.height - vh));
-      trackRef.current.style.transform = `translate3d(${-p * hzDist}px,0,0)`;
+    // การ์ดขั้นตอน: เลื่อนไปทางขวา + เอียงเป็น 3D ตามระยะจากกึ่งกลางจอ
+    if (hzRef.current && trackRef.current) {
+      const r = hzRef.current.getBoundingClientRect();
+      const dist = Math.max(0, trackRef.current.scrollWidth - vw + 72);
+      const p = clamp(-r.top / Math.max(1, r.height - vh));
+      trackRef.current.style.transform = `translate3d(${-p * dist}px,0,0)`;
       if (hzBarRef.current) hzBarRef.current.style.transform = `scaleX(${p})`;
+      if (r.top < vh && r.bottom > 0) {
+        const calm = isCalm();
+        cardRefs.current.forEach((c) => {
+          if (!c) return;
+          const cr = c.getBoundingClientRect();
+          const tt = Math.max(-1.4, Math.min(1.4, ((cr.left + cr.width / 2) - vw / 2) / (vw * 0.55)));
+          const ab = Math.abs(tt);
+          c.style.transform = calm ? 'none' : `perspective(1100px) rotateY(${(-tt * 30).toFixed(1)}deg) translateZ(${(-ab * 90).toFixed(0)}px) scale(${(1 - ab * 0.06).toFixed(3)})`;
+          c.style.opacity = String(Math.max(0.35, 1 - ab * 0.4).toFixed(2));
+        });
+      }
     }
 
-    setActive((a) => (a === best ? a : best));
+    // ภาพที่ "ลุกขึ้นมา" เมื่อเลื่อนเข้าจอ
+    riseRefs.current.forEach((el) => {
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      el.style.setProperty('--q', clamp((vh - r.top) / (vh * 0.85)).toFixed(3));
+    });
   });
-
-  const onHeroMove = (e) => {
-    const el = heroRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    el.style.setProperty('--px', `${e.clientX - r.left}px`);
-    el.style.setProperty('--py', `${e.clientY - r.top}px`);
-  };
 
   const go = (e) => {
     const r = e.currentTarget.getBoundingClientRect();
@@ -6198,224 +6682,196 @@ function Landing({ onEnter }) {
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   const heroLines = [['ทุกการเช่า'], ['ควรเรียบง่าย'], ['เหมือนกด', 'ชัตเตอร์']];
-  let idx = 0;
+  let widx = 0;
 
   return (
-    <div data-theme="light" className={`ld relative min-h-dvh overflow-x-clip ${ready ? 'ld-ready' : ''}`}>
+    <div data-theme="light" className={`l2 ${ready ? 'l2-ready' : ''}`}>
       {showPre && <Preloader onDone={onPre} />}
-      <CursorRing />
-      <div ref={progressRef} className="fixed left-0 top-0 z-[90] h-[3px] w-full origin-left bg-[rgb(var(--wa-color-purple-50))]" style={{ transform: 'scaleX(0)' }} />
+      <div ref={progressRef} className="l2-progress" style={{ transform: 'scaleX(0)' }} />
 
-      {/* NAV — ลอย ซ่อนตอนเลื่อนลง */}
-      <header ref={navRef} data-hide="false" className="ld-nav safe-t">
-        <span className="flex min-w-0 shrink items-center gap-2 pr-2 sm:gap-2.5 sm:pr-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-[9px] bg-[rgb(var(--wa-color-purple-60))] text-white"><ShopMark size={17} className="rounded-[9px]" /></span>
-          <span className="ld-nav-name font-display font-semibold tracking-tight">{SHOP.name}</span>
-        </span>
-        <span className="hidden items-center md:flex">
-          {[['features', 'ฟีเจอร์'], ['flow', 'ขั้นตอน'], ['devices', 'ทุกอุปกรณ์']].map(([id, label]) => (
-            <button key={id} className="l" onClick={() => scrollTo(id)}>{label}</button>
-          ))}
-        </span>
-        <button onClick={go} data-cursor="เข้าระบบ" className="ml-1 flex whitespace-nowrap items-center gap-2 rounded-full bg-[rgb(var(--wa-color-purple-70))] px-4 py-2 text-[0.82rem] font-medium text-white transition-transform hover:scale-[1.04]">
-          เข้าสู่ระบบ <ArrowRight size={15} />
-        </button>
+      {/* แถบเมนูบนสุด */}
+      <header ref={navRef} data-solid="false" className="l2-nav safe-t">
+        <div className="l2-nav-in">
+          <span className="flex min-w-0 items-center gap-2.5">
+            <span className="l2-mark"><ShopMark size={16} className="rounded-[8px]" /></span>
+            <span className="l2-nav-name">{SHOP.name}</span>
+          </span>
+          <nav className="hidden items-center gap-7 md:flex" aria-label="เมนูหน้าแนะนำ">
+            {[['features', 'ฟีเจอร์'], ['flow', 'ขั้นตอน'], ['devices', 'ทุกอุปกรณ์'], ['rules', 'กติกา']].map(([id, label]) => (
+              <button key={id} type="button" onClick={() => scrollTo(id)} className="l2-nav-link">{label}</button>
+            ))}
+          </nav>
+          <button type="button" onClick={go} className="l2-pill l2-pill-sm">เข้าสู่ระบบ</button>
+        </div>
       </header>
 
-      {/* HERO */}
-      <section ref={heroRef} onPointerMove={onHeroMove} className="ld-grain relative flex min-h-dvh items-center overflow-hidden">
-        <SpotlightBeam />
-        <div className="dotgrid" />
-        <Beams className="opacity-60" count={IS_WEBKIT ? 6 : 16} />
-        <div className="pointer-events-none absolute inset-0" style={{ background: 'radial-gradient(520px circle at var(--px,70%) var(--py,30%), rgb(157 115 250 / 0.1), transparent 60%)' }} />
+      {/* ฉากหลัก: กล้อง 3D ติดหน้าจอ เลื่อนแล้วหมุน/แยกชิ้นส่วน */}
+      <section ref={stageRef} className="l2-stage" aria-label="แนะนำระบบ">
+        <div className="l2-sticky" onPointerMove={onStageMove}>
+          <div className="l2-bg" aria-hidden="true" />
+          <div className="l2-dots" aria-hidden="true" />
 
-        <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 px-5 pb-20 pt-32 sm:px-8 lg:grid-cols-[1.12fr_0.88fr] lg:gap-8">
-          <div>
-            <p className="eyebrow ld-fade !text-[rgb(var(--wa-color-purple-70))]" style={{ '--i': 0 }}>ระบบจัดการร้านเช่ากล้อง</p>
-            <h1 className="ld-title mt-7 text-[clamp(2.7rem,8.2vw,6.8rem)]">
+          <div ref={wrapRef} className="l2-camwrap" aria-hidden="true">
+            <div className="l2-halo" />
+            <div ref={floorRef} className="l2-floor" />
+            <div className="l2-camp">
+              <div className="l2-float">
+                <div ref={rigRef} className="l2-rig" style={{ '--ex': 0 }}>
+                  <CameraRig shop={SHOP.name} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ข้อความฉากแรก (หน้าแรก) */}
+          <div ref={(el) => { beatRefs.current[0] = el; }} className="l2-beat" data-side="hero">
+            <p className="l2-eyebrow l2-up" style={{ '--i': 0 }}>ระบบจัดการร้านเช่ากล้อง</p>
+            <h1 className="l2-h1">
               {heroLines.map((line, li) => (
                 <span key={li} className="block">
                   {line.map((word) => {
-                    const i = idx++;
+                    const i = widx++;
                     return (
-                      <span key={word} className="ld-mask mr-[0.22em]">
-                        <span className={li === 2 ? 'ld-purple' : ''} style={{ '--i': i }}>{word}</span>
+                      <span key={word} className="l2-w">
+                        <span className={li === 2 ? 'l2-grad' : ''} style={{ '--i': i }}>{word}</span>
                       </span>
                     );
                   })}
                 </span>
               ))}
             </h1>
-            <p className="ld-fade mt-8 max-w-xl text-base leading-[1.95] text-[rgb(var(--wa-color-purple-95)/0.7)] sm:text-lg" style={{ '--i': 6 }}>
+            <p className="l2-lead l2-up" style={{ '--i': 6 }}>
               ดูว่ากล้องตัวไหนว่าง ใครมารับวันไหน ใครต้องคืน และเงินเข้าออกเท่าไร
               ใช้คนเดียวก็ไหว เปิดจากมือถือตอนอยู่หน้างานได้
             </p>
-            <div className="ld-fade mt-10 flex flex-wrap items-center gap-4" style={{ '--i': 8 }}>
-              <Magnetic>
-                <span className="mb">
-                  <button onClick={go} data-cursor="เข้าระบบ" className="ld-btn ld-btn-purple">เข้าใช้งานระบบ <ArrowRight size={18} /></button>
-                </span>
-              </Magnetic>
-              <button onClick={() => scrollTo('statement')} className="ld-btn ld-btn-line">ดูว่าทำอะไรได้ <ArrowDown size={17} /></button>
-            </div>
-            <div className="ld-fade mt-12 flex items-center gap-4 text-[rgb(var(--wa-color-purple-95)/0.7)]" style={{ '--i': 10 }}>
-              <span className="h-px w-10 bg-[rgb(var(--wa-color-purple-05)/0.25)]" />
-              <ExifTicker />
+            <div className="l2-cta l2-up" style={{ '--i': 8 }}>
+              <button type="button" onClick={go} className="l2-pill">เข้าใช้งานระบบ <ArrowRight size={17} /></button>
+              <button type="button" onClick={() => scrollTo('statement')} className="l2-link">ดูว่าทำอะไรได้ <ArrowDown size={15} /></button>
             </div>
           </div>
 
-          <div className="ld-fade mx-auto w-full max-w-[420px] lg:max-w-none" style={{ '--i': 5 }}>
-            <HeroFinder />
-          </div>
-        </div>
-
-        <div className="absolute bottom-7 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 sm:flex">
-          <span className="mono !text-[9px] !tracking-[0.3em] text-[rgb(var(--wa-color-purple-95)/0.7)]">Scroll</span>
-          <span className="h-10 w-px overflow-hidden bg-[rgb(var(--wa-color-purple-05)/0.2)]"><span className="block h-4 w-px bg-[rgb(var(--wa-color-purple-50))]" style={{ animation: 'floaty 1.8s ease-in-out infinite' }} /></span>
-        </div>
-      </section>
-
-      {/* MARQUEE */}
-      <div className="overflow-hidden border-y border-[rgb(var(--wa-color-purple-05)/0.1)] py-6">
-        <div className="ld-marquee">
-          {[0, 1].map((k) => (
-            <div key={k} className="flex shrink-0 items-center" aria-hidden={k === 1}>
-              {MARQUEE.map((w) => (
-                <span key={w + k} className="flex items-center">
-                  <span className="ld-title px-8 text-[clamp(2rem,5vw,3.6rem)] text-transparent" style={{ WebkitTextStroke: '1px rgb(239 232 218 / 0.38)' }}>{w}</span>
-                  <Aperture size={22} className="text-[rgb(var(--wa-color-purple-70))]" strokeWidth={1.3} />
-                </span>
-              ))}
+          {/* ข้อความฉากที่เหลือ */}
+          {BEATS.map((b, i) => (
+            <div key={b.eyebrow} ref={(el) => { beatRefs.current[i + 1] = el; }} className="l2-beat" data-side={b.side} style={{ opacity: 0, visibility: 'hidden' }}>
+              <p className="l2-eyebrow">{b.eyebrow}</p>
+              <h2 className="l2-h2">
+                {b.title.map((t, ti) => <span key={t} className={`block ${ti === 1 ? 'l2-grad' : ''}`}>{t}</span>)}
+              </h2>
+              <p className="l2-lead">{b.text}</p>
             </div>
           ))}
-        </div>
-      </div>
 
-      {/* STATEMENT */}
-      <section id="statement" ref={stmtRef} className="relative h-[240vh]">
-        <div className="sticky top-0 flex h-dvh items-center">
-          <div className="mx-auto max-w-5xl px-5 sm:px-8">
-            <span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">ระบบนี้ช่วยอะไร</span>
-            <p className="ld-title mt-8 text-[clamp(1.9rem,5.4vw,4rem)] leading-[1.3]">
-              {STATEMENT.map((w, i) => <span key={i} className="ld-word mr-[0.28em] inline-block" data-on="false">{w}</span>)}
-            </p>
-          </div>
+          <div className="l2-cue" aria-hidden="true"><span /></div>
         </div>
       </section>
 
-      {/* FEATURES — sticky scroll reveal */}
-      <section id="features" className="relative mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:py-32">
-        <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">สิ่งที่ใช้ได้</span></Reveal>
-        <h2 className="ld-title mt-5 max-w-2xl text-[clamp(1.9rem,4.6vw,3.4rem)] lg:ml-16">
-          <GenerateText words={['งานประจำวัน', 'ของร้านเช่า', 'ทำได้ในนี้']} />
-        </h2>
-        <div className="mt-8 grid gap-6 lg:mt-16 lg:grid-cols-2 lg:gap-20">
-          <div>
+      {/* ประโยคใหญ่ ไล่สว่างทีละคำ */}
+      <section id="statement" ref={stmtRef} className="l2-statement">
+        <div className="l2-statement-in">
+          <p className="l2-eyebrow">ระบบนี้ช่วยอะไร</p>
+          <p className="l2-big">
+            {STATEMENT.map((w, i) => <span key={i} className="l2-word" data-on="false">{w}</span>)}
+          </p>
+        </div>
+      </section>
+
+      {/* ฟีเจอร์ — การ์ดเอียงได้ */}
+      <section id="features" className="l2-light l2-sec">
+        <div className="l2-wrap">
+          <Reveal><p className="l2-eyebrow">สิ่งที่ใช้ได้</p></Reveal>
+          <Reveal a="up" delay={80}>
+            <h2 className="l2-h2 l2-h2-dark">งานประจำวันของร้านเช่า<br /><span className="l2-grad-d">ทำได้ในนี้</span></h2>
+          </Reveal>
+          <div className="l2-tiles">
             {FEATURES.map((f, i) => (
-              <div key={f.title} ref={(el) => { itemRefs.current[i] = el; }} data-on={active === i} className="sf-item">
-                <p className="font-num text-[5.5rem] leading-none text-[rgb(var(--wa-color-purple-50)/0.55)]">0{i + 1}</p>
-                <h3 className="ld-title mt-4 text-[clamp(1.5rem,3vw,2.2rem)]">{f.title}</h3>
-                <p className="mt-4 max-w-md text-base leading-[1.95] text-[rgb(var(--wa-color-purple-95)/0.7)]">{f.text}</p>
-                <div className="relative mt-8 h-[300px] lg:hidden">
-                  <div className="sf-vis" data-on="true"><f.Vis /></div>
-                </div>
-              </div>
+              <Reveal key={f.title} a="up" delay={(i % 2) * 120} className={i === 4 ? 'lg:col-span-2' : ''}>
+                <Tilt max={3} glare={false} className="l2-tile">
+                  <p className="l2-tile-no">0{i + 1}</p>
+                  <h3 className="l2-tile-h">{f.title}</h3>
+                  <p className="l2-tile-p">{f.text}</p>
+                  <div className="l2-tile-vis"><f.Vis /></div>
+                </Tilt>
+              </Reveal>
             ))}
-          </div>
-          <div className="relative hidden lg:block">
-            <div className="sticky top-[13vh] h-[min(68vh,540px)]">
-              {FEATURES.map((f, i) => (
-                <div key={f.title} className="sf-vis" data-on={active === i}><f.Vis /></div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
 
-      <Bento />
-
-      {/* FLOW — เลื่อนลงแล้วการ์ดไหลไปทางขวา */}
-      <section id="flow" ref={hzRef} className="relative h-[330vh]">
-        <div className="sticky top-0 flex h-dvh flex-col justify-center overflow-hidden">
-          <div className="mx-auto mb-10 w-full max-w-7xl px-5 sm:px-8">
-            <span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">วิธีใช้</span>
-            <h2 className="ld-title mt-5 max-w-2xl text-[clamp(1.9rem,4.6vw,3.4rem)]">
-              ตั้งแต่เพิ่มกล้อง <span className="ld-purple">จนถึงรับเงินค่าเช่า</span>
-            </h2>
+      {/* ขั้นตอน — การ์ดไหลไปทางขวาแบบ 3D */}
+      <section id="flow" ref={hzRef} className="l2-flow">
+        <div className="l2-flow-sticky">
+          <div className="l2-wrap l2-flow-head">
+            <p className="l2-eyebrow">วิธีใช้</p>
+            <h2 className="l2-h2">ตั้งแต่เพิ่มกล้อง<br /><span className="l2-grad">จนถึงรับเงินค่าเช่า</span></h2>
           </div>
-          <div ref={trackRef} className="hz-track pl-5 sm:pl-[max(2rem,calc((100vw-80rem)/2+2rem))]">
-            {STEPS.map((s) => (
-              <article key={s.no} className="hz-card">
-                <p className="hz-no">{s.no}</p>
-                <div>
-                  <h3 className="font-serif text-2xl font-medium">{s.title}</h3>
-                  <p className="mt-3 max-w-sm text-sm leading-[1.9] text-[rgb(var(--wa-color-purple-95)/0.7)] sm:text-base">{s.text}</p>
-                </div>
-              </article>
-            ))}
+          <div ref={trackRef} className="l2-track">
+            {STEPS.map((s, i) => {
+              const Ico = FLOW_ICONS[i];
+              return (
+                <article key={s.no} ref={(el) => { cardRefs.current[i] = el; }} className="l2-step">
+                  <span className="l2-step-ico"><Ico size={26} strokeWidth={1.4} /></span>
+                  <p className="l2-step-no">{s.no}</p>
+                  <div>
+                    <h3 className="l2-step-h">{s.title}</h3>
+                    <p className="l2-step-p">{s.text}</p>
+                  </div>
+                </article>
+              );
+            })}
             <div className="w-6 shrink-0 sm:w-24" />
           </div>
-          <div className="mx-auto mt-10 h-px w-[calc(100%-2.5rem)] max-w-7xl bg-[rgb(var(--wa-color-purple-05)/0.15)] sm:w-[calc(100%-4rem)]">
-            <div ref={hzBarRef} className="h-full origin-left bg-[rgb(var(--wa-color-purple-50))]" style={{ transform: 'scaleX(0)' }} />
-          </div>
+          <div className="l2-wrap"><div className="l2-bar"><div ref={hzBarRef} /></div></div>
         </div>
       </section>
 
-      {/* DEVICES */}
-      <section id="devices" className="relative overflow-hidden border-t border-[rgb(var(--wa-color-purple-05)/0.1)] px-5 py-24 sm:px-8 md:py-36">
-        <div className="mx-auto max-w-5xl">
-          <Reveal><span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">ใช้ได้ทุกอุปกรณ์</span></Reveal>
-          <Reveal a="zoom"><h2 className="ld-title mt-5 max-w-3xl text-[clamp(1.9rem,4.6vw,3.4rem)]">ที่ร้านหรือนอกร้าน<br /><span className="ld-purple">ใช้ได้เหมือนกัน</span></h2></Reveal>
-          <Reveal a="rotate" delay={200}><DeviceShowcase /></Reveal>
+      {/* ทุกอุปกรณ์ */}
+      <section id="devices" className="l2-light l2-sec l2-devices">
+        <div className="l2-wrap text-center">
+          <Reveal><p className="l2-eyebrow">ใช้ได้ทุกอุปกรณ์</p></Reveal>
+          <Reveal a="up" delay={80}><h2 className="l2-h2 l2-h2-dark">ที่ร้านหรือนอกร้าน<br /><span className="l2-grad-d">ใช้ได้เหมือนกัน</span></h2></Reveal>
+          <div ref={(el) => { riseRefs.current[0] = el; }} className="l2-rise"><DeviceShowcase /></div>
         </div>
       </section>
 
-      {/* กติกาการเช่า — ข้อมูลจริงของร้าน */}
-      <section className="border-y border-[rgb(var(--wa-color-purple-05)/0.1)] px-5 py-16 sm:px-8 md:py-24">
-        <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.4fr)] md:gap-16">
+      {/* กติกาของร้าน */}
+      <section id="rules" className="l2-sec l2-rules">
+        <div className="l2-wrap l2-rules-grid">
           <div>
-            <span className="eyebrow !text-[rgb(var(--wa-color-purple-70))]">กติกาของร้าน</span>
-            <h2 className="ld-title mt-5 text-[clamp(1.7rem,3.8vw,2.7rem)]">กติกาที่ระบบใช้<br />ตอนรับจอง</h2>
+            <Reveal><p className="l2-eyebrow">กติกาของร้าน</p></Reveal>
+            <Reveal a="up" delay={80}><h2 className="l2-h2">กติกาที่ระบบใช้<br /><span className="l2-grad">ตอนรับจอง</span></h2></Reveal>
           </div>
-          <dl className="divide-y divide-[rgb(var(--wa-color-purple-05)/0.1)] border-y border-[rgb(var(--wa-color-purple-05)/0.1)]">
-            {RULES.map(([k, v]) => (
-              <div key={k} className="grid gap-1 py-4 sm:grid-cols-[11rem_1fr] sm:gap-6">
-                <dt className="text-sm text-[rgb(var(--wa-color-purple-95)/0.7)]">{k}</dt>
-                <dd className="text-[rgb(var(--wa-color-purple-95)/0.85)]">{v}</dd>
-              </div>
+          <dl className="l2-dl">
+            {RULES.map(([k, v], i) => (
+              <Reveal key={k} a="up" delay={i * 60} className="l2-dl-row">
+                <dt>{k}</dt>
+                <dd>{v}</dd>
+              </Reveal>
             ))}
           </dl>
         </div>
       </section>
 
-      {/* CTA — Lamp */}
-      <section className="relative overflow-hidden px-5 pb-28 pt-12 sm:px-8 md:pb-40">
-        <Beams className="opacity-40" count={IS_WEBKIT ? 6 : 16} />
-        <Lamp className="min-h-[560px] pt-28">
-          <div className="mx-auto max-w-4xl text-center">
-            <h2 className="ld-title text-[clamp(2.4rem,8vw,6rem)]">
-              <GenerateText words={['เริ่มใช้', 'งานได้', 'เลย']} step={140} />
-            </h2>
-            <p className="mx-auto mt-6 max-w-md text-[rgb(var(--wa-color-purple-95)/0.7)]">เข้าสู่ระบบ แล้วเพิ่มกล้องตัวแรกได้เลย</p>
-            <div className="mt-12">
-              <Magnetic>
-                <span className="mb">
-                  <button onClick={go} data-cursor="เข้าระบบ" className="ld-btn ld-btn-purple !min-h-[66px] !px-11 text-lg">
-                    เข้าสู่ระบบ <ArrowRight size={19} />
-                  </button>
-                </span>
-              </Magnetic>
-            </div>
+      {/* ปิดท้าย */}
+      <section className="l2-end">
+        <div className="l2-rings" aria-hidden="true"><i /><i /><i /></div>
+        <div className="l2-wrap relative z-10 text-center">
+          <h2 className="l2-h1 l2-h1-end">
+            <GenerateText words={['เริ่มใช้', 'งานได้', 'เลย']} step={140} />
+          </h2>
+          <p className="l2-lead mx-auto">เข้าสู่ระบบ แล้วเพิ่มกล้องตัวแรกได้เลย</p>
+          <div className="mt-10 flex justify-center">
+            <button type="button" onClick={go} className="l2-pill l2-pill-lg">เข้าสู่ระบบ <ArrowRight size={19} /></button>
           </div>
-        </Lamp>
+        </div>
       </section>
 
-      <footer className="border-t border-[rgb(var(--wa-color-purple-05)/0.1)] px-5 py-10 text-center">
-        <p className="mono !text-[10px] text-[rgb(var(--wa-color-purple-95)/0.7)]">{SHOP.name} — ระบบจัดการร้านเช่ากล้อง</p>
+      <footer className="l2-foot">
+        <p>{SHOP.name} — ระบบจัดการร้านเช่ากล้อง</p>
       </footer>
     </div>
   );
 }
+
 
 /* ═════ pages/Dashboard.jsx ═════ */
 const greeting = () => {
